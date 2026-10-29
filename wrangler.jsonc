@@ -16,11 +16,6 @@
 		{
 			"binding": "DB",
 			"database_name": "kdeenoff_db",
-			"database_id": "placeholder-kdeenoff-db"
-		},
-		{
-			"binding": "kdeenoff_db",
-			"database_name": "kdeenoff_db",
 			"database_id": "1c98a6bc-95a4-4f63-9708-5dcb878ab089"
 		}
 	],
