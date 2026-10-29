@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <!-- Leaf Green Gradient -->
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#72f238"/>
+      <stop offset="60%" stop-color="#3eb811"/>
+      <stop offset="100%" stop-color="#1e7305"/>
+    </linearGradient>
+
+    <!-- Banner Gradient -->
+    <linearGradient id="bannerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff875"/>
+      <stop offset="100%" stop-color="#f5ba18"/>
+    </linearGradient>
+
+    <filter id="badgeShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#badgeShadow)" transform="translate(80, 75)">
+    <!-- 7-pointed stylized leaf -->
+    <g transform="translate(0, -15)">
+      <!-- Center Main Blade -->
+      <path d="M 0 -60 C -12 -35 -15 -10 0 15 C 15 -10 12 -35 0 -60 Z"
+            fill="url(#leafGrad)" stroke="#111809" stroke-width="4" stroke-linejoin="round"/>
+      <!-- Top Left Blade -->
+      <path d="M 0 0 C -25 -25 -42 -38 -45 -52 C -50 -35 -30 -10 0 10 Z"
+            fill="url(#leafGrad)" stroke="#111809" stroke-width="4" stroke-linejoin="round"/>
+      <!-- Top Right Blade -->
+      <path d="M 0 0 C 25 -25 42 -38 45 -52 C 50 -35 30 -10 0 10 Z"
+            fill="url(#leafGrad)" stroke="#111809" stroke-width="4" stroke-linejoin="round"/>
+      <!-- Mid Left Blade -->
+      <path d="M 0 5 C -30 -10 -55 -15 -62 -22 C -62 -8 -40 10 0 15 Z"
+            fill="url(#leafGrad)" stroke="#111809" stroke-width="4" stroke-linejoin="round"/>
+      <!-- Mid Right Blade -->
+      <path d="M 0 5 C 30 -10 55 -15 62 -22 C 62 -8 40 10 0 15 Z"
+            fill="url(#leafGrad)" stroke="#111809" stroke-width="4" stroke-linejoin="round"/>
+      <!-- Bot Left Blade -->
+      <path d="M 0 10 C -25 8 -45 12 -52 8 C -48 18 -25 22 0 18 Z"
+            fill="url(#leafGrad)" stroke="#111809" stroke-width="4" stroke-linejoin="round"/>
+      <!-- Bot Right Blade -->
+      <path d="M 0 10 C 25 8 45 12 52 8 C 48 18 25 22 0 18 Z"
+            fill="url(#leafGrad)" stroke="#111809" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Curved BONUS banner across bottom -->
+    <g transform="translate(0, 30)">
+      <!-- Banner Back Extrusion -->
+      <path d="M -66 12 Q 0 22 66 12 L 66 30 Q 0 40 -66 30 Z" fill="#14180c"/>
+      <!-- Banner Front -->
+      <path d="M -64 8 Q 0 18 64 8 L 62 25 Q 0 35 -62 25 Z"
+            fill="url(#bannerGrad)" stroke="#14180c" stroke-width="4" stroke-linejoin="round"/>
+      <!-- Text -->
+      <text x="0" y="24"
+            text-anchor="middle"
+            font-family="'Anton', 'Titan One', 'Arial Black', sans-serif"
+            font-size="20"
+            font-weight="900"
+            letter-spacing="2"
+            fill="#121808"
+            stroke="#121808"
+            stroke-width="1">
+        BONUS
+      </text>
+    </g>
+  </g>
+</svg>

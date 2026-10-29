@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Журнал аудита · Admin KDeenOff</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body" data-admin-page="audit">
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <a href="/admin/" class="admin-header__brand">
+        <strong>KDeenOff</strong>
+        <span class="admin-header__badge">Admin</span>
+      </a>
+
+      <nav class="admin-nav">
+        <a href="/admin/">Обзор</a>
+        <a href="/admin/leaderboards/">Лидерборды</a>
+        <a href="/admin/site/">Настройки сайта</a>
+        <a href="/admin/audit/" class="is-active">Журнал аудита</a>
+      </nav>
+
+      <a href="/" class="admin-header__site-link" target="_blank">Перейти на сайт ↗</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="admin-page-head">
+      <div>
+        <h1 class="admin-page-title">Журнал действий (Audit Log)</h1>
+        <p class="admin-page-sub">История всех изменений настроек, игроков, рангов и выплат</p>
+      </div>
+
+      <div class="admin-page-actions">
+        <button type="button" class="adm-btn adm-btn--secondary" data-btn-refresh-audit>
+          ↻ Обновить журнал
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Дата и время</th>
+              <th>Пользователь</th>
+              <th>Действие</th>
+              <th>Объект</th>
+              <th>Детали (JSON)</th>
+            </tr>
+          </thead>
+          <tbody data-admin-audit-tbody>
+            <tr>
+              <td colspan="5" class="admin-status">Загрузка журнала…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/admin/admin.js"></script>
+</body>
+</html>

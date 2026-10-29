@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Редактор лидерборда · Admin KDeenOff</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body" data-admin-page="board-editor">
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <a href="/admin/" class="admin-header__brand">
+        <strong>KDeenOff</strong>
+        <span class="admin-header__badge">Admin</span>
+      </a>
+
+      <nav class="admin-nav">
+        <a href="/admin/">Обзор</a>
+        <a href="/admin/leaderboards/" class="is-active">Лидерборды</a>
+        <a href="/admin/site/">Настройки сайта</a>
+        <a href="/admin/audit/">Журнал аудита</a>
+      </nav>
+
+      <a href="/" class="admin-header__site-link" target="_blank">Перейти на сайт ↗</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="admin-page-head">
+      <div>
+        <div style="font-size: 0.85rem; color: var(--adm-muted); margin-bottom: 0.25rem;">
+          <a href="/admin/leaderboards/" style="color: var(--adm-accent); text-decoration: none;">← Ко всем лидербордам</a>
+        </div>
+        <h1 class="admin-page-title" data-board-edit-title>Редактирование лидерборда</h1>
+      </div>
+
+      <div class="admin-page-actions" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <a href="#" class="adm-btn adm-btn--secondary" data-btn-view-public target="_blank">
+          Публичный вид ↗
+        </a>
+        <button type="button" class="adm-btn adm-btn--secondary" data-btn-apply-growth>
+          ⚡ Применить тик роста
+        </button>
+        <button type="button" class="adm-btn adm-btn--secondary" data-btn-auto-rank>
+          ⇅ Авто-ранг по вагеру
+        </button>
+        <button type="button" class="adm-btn adm-btn--primary" data-btn-save-board>
+          Сохранить настройки
+        </button>
+      </div>
+    </div>
+
+    <!-- Status message -->
+    <div id="admin-status-box" hidden></div>
+
+    <!-- 1. Board Settings Card -->
+    <div class="admin-card">
+      <div class="admin-card__head">
+        <h2 class="admin-card__title">Параметры гонки</h2>
+        <span style="font-size: 0.8rem; color: var(--adm-muted);" data-board-slug-indicator></span>
+      </div>
+
+      <form data-form-board-settings>
+        <div class="admin-form-grid">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Название *</label>
+            <input type="text" name="title" class="admin-input" required>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Призовой фонд ($) *</label>
+            <input type="number" name="prize_pool_usd" class="admin-input" step="0.01" required>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Партнёр (Казино)</label>
+            <input type="text" name="partner" class="admin-input" placeholder="stake / rainbet">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Реферальная ссылка партнёра</label>
+            <input type="url" name="partner_signup_url" class="admin-input">
+          </div>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Дата окончания *</label>
+            <input type="datetime-local" name="ends_at_local" class="admin-input" required>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Стиль аватаров</label>
+            <select name="avatar_style" class="admin-select">
+              <option value="fun-emoji">Fun Emoji (Смайлы)</option>
+              <option value="bottts-neutral">Bottts Neutral (Роботы)</option>
+              <option value="none">Без аватаров</option>
+            </select>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Авто-скрывать места ниже ранга</label>
+            <input type="number" name="auto_hidden_above_rank" class="admin-input" min="0" placeholder="25 (0 = показывать всех)">
+          </div>
+          <div class="admin-form-group" style="justify-content: flex-end;">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" name="auto_rank_by_wagered" value="1">
+              <strong>Авто-сортировка по вагеру</strong>
+            </label>
+          </div>
+        </div>
+
+        <div class="admin-card" style="background: var(--adm-surface-light); margin-top: 1rem; margin-bottom: 0;">
+          <div class="admin-card__head" style="margin-bottom: 0.5rem; padding-bottom: 0.5rem;">
+            <strong style="font-size: 0.9rem;">Автоматический рост вагера (Wager Growth)</strong>
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" name="auto_wager_growth_enabled" value="1">
+              <span>Включить авто-рост по расписанию</span>
+            </label>
+          </div>
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Прирост за интервал (% от текущего)</label>
+              <input type="number" name="auto_wager_growth_pct" class="admin-input" min="1" max="100" value="3">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Интервал тика (часов)</label>
+              <input type="number" name="auto_wager_growth_hours" class="admin-input" min="0.1" step="0.5" value="12">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- 2. Players Management Card -->
+    <div class="admin-card">
+      <div class="admin-card__head">
+        <div>
+          <h2 class="admin-card__title">Участники гонки</h2>
+          <span style="font-size: 0.8rem; color: var(--adm-muted);" data-players-count>0 участников</span>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-btn-import-csv>
+            📥 Импорт CSV
+          </button>
+          <button type="button" class="adm-btn adm-btn--primary adm-btn--sm" data-btn-add-player>
+            + Добавить игрока
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">Ранг</th>
+              <th>Аватар</th>
+              <th>Никнейм игрока</th>
+              <th>Вагер ($)</th>
+              <th>Призовые ($)</th>
+              <th>Авто-рост</th>
+              <th>72h План</th>
+              <th style="text-align: right;">Действия</th>
+            </tr>
+          </thead>
+          <tbody data-admin-players-tbody>
+            <tr>
+              <td colspan="8" class="admin-status">Загрузка участников…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. Spot Prizes Card -->
+    <div class="admin-card">
+      <div class="admin-card__head">
+        <div>
+          <h2 class="admin-card__title">Фиксированные призовые по местам (Spot Prizes)</h2>
+          <p style="font-size: 0.8rem; color: var(--adm-muted);">
+            Призовые для каждого ранга (1..10+). Если задан spot prize, он переопределяет индивидуальный приз игрока на этом месте.
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table" style="max-width: 600px;">
+          <thead>
+            <tr>
+              <th style="width: 80px;">Место</th>
+              <th>Приз за место ($)</th>
+              <th>Скрыть место</th>
+              <th>Сохранить</th>
+            </tr>
+          </thead>
+          <tbody data-admin-spots-tbody>
+            <!-- Generated 1..10 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Player Modal -->
+  <div class="admin-modal" id="modal-add-player" hidden>
+    <div class="admin-modal__card">
+      <div class="admin-modal__head">
+        <h3>Добавить игрока</h3>
+        <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
+      </div>
+      <form data-form-add-player>
+        <div class="admin-modal__body">
+          <div class="admin-form-group" style="margin-bottom: 1rem;">
+            <label class="admin-form-label">Никнейм игрока *</label>
+            <input type="text" name="username" class="admin-input" required placeholder="Например: LuckySnail">
+          </div>
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Сумма вагера ($)</label>
+              <input type="number" name="wagered_usd" class="admin-input" step="0.01" value="0">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Призовые ($)</label>
+              <input type="number" name="prize_usd" class="admin-input" step="0.01" value="0">
+            </div>
+          </div>
+          <div class="admin-form-group" style="margin-bottom: 1rem;">
+            <label class="admin-form-label">Кастомный URL аватара (опционально)</label>
+            <input type="url" name="avatar_url" class="admin-input" placeholder="https://...">
+          </div>
+          <div class="admin-form-group">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" name="wag_growth_enabled" value="1" checked>
+              <strong>Включить авто-рост вагера для игрока</strong>
+            </label>
+          </div>
+        </div>
+        <div class="admin-modal__footer">
+          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Отмена</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Добавить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CSV Import Modal -->
+  <div class="admin-modal" id="modal-import-csv" hidden>
+    <div class="admin-modal__card">
+      <div class="admin-modal__head">
+        <h3>Импорт игроков из CSV</h3>
+        <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
+      </div>
+      <form data-form-import-csv>
+        <div class="admin-modal__body">
+          <p style="font-size: 0.85rem; color: var(--adm-muted); margin-bottom: 1rem;">
+            Вставьте строки в формате: <code>username, wager_in_usd, prize_in_usd</code>.<br>
+            Первая строка с заголовком будет автоматически пропущена.
+          </p>
+          <textarea name="csv_text" class="admin-textarea" rows="8" placeholder="Player1, 15000, 500&#10;Player2, 8500, 250&#10;Player3, 4200, 100" required></textarea>
+        </div>
+        <div class="admin-modal__footer">
+          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Отмена</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Импортировать</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 72h Growth Schedule Modal -->
+  <div class="admin-modal" id="modal-growth-schedule" hidden>
+    <div class="admin-modal__card">
+      <div class="admin-modal__head">
+        <div>
+          <h3 data-wager-schedule-title>План роста на 72 часа</h3>
+          <p style="font-size:0.75rem; color:var(--adm-muted);" data-wager-schedule-subtitle></p>
+        </div>
+        <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
+      </div>
+      <div class="admin-modal__body">
+        <ul class="growth-timeline" data-wager-schedule-list>
+          <!-- List items -->
+        </ul>
+      </div>
+      <div class="admin-modal__footer">
+        <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/admin/admin.js"></script>
+</body>
+</html>

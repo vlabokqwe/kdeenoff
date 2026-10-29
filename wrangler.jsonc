@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kdeenoff",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-04-01",
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "vars": {
+    "SITE_LABEL": "kdeenoff",
+    "PROMO_CODE": "KDEENOFF"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kdeenoff_db",
+      "database_id": "placeholder-kdeenoff-db"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  }
+}

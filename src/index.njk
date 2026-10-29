@@ -1,0 +1,196 @@
+---
+layout: layout.njk
+title: Главная
+permalink: /
+---
+<!-- Hero Section with Slot Branding & Code Claim -->
+<section class="slot-hero" aria-labelledby="hero-title">
+  <div class="slot-hero__container">
+    <div class="slot-hero__content">
+      <div class="slot-hero__headline">
+        <span class="slot-pill-tag">🔥 ЕЖЕМЕСЯЧНАЯ ГОНКА</span>
+        <h1 id="hero-title" class="slot-hero__title">
+          КРУТИ СЛОТЫ. <br>
+          <span class="text-gold-gradient">ЗАБИРАЙ ПРИЗОВЫЕ.</span>
+        </h1>
+        <p class="slot-hero__desc">
+          Официальный лидерборд для подписчиков канала <strong>KDeenOff</strong>. Каждая ставка в слотах под промокодом <span class="tag-code">{{ site.promoCode }}</span> двигает тебя на вершину пьедестала!
+        </p>
+      </div>
+
+      <!-- Quick Claim Card -->
+      <div class="slot-hero__claim-card">
+        <div class="claim-card__header">
+          <span class="coin-icon" aria-hidden="true">🪙</span>
+          <div>
+            <h2 class="claim-card__title">Твой промокод для участия</h2>
+            <p class="claim-card__sub">Введи при регистрации или в профиле партнёра</p>
+          </div>
+        </div>
+
+        <div class="claim-card__actions">
+          <div class="code-pill-box">
+            <span class="code-pill-label">КОД</span>
+            <strong class="code-pill-value" id="promo-code-val">{{ site.promoCode }}</strong>
+            <button type="button" class="btn-copy-pill" data-copy="{{ site.promoCode }}" aria-label="Скопировать промокод">
+              <span class="btn-copy-pill__text">Копировать</span>
+            </button>
+          </div>
+
+          <a href="{{ site.partnerSignupUrl }}" target="_blank" rel="noopener noreferrer" class="btn-hero-play">
+            <span>Играть и участвовать</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div class="claim-card__footer">
+          <span>⚡ Призовой фонд месяца: <strong>{{ site.leaderboardHeadline }}</strong></span>
+          <span>• 100% прозрачные выплаты</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Cartoon Slot Machine Reel Visual (Hero Decoration) -->
+    <div class="slot-hero__visual" aria-hidden="true">
+      <div class="mini-slot-machine">
+        <div class="mini-slot__top-sign">KDEENOFF 777</div>
+        <div class="mini-slot__screen">
+          <div class="mini-slot__reel" data-reel="1">
+            <span class="reel-symbol">🍀</span>
+            <span class="reel-symbol">👑</span>
+            <span class="reel-symbol">⭐</span>
+          </div>
+          <div class="mini-slot__reel" data-reel="2">
+            <span class="reel-symbol">👑</span>
+            <span class="reel-symbol">👑</span>
+            <span class="reel-symbol">💎</span>
+          </div>
+          <div class="mini-slot__reel" data-reel="3">
+            <span class="reel-symbol">⭐</span>
+            <span class="reel-symbol">👑</span>
+            <span class="reel-symbol">🍀</span>
+          </div>
+        </div>
+        <div class="mini-slot__win-line">
+          <span>JACKPOT LINE</span>
+        </div>
+        <div class="mini-slot__bottom-tray">
+          <img src="/img/brand/snail-mascot.svg" alt="" class="mini-slot__mascot" width="110" height="130">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee Ribbon -->
+<div class="slot-ribbon" role="presentation">
+  <div class="slot-ribbon__track">
+    <span>★ KDEENOFF ГОНКА СЛОТОВ</span>
+    <span>• ПРИЗОВОЙ БАНК {{ site.leaderboardHeadline }}</span>
+    <span>★ ПРОМОКОД {{ site.promoCode }}</span>
+    <span>• ТОП-10 ПРИЗОВЫХ МЕСТ</span>
+    <span>★ КРУТИ И ВЫИГРЫВАЙ</span>
+    <span>• ПРЯМЫЕ СТРИМЫ НА KICK</span>
+    <!-- Repeat for seamless marquee -->
+    <span>★ KDEENOFF ГОНКА СЛОТОВ</span>
+    <span>• ПРИЗОВОЙ БАНК {{ site.leaderboardHeadline }}</span>
+    <span>★ ПРОМОКОД {{ site.promoCode }}</span>
+    <span>• ТОП-10 ПРИЗОВЫХ МЕСТ</span>
+    <span>★ КРУТИ И ВЫИГРЫВАЙ</span>
+    <span>• ПРЯМЫЕ СТРИМЫ НА KICK</span>
+  </div>
+</div>
+
+<!-- Main Live Leaderboard Section -->
+<section class="section-leaderboard" id="leaderboard" aria-label="Таблица Лидерборда">
+  <div class="section-leaderboard__container">
+    {% include "partials/leaderboard-shell.njk" %}
+  </div>
+</section>
+
+<!-- How It Works (Cartoon Wooden Steps) -->
+<section class="slot-steps" id="how-it-works" aria-labelledby="steps-title">
+  <div class="slot-steps__container">
+    <div class="section-heading">
+      <span class="section-tag">КАК ЭТО РАБОТАЕТ</span>
+      <h2 id="steps-title" class="section-title">3 ПРОСТЫХ ШАГА К ПРИЗАМ</h2>
+      <p class="section-sub">Участие автоматическое для всех игроков под кодом канала</p>
+    </div>
+
+    <div class="slot-steps__grid">
+      <!-- Step 1 -->
+      <div class="step-card">
+        <div class="step-card__badge">1</div>
+        <div class="step-card__icon-wrap">
+          <span class="step-icon">📝</span>
+        </div>
+        <h3 class="step-card__title">Регистрация под кодом</h3>
+        <p class="step-card__text">
+          Зарегистрируйте аккаунт в казино с промокодом <strong class="highlight-inline">{{ site.promoCode }}</strong> или привяжите его в настройках своего профиля.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card">
+        <div class="step-card__badge">2</div>
+        <div class="step-card__icon-wrap">
+          <span class="step-icon">🎰</span>
+        </div>
+        <h3 class="step-card__title">Крутите слоты</h3>
+        <p class="step-card__text">
+          Делайте ставки в любых играх. Каждый доллар оборота автоматически добавляет очки в лидерборд и продвигает вас выше по рангам.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card">
+        <div class="step-card__badge">3</div>
+        <div class="step-card__icon-wrap">
+          <span class="step-icon">🏆</span>
+        </div>
+        <h3 class="step-card__title">Забирайте выплаты</h3>
+        <p class="step-card__text">
+          По окончании таймера гонки топ игроки таблицы получают денежные призы прямо на игровой баланс или кошелёк.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Rules & Transparency Section -->
+<section class="slot-rules" id="rules" aria-labelledby="rules-title">
+  <div class="slot-rules__container">
+    <div class="slot-rules__box">
+      <div class="slot-rules__header">
+        <span class="rules-icon" aria-hidden="true">📜</span>
+        <div>
+          <h2 id="rules-title" class="slot-rules__title">Правила и честная игра</h2>
+          <p class="slot-rules__sub">Прозрачные условия без скрытых комиссий</p>
+        </div>
+      </div>
+
+      <div class="slot-rules__content">
+        <ul class="rules-list">
+          <li>
+            <strong>Учёт ставок:</strong> В таблице учитывается сумма общего вагера (оборота) за расчётный период гонки.
+          </li>
+          <li>
+            <strong>Честная борьба (No Abuse):</strong> Попытки накрутки нулевыми ставками (например, одновременные ставки на красное/чёрное в рулетке с минимальным риском) или мультиаккаунтинг строго запрещены и приводят к аннулированию результатов.
+          </li>
+          <li>
+            <strong>Выплата призов:</strong> Призовые начисляются в течение 24–48 часов после завершения таймера. Победители получают средства в криптовалюте или на игровой баланс.
+          </li>
+          <li>
+            <strong>Поддержка:</strong> Вопросы по гонке и подтверждению аккаунта можно задать в Telegram канале KDeenOff.
+          </li>
+        </ul>
+      </div>
+
+      <div class="slot-rules__cta">
+        <a href="{{ site.partnerSignupUrl }}" target="_blank" rel="noopener noreferrer" class="btn-play-slot btn-play-slot--large">
+          <span>Начать гонку с кодом {{ site.promoCode }}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

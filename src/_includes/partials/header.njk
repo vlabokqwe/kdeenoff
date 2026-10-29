@@ -1,0 +1,32 @@
+<header class="slot-header" role="banner">
+  <div class="slot-header__container">
+    <a href="/" class="slot-header__brand" aria-label="KDeenOff Leaderboard Home">
+      <img src="/img/brand/kdeenoff-logo.svg" alt="KDeenOff" class="slot-header__logo" width="190" height="48">
+      <span class="slot-header__badge">SLOT RACE</span>
+    </a>
+
+    <nav class="slot-header__nav" aria-label="Main Navigation">
+      <a href="/" class="slot-header__link" data-nav-link="home">Главная</a>
+      <a href="/leaderboards/kdeenoff-monthly/" class="slot-header__link" data-nav-link="leaderboard">Лидерборд</a>
+      <a href="#rules" class="slot-header__link">Правила</a>
+      {% if site.kickUrl %}
+      <a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer" class="slot-header__link slot-header__link--kick">
+        <span class="kick-dot" aria-hidden="true"></span> Kick
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="slot-header__actions">
+      <div class="slot-header__status-chip">
+        <span class="pulse-indicator" aria-hidden="true"></span>
+        <span class="status-chip__text">АКТИВНЫЙ РЕЙС</span>
+        <strong class="status-chip__pot">{{ site.leaderboardHeadline }}</strong>
+      </div>
+
+      <a href="/admin/" class="btn-admin-pill" title="Панель управления лидербордом">
+        <span class="admin-icon" aria-hidden="true">⚙</span>
+        <span>Admin</span>
+      </a>
+    </div>
+  </div>
+</header>

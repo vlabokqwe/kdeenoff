@@ -1,0 +1,22 @@
+{
+  "name": "kdeenoff-leaderboard",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && eleventy && node scripts/build-css.mjs && node scripts/build-js.mjs",
+    "build:fast": "eleventy",
+    "serve": "eleventy --serve",
+    "watch": "eleventy --watch",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@11ty/eleventy": "^3.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "wrangler": "^4.87.0"
+  }
+}

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Гонки и Лидерборды · Admin KDeenOff</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body" data-admin-page="boards-list">
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <a href="/admin/" class="admin-header__brand">
+        <strong>KDeenOff</strong>
+        <span class="admin-header__badge">Admin</span>
+      </a>
+
+      <nav class="admin-nav">
+        <a href="/admin/">Обзор</a>
+        <a href="/admin/leaderboards/" class="is-active">Лидерборды</a>
+        <a href="/admin/site/">Настройки сайта</a>
+        <a href="/admin/audit/">Журнал аудита</a>
+      </nav>
+
+      <a href="/" class="admin-header__site-link" target="_blank">Перейти на сайт ↗</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="admin-page-head">
+      <div>
+        <h1 class="admin-page-title">Все гонки и лидерборды</h1>
+        <p class="admin-page-sub">Активные, завершенные и архивные лидерборды</p>
+      </div>
+
+      <div class="admin-page-actions">
+        <button type="button" class="adm-btn adm-btn--primary" data-open-create-board-modal>
+          + Создать лидерборд
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Название / Slug</th>
+              <th>Партнёр</th>
+              <th>Банк ($)</th>
+              <th>Игроков</th>
+              <th>Окончание</th>
+              <th>Статус</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody data-admin-boards-tbody>
+            <tr>
+              <td colspan="7" class="admin-status">Загрузка…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create Board Modal -->
+  <div class="admin-modal" id="modal-create-board" hidden>
+    <div class="admin-modal__card">
+      <div class="admin-modal__head">
+        <h3>Новый лидерборд</h3>
+        <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
+      </div>
+      <form data-form-create-board>
+        <div class="admin-modal__body">
+          <div class="admin-form-group" style="margin-bottom: 1rem;">
+            <label class="admin-form-label">Название лидерборда *</label>
+            <input type="text" name="title" class="admin-input" required placeholder="Например: KDeenOff $10,000 Race">
+          </div>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Slug (URL) *</label>
+              <input type="text" name="slug" class="admin-input" placeholder="kdeenoff-monthly">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Призовой банк ($) *</label>
+              <input type="number" name="prize_pool_usd" class="admin-input" value="10000" min="0">
+            </div>
+          </div>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Партнёр (Казино)</label>
+              <input type="text" name="partner" class="admin-input" value="stake" placeholder="stake / rainbet">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Ссылка для регистрации</label>
+              <input type="url" name="partner_signup_url" class="admin-input" value="https://stake.com/?c=KDEENOFF">
+            </div>
+          </div>
+
+          <div class="admin-form-group" style="margin-bottom: 1rem;">
+            <label class="admin-form-label">Подзаголовок / Описание</label>
+            <textarea name="subtitle" class="admin-textarea" rows="2" placeholder="Крутите в казино с кодом KDEENOFF..."></textarea>
+          </div>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Дата окончания *</label>
+              <input type="datetime-local" name="ends_at_local" class="admin-input" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Стиль аватаров</label>
+              <select name="avatar_style" class="admin-select">
+                <option value="fun-emoji" selected>Fun Emoji (Смайлы DiceBear)</option>
+                <option value="bottts-neutral">Bottts Neutral (Роботы)</option>
+                <option value="none">Без аватаров</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="admin-modal__footer">
+          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Отмена</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Создать гонку</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/admin/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+---
+layout: layout.njk
+title: Лидерборд
+permalink: /leaderboards/_board/index.html
+eleventyExcludeFromCollections: true
+---
+{# Generic dynamic leaderboard shell.
+   The Worker rewrites unknown /leaderboards/<slug>/ requests to this page
+   so admin-created boards work without an Eleventy rebuild.
+   The slug is detected from location.pathname in leaderboard.js. #}
+<section class="section-leaderboard section-leaderboard--page" aria-label="Таблица Лидерборда">
+  <div class="section-leaderboard__container">
+    {% set lbSlug = "" %}
+    {% include "partials/leaderboard-shell.njk" %}
+  </div>
+</section>

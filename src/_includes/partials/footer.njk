@@ -1,0 +1,35 @@
+<footer class="slot-footer" role="contentinfo">
+  <div class="slot-footer__container">
+    <div class="slot-footer__top">
+      <div class="slot-footer__brand-block">
+        <img src="/img/brand/kdeenoff-logo.svg" alt="KDeenOff" class="slot-footer__logo" width="160" height="42">
+        <p class="slot-footer__tagline">{{ site.tagline }}</p>
+      </div>
+
+      <div class="slot-footer__socials">
+        {% if site.kickUrl %}
+        <a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer" class="social-btn social-btn--kick">
+          <span>Kick Стрим</span>
+        </a>
+        {% endif %}
+        {% if site.telegramUrl %}
+        <a href="{{ site.telegramUrl }}" target="_blank" rel="noopener noreferrer" class="social-btn social-btn--tg">
+          <span>Telegram Канал</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="slot-footer__bottom">
+      <div class="slot-footer__disclaimer">
+        <span class="badge-18" aria-label="18 plus only">18+</span>
+        <p class="disclaimer-text">
+          Играйте ответственно. Данный ресурс не организует и не проводит азартные игры на реальные деньги, а является информационной платформой лидерборда для сообщества KDeenOff. Все призовые выплачиваются в соответствии с условиями официального партнёра.
+        </p>
+      </div>
+      <p class="slot-footer__copyright">
+        &copy; {% year %} KDeenOff. Все права защищены.
+      </p>
+    </div>
+  </div>
+</footer>

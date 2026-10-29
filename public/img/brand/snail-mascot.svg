@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" width="100%" height="100%">
+  <defs>
+    <!-- Skin gradient -->
+    <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9d7a"/>
+      <stop offset="60%" stop-color="#e87353"/>
+      <stop offset="100%" stop-color="#bf5034"/>
+    </linearGradient>
+
+    <!-- Shell rainbow gradients -->
+    <linearGradient id="shellGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b6f043"/>
+      <stop offset="100%" stop-color="#4ea61d"/>
+    </linearGradient>
+    <linearGradient id="shellYellow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff852"/>
+      <stop offset="100%" stop-color="#e5a800"/>
+    </linearGradient>
+    <linearGradient id="shellRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff5964"/>
+      <stop offset="100%" stop-color="#bf1b2c"/>
+    </linearGradient>
+
+    <!-- Gold Chain -->
+    <linearGradient id="goldChain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff275"/>
+      <stop offset="50%" stop-color="#f5ba18"/>
+      <stop offset="100%" stop-color="#a86800"/>
+    </linearGradient>
+
+    <!-- Vest gradient -->
+    <linearGradient id="vestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#363945"/>
+      <stop offset="100%" stop-color="#181a20"/>
+    </linearGradient>
+
+    <!-- Drop shadow -->
+    <filter id="mascotShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="rgba(0,0,0,0.35)"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#mascotShadow)">
+    <!-- 1. Rainbow Spiral Shell (Back) -->
+    <g id="shell" transform="translate(145, 120)">
+      <!-- Outer Green Layer -->
+      <path d="M 15 200 C -30 140 -20 50 45 10 C 110 -25 180 20 185 95 C 190 170 120 220 50 215 Z"
+            fill="url(#shellGreen)" stroke="#1a1410" stroke-width="6" stroke-linejoin="round"/>
+
+      <!-- Middle Yellow Spiral Segment -->
+      <path d="M 35 170 C 0 125 10 60 55 35 C 105 10 155 45 150 105 C 145 160 95 185 50 180 Z"
+            fill="url(#shellYellow)" stroke="#1a1410" stroke-width="5" stroke-linejoin="round"/>
+
+      <!-- Inner Red Spiral Center -->
+      <path d="M 55 145 C 30 115 35 75 65 60 C 95 45 125 70 120 110 C 115 145 80 155 55 145 Z"
+            fill="url(#shellRed)" stroke="#1a1410" stroke-width="5" stroke-linejoin="round"/>
+
+      <!-- Center Swirl Detail -->
+      <path d="M 75 115 C 65 100 70 85 85 85 C 95 85 105 95 100 110 C 95 120 80 125 75 115"
+            fill="none" stroke="#680b15" stroke-width="4" stroke-linecap="round"/>
+    </g>
+
+    <!-- 2. Snail Soft Slime Foot (Bottom Base) -->
+    <path d="M 50 320 C 10 320 20 355 60 355 C 130 355 240 360 270 340 C 290 325 280 300 240 305 C 200 310 120 315 50 320 Z"
+          fill="#d45b3d" stroke="#1a1410" stroke-width="6" stroke-linejoin="round"/>
+
+    <!-- 3. Snail Body & Neck -->
+    <path d="M 75 200 C 65 240 60 290 85 330 C 130 340 170 330 185 290 C 195 240 180 200 170 175 Z"
+          fill="url(#skinGrad)" stroke="#1a1410" stroke-width="6" stroke-linejoin="round"/>
+
+    <!-- 4. Open Black Vest -->
+    <path d="M 70 215 C 55 245 55 285 70 310 C 95 315 115 310 125 295 C 110 265 100 235 95 210 Z"
+          fill="url(#vestGrad)" stroke="#1a1410" stroke-width="5"/>
+    <path d="M 175 210 C 190 240 190 280 175 305 C 150 310 135 305 128 290 C 140 260 150 230 155 208 Z"
+          fill="url(#vestGrad)" stroke="#1a1410" stroke-width="5"/>
+
+    <!-- 5. Heavy Gold Chain & Cannabis Leaf Pendant -->
+    <path d="M 90 225 Q 120 265 150 225" fill="none" stroke="url(#goldChain)" stroke-width="7" stroke-linecap="round"/>
+    <!-- Gold Leaf Pendant -->
+    <g transform="translate(120, 255) scale(0.9)">
+      <path d="M 0 -18 C -2 -10 -8 -6 -14 -8 C -10 -2 -8 3 -12 8 C -6 6 -2 8 0 14 C 2 8 6 6 12 8 C 8 3 10 -2 14 -8 C 8 -6 2 -10 0 -18 Z"
+            fill="url(#goldChain)" stroke="#1a1410" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="0" cy="-20" r="3" fill="#ffd700" stroke="#1a1410" stroke-width="2"/>
+    </g>
+
+    <!-- 6. Snail Head & Face -->
+    <g id="head">
+      <!-- Head Base -->
+      <path d="M 70 160 C 50 140 55 105 85 95 C 130 85 160 95 175 120 C 190 145 175 180 140 195 C 100 205 80 180 70 160 Z"
+            fill="url(#skinGrad)" stroke="#1a1410" stroke-width="6" stroke-linejoin="round"/>
+
+      <!-- Muzzle / Upper Cheek (lighter peach tone) -->
+      <path d="M 72 135 C 75 115 115 110 150 120 C 165 140 155 170 125 175 C 95 175 75 155 72 135 Z"
+            fill="#fca582" stroke="#1a1410" stroke-width="4"/>
+
+      <!-- Friendly Smile Line -->
+      <path d="M 80 142 Q 115 175 155 148" fill="none" stroke="#1a1410" stroke-width="5" stroke-linecap="round"/>
+      <path d="M 78 140 Q 82 146 86 142" fill="none" stroke="#1a1410" stroke-width="4" stroke-linecap="round"/>
+      <path d="M 152 146 Q 156 152 160 147" fill="none" stroke="#1a1410" stroke-width="4" stroke-linecap="round"/>
+
+      <!-- Two Cartoon Buck Teeth -->
+      <rect x="100" y="152" width="12" height="12" rx="2" fill="#ffffff" stroke="#1a1410" stroke-width="3"/>
+      <rect x="114" y="152" width="12" height="12" rx="2" fill="#ffffff" stroke="#1a1410" stroke-width="3"/>
+
+      <!-- Goatee -->
+      <path d="M 110 174 L 118 174 L 114 186 Z" fill="#181a20" stroke="#1a1410" stroke-width="2"/>
+
+      <!-- 7. Stylized Dreadlocks Hair -->
+      <g id="dreads">
+        <!-- Back hair bulk -->
+        <path d="M 60 130 C 40 110 40 75 65 65 C 80 58 100 60 110 65 C 130 55 160 65 170 80 C 185 100 180 130 165 145 C 160 130 150 115 140 110 C 130 95 100 95 85 110 C 75 115 70 125 60 130 Z"
+              fill="#242730" stroke="#1a1410" stroke-width="6" stroke-linejoin="round"/>
+        <!-- Individual dread locks hanging -->
+        <path d="M 50 100 C 35 115 35 140 50 150 C 60 155 65 145 60 135 Z" fill="#181a20" stroke="#1a1410" stroke-width="4"/>
+        <path d="M 40 125 C 30 140 32 160 45 170 C 55 175 60 165 52 150 Z" fill="#242730" stroke="#1a1410" stroke-width="4"/>
+        <path d="M 170 105 C 185 120 185 145 170 158 C 160 162 155 150 160 140 Z" fill="#181a20" stroke="#1a1410" stroke-width="4"/>
+        <path d="M 160 135 C 175 150 170 175 155 180 C 145 180 145 165 150 155 Z" fill="#242730" stroke="#1a1410" stroke-width="4"/>
+
+        <!-- Hair Ties (Yellow & Red) -->
+        <rect x="42" y="112" width="8" height="12" rx="2" fill="#ffea31" stroke="#1a1410" stroke-width="2" transform="rotate(-15 46 118)"/>
+        <rect x="164" y="120" width="8" height="12" rx="2" fill="#ff4d5a" stroke="#1a1410" stroke-width="2" transform="rotate(20 168 126)"/>
+      </g>
+
+      <!-- 8. Eye Stalks & Big Snail Eyes -->
+      <!-- Left Stalk -->
+      <path d="M 92 98 C 88 70 85 45 92 25 C 98 25 105 45 105 75 C 105 85 100 95 92 98 Z"
+            fill="url(#skinGrad)" stroke="#1a1410" stroke-width="5" stroke-linejoin="round"/>
+      <!-- Right Stalk -->
+      <path d="M 132 95 C 145 70 165 40 180 25 C 188 28 178 55 160 78 C 150 90 140 95 132 95 Z"
+            fill="url(#skinGrad)" stroke="#1a1410" stroke-width="5" stroke-linejoin="round"/>
+
+      <!-- Left Eye -->
+      <g transform="translate(95, 25)">
+        <!-- Sclera (White) -->
+        <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#1a1410" stroke-width="5"/>
+        <!-- Pupil (Chill look: centered/looking slightly down-right) -->
+        <circle cx="4" cy="4" r="14" fill="#15171c"/>
+        <circle cx="8" cy="0" r="4" fill="#ffffff"/>
+        <!-- Eyelid (Sleepy / Chill half-closed) -->
+        <path d="M -28 0 A 28 28 0 0 1 28 0 Q 0 8 -28 0 Z" fill="url(#skinGrad)" stroke="#1a1410" stroke-width="5"/>
+      </g>
+
+      <!-- Right Eye -->
+      <g transform="translate(182, 30)">
+        <!-- Sclera (White) -->
+        <circle cx="0" cy="0" r="28" fill="#ffffff" stroke="#1a1410" stroke-width="5"/>
+        <!-- Pupil -->
+        <circle cx="-2" cy="4" r="14" fill="#15171c"/>
+        <circle cx="2" cy="0" r="4" fill="#ffffff"/>
+        <!-- Eyelid (Sleepy / Chill half-closed) -->
+        <path d="M -28 0 A 28 28 0 0 1 28 0 Q 0 8 -28 0 Z" fill="url(#skinGrad)" stroke="#1a1410" stroke-width="5"/>
+      </g>
+    </g>
+  </g>
+</svg>

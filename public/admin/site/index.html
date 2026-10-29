@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Настройки сайта · Admin KDeenOff</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body" data-admin-page="site-settings">
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <a href="/admin/" class="admin-header__brand">
+        <strong>KDeenOff</strong>
+        <span class="admin-header__badge">Admin</span>
+      </a>
+
+      <nav class="admin-nav">
+        <a href="/admin/">Обзор</a>
+        <a href="/admin/leaderboards/">Лидерборды</a>
+        <a href="/admin/site/" class="is-active">Настройки сайта</a>
+        <a href="/admin/audit/">Журнал аудита</a>
+      </nav>
+
+      <a href="/" class="admin-header__site-link" target="_blank">Перейти на сайт ↗</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="admin-page-head">
+      <div>
+        <h1 class="admin-page-title">Настройки сайта и промокоды</h1>
+        <p class="admin-page-sub">Глобальные ссылки, промокод канала, партнёры и соцсети</p>
+      </div>
+
+      <div class="admin-page-actions">
+        <button type="button" class="adm-btn adm-btn--primary" data-btn-save-site>
+          Сохранить настройки
+        </button>
+      </div>
+    </div>
+
+    <div id="site-status-box" hidden></div>
+
+    <div class="admin-card">
+      <form data-form-site-settings>
+        <div class="admin-form-grid">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Промокод канала *</label>
+            <input type="text" name="promo_code" class="admin-input" value="KDEENOFF" required>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Главный заголовок призового банка</label>
+            <input type="text" name="headline_prize" class="admin-input" value="$10,000">
+          </div>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Партнёр по умолчанию</label>
+            <input type="text" name="partner_name" class="admin-input" value="Stake">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Реферальная ссылка партнёра</label>
+            <input type="url" name="partner_signup_url" class="admin-input" value="https://stake.com/?c=KDEENOFF">
+          </div>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Kick Канал (Название)</label>
+            <input type="text" name="kick_channel" class="admin-input" value="KDeenOff">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Ссылка на Kick</label>
+            <input type="url" name="kick_url" class="admin-input" value="https://kick.com/kdeenoff">
+          </div>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Telegram Канал / Чат</label>
+            <input type="url" name="telegram_url" class="admin-input" value="https://t.me/kdeenoff">
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script type="module" src="/admin/admin.js"></script>
+</body>
+</html>

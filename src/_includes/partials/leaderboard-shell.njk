@@ -1,0 +1,169 @@
+{% set lbSlug = lbSlug | default("kdeenoff-monthly") %}
+<div class="slot-board-shell" data-leaderboard-shell data-lb-slug="{{ lbSlug }}">
+  <!-- Outer Wooden Slot Cabinet Frame -->
+  <div class="slot-cabinet">
+    <!-- Top Wooden Timber Marquee -->
+    <div class="slot-cabinet__header">
+      <div class="slot-wood-timber slot-wood-timber--top">
+        <span class="bolt bolt--tl" aria-hidden="true"></span>
+        <span class="bolt bolt--tr" aria-hidden="true"></span>
+        
+        <div class="slot-cabinet__title-wrap">
+          <h1 class="slot-cabinet__title" data-lb-title>
+            <span class="slot-cabinet__title-text">KDEENOFF ГОНКА СЛОТОВ</span>
+          </h1>
+          <p class="slot-cabinet__subtitle" data-lb-subtitle>
+            Крутите в казино с кодом <strong class="highlight-code">KDEENOFF</strong>, набивайте оборот и забирайте призы из банка!
+          </p>
+        </div>
+      </div>
+
+      <!-- Slot Machine HUD Meters (Prizepool + Timer) -->
+      <div class="slot-hud">
+        <!-- Prizepool Counter Meter -->
+        <div class="slot-meter slot-meter--pot" data-lb-prize-pool>
+          <div class="slot-meter__label">
+            <span class="meter-icon" aria-hidden="true">💰</span>
+            <span>ПРИЗОВОЙ ФОНД</span>
+          </div>
+          <div class="slot-meter__value" data-lb-prize-pool-value>
+            $10,000.00
+          </div>
+        </div>
+
+        <!-- Timer Meter -->
+        <div class="slot-meter slot-meter--timer" data-lb-timer>
+          <div class="slot-meter__label">
+            <span class="meter-icon" aria-hidden="true">⏳</span>
+            <span data-lb-timer-label>ДО КОНЦА ГОНКИ</span>
+          </div>
+          <time class="slot-meter__value slot-meter__value--digits" data-lb-timer-value>
+            Загрузка…
+          </time>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inside the Slot: Reels & Standings -->
+    <div class="slot-cabinet__body">
+      <!-- Mascot Snail Character (Peeking from bottom-right) -->
+      <aside class="slot-mascot-anchor" aria-label="Маскот KDeenOff Улитка">
+        <div class="slot-mascot-card">
+          <img src="/img/brand/snail-mascot.svg" alt="Ganja Snail Mascot" class="slot-mascot-img" width="180" height="210">
+          <div class="mascot-speech-bubble">
+            <span>Крути в топ, бро! 🍀</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Podium Top 3 Standings (Slot Champions) -->
+      <div class="slot-podium" data-lb-podium>
+        <!-- 2nd Place (Silver) -->
+        <div class="podium-card podium-card--silver" data-podium-rank="2">
+          <div class="podium-card__rank-badge">#2</div>
+          <div class="podium-card__avatar-wrap">
+            <img class="podium-avatar" data-podium-avatar="2" src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=LuckySpinX" alt="Avatar">
+          </div>
+          <h3 class="podium-card__username" data-podium-username="2">LuckySpinX</h3>
+          <div class="podium-card__prize" data-podium-prize="2">$2,000.00</div>
+          <div class="podium-card__wager" data-podium-wager="2">Оборот: $61,200.00</div>
+        </div>
+
+        <!-- 1st Place (Gold Champion) -->
+        <div class="podium-card podium-card--gold" data-podium-rank="1">
+          <div class="podium-card__crown" aria-hidden="true">👑</div>
+          <div class="podium-card__rank-badge podium-card__rank-badge--gold">#1 ЧЕМПИОН</div>
+          <div class="podium-card__avatar-wrap podium-card__avatar-wrap--gold">
+            <img class="podium-avatar podium-avatar--gold" data-podium-avatar="1" src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=TurboSnail77" alt="Champion Avatar">
+          </div>
+          <h3 class="podium-card__username" data-podium-username="1">TurboSnail77</h3>
+          <div class="podium-card__prize podium-card__prize--gold" data-podium-prize="1">$3,500.00</div>
+          <div class="podium-card__wager" data-podium-wager="1">Оборот: $84,250.00</div>
+        </div>
+
+        <!-- 3rd Place (Bronze) -->
+        <div class="podium-card podium-card--bronze" data-podium-rank="3">
+          <div class="podium-card__rank-badge">#3</div>
+          <div class="podium-card__avatar-wrap">
+            <img class="podium-avatar" data-podium-avatar="3" src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=KDeenChampion" alt="Avatar">
+          </div>
+          <h3 class="podium-card__username" data-podium-username="3">KDeenChampion</h3>
+          <div class="podium-card__prize" data-podium-prize="3">$1,200.00</div>
+          <div class="podium-card__wager" data-podium-wager="3">Оборот: $48,900.00</div>
+        </div>
+      </div>
+
+      <!-- Controls: Search / Filter -->
+      <div class="slot-table-controls">
+        <div class="slot-search-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input type="text"
+                 class="slot-search-input"
+                 placeholder="Найти игрока по нику…"
+                 data-lb-search
+                 aria-label="Поиск игрока в лидерборде">
+        </div>
+        <div class="slot-partner-quick">
+          <span>Партнёр:</span>
+          <strong class="partner-name-tag" data-lb-partner-name>Stake</strong>
+        </div>
+      </div>
+
+      <!-- Reel Surface / Standings Table -->
+      <div class="slot-reels-surface">
+        <div class="slot-table-head" aria-hidden="true">
+          <span class="col-rank">Ранг</span>
+          <span class="col-player">Участник</span>
+          <span class="col-wager">Оборот ($)</span>
+          <span class="col-prize">Призовые</span>
+        </div>
+
+        <ol class="slot-rows-list" data-lb-rows>
+          <!-- Hydrated dynamically by JS with slot reel styling -->
+          <li class="slot-row-skeleton" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </li>
+          <li class="slot-row-skeleton" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </li>
+          <li class="slot-row-skeleton" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </li>
+        </ol>
+
+        <p class="slot-board__empty" data-lb-empty hidden>
+          Участников на этом лидерборде пока нет. Будьте первыми!
+        </p>
+      </div>
+
+      <!-- Abuse Tag & Rules Notice -->
+      <div class="slot-cabinet__footer-note">
+        <span class="warning-pill">⚡ ABUSE WG = BAN</span>
+        <p class="terms-micro">
+          Оборот пересчитывается автоматически. Накрутки и мультиаккаунты ведут к дисквалификации.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom Wooden Timber Bar & Claim CTA -->
+    <div class="slot-cabinet__bottom-bar">
+      <span class="bolt bolt--bl" aria-hidden="true"></span>
+      <span class="bolt bolt--br" aria-hidden="true"></span>
+
+      <div class="slot-claim-box">
+        <div class="slot-claim-code">
+          <span class="claim-label">ПРОМОКОД:</span>
+          <button type="button" class="btn-copy-code" data-copy="{{ site.promoCode }}" aria-label="Скопировать промокод">
+            <strong class="code-val">{{ site.promoCode }}</strong>
+            <span class="copy-hint" data-copy-status>КОПИРОВАТЬ</span>
+          </button>
+        </div>
+
+        <a class="btn-play-slot" href="{{ site.partnerSignupUrl }}" target="_blank" rel="noopener noreferrer" data-lb-partner-cta>
+          <span class="btn-spin-arrow" aria-hidden="true">▶</span>
+          <span>ИГРАТЬ В КАЗИНО</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

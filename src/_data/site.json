@@ -1,0 +1,21 @@
+{
+  "title": "KDeenOff Leaderboard",
+  "channelName": "KDeenOff",
+  "lang": "ru",
+  "url": "https://kdeenoff.com",
+  "promoCode": "KDEENOFF",
+  "partnerName": "Stake",
+  "partnerSignupUrl": "https://stake.com/?c=KDEENOFF",
+  "kickUrl": "https://kick.com/kdeenoff",
+  "kickChannel": "kdeenoff",
+  "telegramUrl": "https://t.me/kdeenoff",
+  "leaderboardHeadline": "$10,000",
+  "leaderboardPeriod": "Этот месяц",
+  "leaderboardUpdatedNote": "Данные лидерборда обновляются в реальном времени. Призовые выплачиваются по правилам платформы.",
+  "tagline": "Крути барабаны. Забирай призовые. Врывайся в топ KDeenOff!",
+  "social": {
+    "kick": "https://kick.com/kdeenoff",
+    "telegram": "https://t.me/kdeenoff",
+    "youtube": ""
+  }
+}

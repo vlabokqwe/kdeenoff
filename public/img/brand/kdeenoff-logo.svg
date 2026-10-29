@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 140" width="100%" height="100%">
+  <defs>
+    <!-- 3D block shadow filter -->
+    <filter id="popShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="0" flood-color="#14100c"/>
+      <feDropShadow dx="4" dy="12" stdDeviation="2" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
+
+    <!-- Top golden-yellow gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fffb91"/>
+      <stop offset="25%" stop-color="#ffea31"/>
+      <stop offset="70%" stop-color="#f5b800"/>
+      <stop offset="100%" stop-color="#d97d00"/>
+    </linearGradient>
+
+    <!-- Highlight glint -->
+    <linearGradient id="shineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Wood banner gradient -->
+    <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8a5323"/>
+      <stop offset="50%" stop-color="#b67332"/>
+      <stop offset="100%" stop-color="#8a5323"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(10, 5)">
+    <!-- 3D Extrusion Back Layer (black/dark block) -->
+    <text x="330" y="98"
+          text-anchor="middle"
+          font-family="'Anton', 'Titan One', 'Lilita One', 'Impact', sans-serif"
+          font-size="96"
+          font-weight="900"
+          letter-spacing="4"
+          fill="#110d0a"
+          stroke="#110d0a"
+          stroke-width="18"
+          stroke-linejoin="round">
+      KDEENOFF
+    </text>
+
+    <!-- Mid Shadow Layer -->
+    <text x="330" y="94"
+          text-anchor="middle"
+          font-family="'Anton', 'Titan One', 'Lilita One', 'Impact', sans-serif"
+          font-size="96"
+          font-weight="900"
+          letter-spacing="4"
+          fill="#843c00"
+          stroke="#110d0a"
+          stroke-width="12"
+          stroke-linejoin="round">
+      KDEENOFF
+    </text>
+
+    <!-- Front Golden Cartoon Text -->
+    <text x="330" y="90"
+          text-anchor="middle"
+          font-family="'Anton', 'Titan One', 'Lilita One', 'Impact', sans-serif"
+          font-size="96"
+          font-weight="900"
+          letter-spacing="4"
+          fill="url(#goldGrad)"
+          stroke="#1a140f"
+          stroke-width="7"
+          stroke-linejoin="round">
+      KDEENOFF
+    </text>
+
+    <!-- Top White Highlights on letters -->
+    <path d="M 90 42 Q 130 36 170 40 Q 150 48 100 48 Z" fill="url(#shineGrad)"/>
+    <path d="M 230 40 Q 280 35 340 38 Q 300 46 240 47 Z" fill="url(#shineGrad)"/>
+    <path d="M 390 40 Q 450 35 510 39 Q 470 46 400 47 Z" fill="url(#shineGrad)"/>
+  </g>
+</svg>
