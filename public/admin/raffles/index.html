@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Raffles · Admin KDeenOff</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body" data-admin-page="raffles">
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <a href="/admin/" class="admin-header__brand">
+        <strong>KDeenOff</strong>
+        <span class="admin-header__badge">Admin</span>
+      </a>
+
+      <nav class="admin-nav">
+        <a href="/admin/">Overview</a>
+        <a href="/admin/leaderboards/">Leaderboards</a>
+        <a href="/admin/raffles/" class="is-active">Raffles</a>
+        <a href="/admin/site/">Site settings</a>
+        <a href="/admin/audit/">Audit log</a>
+      </nav>
+
+      <a href="/raffles/" class="admin-header__site-link" target="_blank">Raffles page ↗</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="admin-page-head">
+      <div>
+        <h1 class="admin-page-title">Raffles</h1>
+        <p class="admin-page-sub">Active — still running, Past — already finished. The end date decides where a raffle goes.</p>
+      </div>
+
+      <div class="admin-page-actions">
+        <button type="button" class="adm-btn adm-btn--primary" data-open-raffle-modal>
+          + Add raffle
+        </button>
+      </div>
+    </div>
+
+    <p class="adm-status" data-raffles-status hidden></p>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Prize</th>
+              <th>Winner</th>
+              <th>Ends</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody data-admin-raffles-tbody>
+            <tr>
+              <td colspan="6" class="admin-status">Loading raffles…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div class="admin-modal" id="modal-raffle" hidden>
+    <div class="admin-modal__card">
+      <div class="admin-modal__head">
+        <h3 data-raffle-modal-title>New raffle</h3>
+        <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
+      </div>
+      <form data-form-raffle>
+        <div class="admin-modal__body">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Title *</label>
+            <input type="text" name="title" class="admin-input" required maxlength="120" placeholder="e.g. Weekly $500 Raffle">
+          </div>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Prize</label>
+              <input type="text" name="prize" class="admin-input" maxlength="120" placeholder="$500 or iPhone">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Winner</label>
+              <input type="text" name="winner" class="admin-input" maxlength="80" placeholder="For a finished raffle">
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Note</label>
+            <textarea name="note" class="admin-textarea" rows="2" maxlength="500" placeholder="Terms, how to enter"></textarea>
+          </div>
+
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Starts</label>
+              <input type="datetime-local" name="starts_at_local" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Ends *</label>
+              <input type="datetime-local" name="ends_at_local" class="admin-input" required>
+            </div>
+          </div>
+
+          <p class="admin-page-sub">If the end date has passed, the raffle goes to Past. Otherwise it is in Active.</p>
+
+          <label>
+            <input type="checkbox" name="hidden" value="1">
+            <span>Hide from site</span>
+          </label>
+        </div>
+        <div class="admin-modal__footer">
+          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="adm-btn adm-btn--primary" data-raffle-submit>Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/admin/admin.js"></script>
+</body>
+</html>

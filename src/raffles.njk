@@ -1,0 +1,47 @@
+---
+layout: layout.njk
+title: Raffles
+permalink: /raffles/
+pageClass: site--raffles
+---
+<section class="page-hero" aria-labelledby="raffles-title">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="container page-hero__inner">
+    <div class="page-hero__copy">
+      <p class="eyebrow">Raffles</p>
+      <h1 class="hero__title" id="raffles-title">Stream <span class="accent">raffles</span></h1>
+      <p class="hero__lead">Winners are drawn live on stream. Play with code <strong>{{ site.promoCode }}</strong> to get in.</p>
+      <div class="hero__actions">
+        <a class="btn btn--emerald btn--lg" href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer">
+          <img src="/img/icons/nav-kick.webp" alt="" width="34" height="34"><span>Watch on Kick</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% include "partials/steps.njk" %}
+
+<section class="raffles" aria-label="Raffle list">
+  <div class="container">
+    <div class="raffle-group">
+      <h2 class="raffle-group__title" id="raffles-active-label">
+        <img src="/img/icons/nav-raffle.webp" alt="" width="40" height="40">
+        <span>Active</span>
+      </h2>
+      <div class="raffle-group__list" data-raffles-list="ongoing" role="region" aria-labelledby="raffles-active-label">
+        <div class="raffle-card raffle-card--skeleton" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="raffle-group raffle-group--past">
+      <h2 class="raffle-group__title" id="raffles-past-label">
+        <img src="/img/icons/nav-crown.webp" alt="" width="40" height="40">
+        <span>Past</span>
+      </h2>
+      <div class="raffle-group__list" data-raffles-list="past" role="region" aria-labelledby="raffles-past-label">
+        <div class="raffle-card raffle-card--skeleton" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<script type="module" src="/js/raffles.js"></script>

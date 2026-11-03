@@ -1,0 +1,18 @@
+---
+description: Recruits a new specialist agent when none of the existing ones fit
+alwaysApply: true
+---
+
+# Agent team
+
+The project team lives in `.cursor/agents/`. Current members: `coordinator`, `worker-routing`, `visual`, `preview-verifier`.
+
+When a task needs a specialist and none of those files fit:
+
+1. Invent one focused role for that case. Do not create a vague helper.
+2. Write `.cursor/agents/<name>.md` with YAML frontmatter (`name`, `description`, optional `model` / `readonly`) and a short system prompt. Name is lowercase letters and hyphens only.
+3. Put the trigger in `description` so later chats can find this agent. Prefer phrases like "use proactively" or "always use when…".
+4. Launch that new agent for the current task. Do not do the specialist work yourself after creating it.
+5. Skip recruitment for a one-line fix the main chat can finish in a few tool calls, or when an existing agent already covers the case.
+
+Do not invent agents that duplicate built-in explore or browser work. Do not create a second visual or worker agent under a new name for the same job.

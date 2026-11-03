@@ -1,27 +1,22 @@
 <!DOCTYPE html>
-<html lang="{{ site.lang | default('ru') }}">
+<html lang="{{ site.lang | default('en') }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% if title %}{{ title }} · {% endif %}{{ site.title }}</title>
-  <meta name="description" content="Официальный лидерборд и гонка слотов для сообщества KDeenOff. Следите за ставками, рангами и выигрывайте крутые призовые!">
-  <link rel="icon" href="/img/symbols/symbol-coin.png" type="image/png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&family=Titan+One&display=swap" rel="stylesheet">
+  <meta name="description" content="{{ site.tagline }}">
+  <meta name="theme-color" content="#08130d">
+  <link rel="icon" href="/img/brand/mark.webp" type="image/webp">
+  <link rel="preload" href="/fonts/rubik-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/main.css">
 </head>
-<body class="slot-site">
-  <!-- Slot Scene Background -->
-  <div class="slot-backdrop" aria-hidden="true">
-    <div class="slot-backdrop__img"></div>
-    <div class="slot-backdrop__vignette"></div>
-    <div class="slot-backdrop__glow"></div>
-  </div>
+<body class="site{% if pageClass %} {{ pageClass }}{% endif %}">
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  {% include "partials/header.njk" %}
+  {% include "partials/drawer.njk" %}
 
-  <main id="main" class="slot-main">
+  <main id="main" class="main">
     {{ content | safe }}
   </main>
 

@@ -32,6 +32,7 @@ import {
   upsertSpotHidden,
   upsertSpotPrize,
 } from "../lib/lb-spot-prizes.js";
+import { handleAdminRaffles } from "./raffles.js";
 
 const ADMIN_ACTOR = { sub: 1, email: "admin@kdeenoff.com" };
 
@@ -55,6 +56,11 @@ export async function handleAdmin(request, env, url) {
   // /api/admin/leaderboards...
   if (segs[0] === "leaderboards") {
     return handleLeaderboards(request, env, segs.slice(1), m);
+  }
+
+  // /api/admin/raffles...
+  if (segs[0] === "raffles") {
+    return handleAdminRaffles(request, env, segs.slice(1), m, ADMIN_ACTOR);
   }
 
   // /api/admin/site

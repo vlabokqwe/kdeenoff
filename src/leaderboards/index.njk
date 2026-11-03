@@ -1,11 +1,13 @@
 ---
 layout: layout.njk
-title: Лидерборды
+title: Leaderboards
 permalink: /leaderboards/
+pageClass: site--board
 ---
-<section class="section-leaderboard section-leaderboard--page" aria-label="Таблица Лидерборда">
-  <div class="section-leaderboard__container">
-    {% set lbSlug = "kdeenoff-monthly" %}
-    {% include "partials/leaderboard-shell.njk" %}
-  </div>
+<section class="board-section board-section--page" aria-label="Leaderboards">
+  <div class="board-section__bg" aria-hidden="true"></div>
+  {% set lbSlug = "" %}
+  {% set lbSwitcher = true %}
+  {% set lbHeading = "h1" %}
+  {% include "partials/leaderboard-shell.njk" %}
 </section>

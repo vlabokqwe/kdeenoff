@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Редактор лидерборда · Admin KDeenOff</title>
+  <title>Leaderboard Editor · Admin KDeenOff</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body class="admin-body" data-admin-page="board-editor">
@@ -15,37 +15,38 @@
       </a>
 
       <nav class="admin-nav">
-        <a href="/admin/">Обзор</a>
-        <a href="/admin/leaderboards/" class="is-active">Лидерборды</a>
-        <a href="/admin/site/">Настройки сайта</a>
-        <a href="/admin/audit/">Журнал аудита</a>
+        <a href="/admin/">Overview</a>
+        <a href="/admin/leaderboards/" class="is-active">Leaderboards</a>
+        <a href="/admin/raffles/">Raffles</a>
+        <a href="/admin/site/">Site settings</a>
+        <a href="/admin/audit/">Audit log</a>
       </nav>
 
-      <a href="/" class="admin-header__site-link" target="_blank">Перейти на сайт ↗</a>
+      <a href="/" class="admin-header__site-link" target="_blank">Open site ↗</a>
     </div>
   </header>
 
   <main class="admin-main">
     <div class="admin-page-head">
       <div>
-        <div style="font-size: 0.85rem; color: var(--adm-muted); margin-bottom: 0.25rem;">
-          <a href="/admin/leaderboards/" style="color: var(--adm-accent); text-decoration: none;">← Ко всем лидербордам</a>
+        <div>
+          <a href="/admin/leaderboards/">← All leaderboards</a>
         </div>
-        <h1 class="admin-page-title" data-board-edit-title>Редактирование лидерборда</h1>
+        <h1 class="admin-page-title" data-board-edit-title>Edit leaderboard</h1>
       </div>
 
-      <div class="admin-page-actions" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <div class="admin-page-actions">
         <a href="#" class="adm-btn adm-btn--secondary" data-btn-view-public target="_blank">
-          Публичный вид ↗
+          Public view ↗
         </a>
         <button type="button" class="adm-btn adm-btn--secondary" data-btn-apply-growth>
-          ⚡ Применить тик роста
+          ⚡ Apply growth tick
         </button>
         <button type="button" class="adm-btn adm-btn--secondary" data-btn-auto-rank>
-          ⇅ Авто-ранг по вагеру
+          ⇅ Auto-rank by wager
         </button>
         <button type="button" class="adm-btn adm-btn--primary" data-btn-save-board>
-          Сохранить настройки
+          Save settings
         </button>
       </div>
     </div>
@@ -56,70 +57,70 @@
     <!-- 1. Board Settings Card -->
     <div class="admin-card">
       <div class="admin-card__head">
-        <h2 class="admin-card__title">Параметры гонки</h2>
-        <span style="font-size: 0.8rem; color: var(--adm-muted);" data-board-slug-indicator></span>
+        <h2 class="admin-card__title">Race settings</h2>
+        <span data-board-slug-indicator></span>
       </div>
 
       <form data-form-board-settings>
         <div class="admin-form-grid">
           <div class="admin-form-group">
-            <label class="admin-form-label">Название *</label>
+            <label class="admin-form-label">Title *</label>
             <input type="text" name="title" class="admin-input" required>
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Призовой фонд ($) *</label>
+            <label class="admin-form-label">Prize pool ($) *</label>
             <input type="number" name="prize_pool_usd" class="admin-input" step="0.01" required>
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Партнёр (Казино)</label>
+            <label class="admin-form-label">Partner (casino)</label>
             <input type="text" name="partner" class="admin-input" placeholder="stake / rainbet">
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Реферальная ссылка партнёра</label>
+            <label class="admin-form-label">Partner referral link</label>
             <input type="url" name="partner_signup_url" class="admin-input">
           </div>
         </div>
 
         <div class="admin-form-grid">
           <div class="admin-form-group">
-            <label class="admin-form-label">Дата окончания *</label>
+            <label class="admin-form-label">End date *</label>
             <input type="datetime-local" name="ends_at_local" class="admin-input" required>
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Стиль аватаров</label>
+            <label class="admin-form-label">Avatar style</label>
             <select name="avatar_style" class="admin-select">
-              <option value="fun-emoji">Fun Emoji (Смайлы)</option>
-              <option value="bottts-neutral">Bottts Neutral (Роботы)</option>
-              <option value="none">Без аватаров</option>
+              <option value="fun-emoji">Fun Emoji (smileys)</option>
+              <option value="bottts-neutral">Bottts Neutral (robots)</option>
+              <option value="none">No avatars</option>
             </select>
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Авто-скрывать места ниже ранга</label>
-            <input type="number" name="auto_hidden_above_rank" class="admin-input" min="0" placeholder="25 (0 = показывать всех)">
+            <label class="admin-form-label">Auto-hide spots below rank</label>
+            <input type="number" name="auto_hidden_above_rank" class="admin-input" min="0" placeholder="25 (0 = show all)">
           </div>
-          <div class="admin-form-group" style="justify-content: flex-end;">
-            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+          <div class="admin-form-group">
+            <label>
               <input type="checkbox" name="auto_rank_by_wagered" value="1">
-              <strong>Авто-сортировка по вагеру</strong>
+              <strong>Auto-sort by wager</strong>
             </label>
           </div>
         </div>
 
-        <div class="admin-card" style="background: var(--adm-surface-light); margin-top: 1rem; margin-bottom: 0;">
-          <div class="admin-card__head" style="margin-bottom: 0.5rem; padding-bottom: 0.5rem;">
-            <strong style="font-size: 0.9rem;">Автоматический рост вагера (Wager Growth)</strong>
-            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+        <div class="admin-card">
+          <div class="admin-card__head">
+            <strong>Automatic wager growth</strong>
+            <label>
               <input type="checkbox" name="auto_wager_growth_enabled" value="1">
-              <span>Включить авто-рост по расписанию</span>
+              <span>Enable scheduled auto-growth</span>
             </label>
           </div>
           <div class="admin-form-grid">
             <div class="admin-form-group">
-              <label class="admin-form-label">Прирост за интервал (% от текущего)</label>
+              <label class="admin-form-label">Growth per interval (% of current)</label>
               <input type="number" name="auto_wager_growth_pct" class="admin-input" min="1" max="100" value="3">
             </div>
             <div class="admin-form-group">
-              <label class="admin-form-label">Интервал тика (часов)</label>
+              <label class="admin-form-label">Tick interval (hours)</label>
               <input type="number" name="auto_wager_growth_hours" class="admin-input" min="0.1" step="0.5" value="12">
             </div>
           </div>
@@ -131,16 +132,16 @@
     <div class="admin-card">
       <div class="admin-card__head">
         <div>
-          <h2 class="admin-card__title">Участники гонки</h2>
-          <span style="font-size: 0.8rem; color: var(--adm-muted);" data-players-count>0 участников</span>
+          <h2 class="admin-card__title">Race players</h2>
+          <span data-players-count>0 players</span>
         </div>
 
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <div>
           <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-btn-import-csv>
-            📥 Импорт CSV
+            📥 Import CSV
           </button>
           <button type="button" class="adm-btn adm-btn--primary adm-btn--sm" data-btn-add-player>
-            + Добавить игрока
+            + Add player
           </button>
         </div>
       </div>
@@ -149,19 +150,19 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th style="width: 50px;">Ранг</th>
-              <th>Аватар</th>
-              <th>Никнейм игрока</th>
-              <th>Вагер ($)</th>
-              <th>Призовые ($)</th>
-              <th>Авто-рост</th>
-              <th>72h План</th>
-              <th style="text-align: right;">Действия</th>
+              <th>Rank</th>
+              <th>Avatar</th>
+              <th>Player username</th>
+              <th>Wager ($)</th>
+              <th>Prize ($)</th>
+              <th>Auto-growth</th>
+              <th>72h Plan</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody data-admin-players-tbody>
             <tr>
-              <td colspan="8" class="admin-status">Загрузка участников…</td>
+              <td colspan="8" class="admin-status">Loading players…</td>
             </tr>
           </tbody>
         </table>
@@ -172,21 +173,21 @@
     <div class="admin-card">
       <div class="admin-card__head">
         <div>
-          <h2 class="admin-card__title">Фиксированные призовые по местам (Spot Prizes)</h2>
-          <p style="font-size: 0.8rem; color: var(--adm-muted);">
-            Призовые для каждого ранга (1..10+). Если задан spot prize, он переопределяет индивидуальный приз игрока на этом месте.
+          <h2 class="admin-card__title">Fixed prizes per spot (Spot Prizes)</h2>
+          <p>
+            Prize for each rank (1..10+). If a spot prize is set, it overrides the individual prize of the player in that spot.
           </p>
         </div>
       </div>
 
       <div class="admin-table-wrap">
-        <table class="admin-table" style="max-width: 600px;">
+        <table class="admin-table">
           <thead>
             <tr>
-              <th style="width: 80px;">Место</th>
-              <th>Приз за место ($)</th>
-              <th>Скрыть место</th>
-              <th>Сохранить</th>
+              <th>Spot</th>
+              <th>Spot prize ($)</th>
+              <th>Hide spot</th>
+              <th>Save</th>
             </tr>
           </thead>
           <tbody data-admin-spots-tbody>
@@ -201,39 +202,39 @@
   <div class="admin-modal" id="modal-add-player" hidden>
     <div class="admin-modal__card">
       <div class="admin-modal__head">
-        <h3>Добавить игрока</h3>
+        <h3>Add player</h3>
         <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
       </div>
       <form data-form-add-player>
         <div class="admin-modal__body">
-          <div class="admin-form-group" style="margin-bottom: 1rem;">
-            <label class="admin-form-label">Никнейм игрока *</label>
-            <input type="text" name="username" class="admin-input" required placeholder="Например: LuckySnail">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Player username *</label>
+            <input type="text" name="username" class="admin-input" required placeholder="e.g. LuckySnail">
           </div>
           <div class="admin-form-grid">
             <div class="admin-form-group">
-              <label class="admin-form-label">Сумма вагера ($)</label>
+              <label class="admin-form-label">Wager amount ($)</label>
               <input type="number" name="wagered_usd" class="admin-input" step="0.01" value="0">
             </div>
             <div class="admin-form-group">
-              <label class="admin-form-label">Призовые ($)</label>
+              <label class="admin-form-label">Prize ($)</label>
               <input type="number" name="prize_usd" class="admin-input" step="0.01" value="0">
             </div>
           </div>
-          <div class="admin-form-group" style="margin-bottom: 1rem;">
-            <label class="admin-form-label">Кастомный URL аватара (опционально)</label>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Custom avatar URL (optional)</label>
             <input type="url" name="avatar_url" class="admin-input" placeholder="https://...">
           </div>
           <div class="admin-form-group">
-            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+            <label>
               <input type="checkbox" name="wag_growth_enabled" value="1" checked>
-              <strong>Включить авто-рост вагера для игрока</strong>
+              <strong>Enable wager auto-growth for this player</strong>
             </label>
           </div>
         </div>
         <div class="admin-modal__footer">
-          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Отмена</button>
-          <button type="submit" class="adm-btn adm-btn--primary">Добавить</button>
+          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Add</button>
         </div>
       </form>
     </div>
@@ -243,20 +244,20 @@
   <div class="admin-modal" id="modal-import-csv" hidden>
     <div class="admin-modal__card">
       <div class="admin-modal__head">
-        <h3>Импорт игроков из CSV</h3>
+        <h3>Import players from CSV</h3>
         <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
       </div>
       <form data-form-import-csv>
         <div class="admin-modal__body">
-          <p style="font-size: 0.85rem; color: var(--adm-muted); margin-bottom: 1rem;">
-            Вставьте строки в формате: <code>username, wager_in_usd, prize_in_usd</code>.<br>
-            Первая строка с заголовком будет автоматически пропущена.
+          <p>
+            Paste rows in the format: <code>username, wager_in_usd, prize_in_usd</code>.<br>
+            A header row will be skipped automatically.
           </p>
           <textarea name="csv_text" class="admin-textarea" rows="8" placeholder="Player1, 15000, 500&#10;Player2, 8500, 250&#10;Player3, 4200, 100" required></textarea>
         </div>
         <div class="admin-modal__footer">
-          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Отмена</button>
-          <button type="submit" class="adm-btn adm-btn--primary">Импортировать</button>
+          <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Import</button>
         </div>
       </form>
     </div>
@@ -267,8 +268,8 @@
     <div class="admin-modal__card">
       <div class="admin-modal__head">
         <div>
-          <h3 data-wager-schedule-title>План роста на 72 часа</h3>
-          <p style="font-size:0.75rem; color:var(--adm-muted);" data-wager-schedule-subtitle></p>
+          <h3 data-wager-schedule-title>72-hour growth plan</h3>
+          <p data-wager-schedule-subtitle></p>
         </div>
         <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-close-modal>×</button>
       </div>
@@ -278,7 +279,7 @@
         </ul>
       </div>
       <div class="admin-modal__footer">
-        <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Закрыть</button>
+        <button type="button" class="adm-btn adm-btn--secondary" data-close-modal>Close</button>
       </div>
     </div>
   </div>

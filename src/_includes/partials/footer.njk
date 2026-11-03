@@ -1,35 +1,38 @@
-<footer class="slot-footer" role="contentinfo">
-  <div class="slot-footer__container">
-    <div class="slot-footer__top">
-      <div class="slot-footer__brand-block">
-        <img src="/img/brand/kdeenoff-logo.svg" alt="KDeenOff" class="slot-footer__logo" width="160" height="42">
-        <p class="slot-footer__tagline">{{ site.tagline }}</p>
-      </div>
-
-      <div class="slot-footer__socials">
-        {% if site.kickUrl %}
-        <a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer" class="social-btn social-btn--kick">
-          <span>Kick Стрим</span>
-        </a>
-        {% endif %}
-        {% if site.telegramUrl %}
-        <a href="{{ site.telegramUrl }}" target="_blank" rel="noopener noreferrer" class="social-btn social-btn--tg">
-          <span>Telegram Канал</span>
-        </a>
-        {% endif %}
+<footer class="footer" role="contentinfo">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <a href="/" class="footer__logo" aria-label="KDeenOff home">
+        <img src="/img/brand/mark.webp" alt="" width="44" height="44" loading="lazy">
+        <img src="/img/brand/logo.webp" alt="KDeenOff" width="160" height="44" loading="lazy">
+      </a>
+      <p>{{ site.tagline }}</p>
+      <div class="footer__social">
+        {% if site.kickUrl %}<a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Kick"><img src="/img/icons/nav-kick.webp" alt="" width="44" height="44" loading="lazy"></a>{% endif %}
+        {% if site.telegramUrl %}<a href="{{ site.telegramUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><img src="/img/icons/nav-telegram.webp" alt="" width="44" height="44" loading="lazy"></a>{% endif %}
       </div>
     </div>
 
-    <div class="slot-footer__bottom">
-      <div class="slot-footer__disclaimer">
-        <span class="badge-18" aria-label="18 plus only">18+</span>
-        <p class="disclaimer-text">
-          Играйте ответственно. Данный ресурс не организует и не проводит азартные игры на реальные деньги, а является информационной платформой лидерборда для сообщества KDeenOff. Все призовые выплачиваются в соответствии с условиями официального партнёра.
-        </p>
-      </div>
-      <p class="slot-footer__copyright">
-        &copy; {% year %} KDeenOff. Все права защищены.
-      </p>
-    </div>
+    <nav class="footer__col" aria-label="Site">
+      <p class="footer__title">Site</p>
+      <a href="/">Home</a>
+      <a href="/raffles/">Raffles</a>
+      <a href="/leaderboards/">Leaderboards</a>
+      <a href="/#bonus">Bonuses</a>
+    </nav>
+
+    <nav class="footer__col" aria-label="Community">
+      <p class="footer__title">Community</p>
+      {% if site.kickUrl %}<a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer">Kick</a>{% endif %}
+      {% if site.telegramUrl %}<a href="{{ site.telegramUrl }}" target="_blank" rel="noopener noreferrer">Telegram</a>{% endif %}
+      <a href="/#contacts">Contacts</a>
+    </nav>
+  </div>
+
+  <div class="container footer__bottom">
+    <p>&copy; {% year %} KDeenOff. All rights reserved.</p>
+    <p class="footer__rg">
+      <img src="/img/icons/nav-18.webp" alt="18+" width="32" height="32" loading="lazy">
+      <span>Gamble responsibly — <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">begambleaware.org</a></span>
+    </p>
   </div>
 </footer>

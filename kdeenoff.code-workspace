@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../spicy"
+		},
+		{
+			"path": "../godmode"
+		},
+		{
+			"path": "../bobbybet"
+		}
+	],
+	"settings": {}
+}

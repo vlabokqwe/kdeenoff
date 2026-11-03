@@ -8,7 +8,8 @@
   "scripts": {
     "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && eleventy && node scripts/build-css.mjs && node scripts/build-js.mjs",
     "build:fast": "eleventy",
-    "serve": "eleventy --serve",
+    "serve": "node scripts/dev.mjs",
+    "serve:static": "eleventy --serve",
     "watch": "eleventy --watch",
     "deploy": "npm run build && wrangler deploy"
   },

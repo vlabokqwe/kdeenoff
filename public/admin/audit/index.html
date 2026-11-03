@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Журнал аудита · Admin KDeenOff</title>
+  <title>Audit Log · Admin KDeenOff</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body class="admin-body" data-admin-page="audit">
@@ -15,26 +15,27 @@
       </a>
 
       <nav class="admin-nav">
-        <a href="/admin/">Обзор</a>
-        <a href="/admin/leaderboards/">Лидерборды</a>
-        <a href="/admin/site/">Настройки сайта</a>
-        <a href="/admin/audit/" class="is-active">Журнал аудита</a>
+        <a href="/admin/">Overview</a>
+        <a href="/admin/leaderboards/">Leaderboards</a>
+        <a href="/admin/raffles/">Raffles</a>
+        <a href="/admin/site/">Site settings</a>
+        <a href="/admin/audit/" class="is-active">Audit log</a>
       </nav>
 
-      <a href="/" class="admin-header__site-link" target="_blank">Перейти на сайт ↗</a>
+      <a href="/" class="admin-header__site-link" target="_blank">Open site ↗</a>
     </div>
   </header>
 
   <main class="admin-main">
     <div class="admin-page-head">
       <div>
-        <h1 class="admin-page-title">Журнал действий (Audit Log)</h1>
-        <p class="admin-page-sub">История всех изменений настроек, игроков, рангов и выплат</p>
+        <h1 class="admin-page-title">Audit Log</h1>
+        <p class="admin-page-sub">History of all changes to settings, players, ranks and payouts</p>
       </div>
 
       <div class="admin-page-actions">
         <button type="button" class="adm-btn adm-btn--secondary" data-btn-refresh-audit>
-          ↻ Обновить журнал
+          ↻ Refresh log
         </button>
       </div>
     </div>
@@ -44,16 +45,16 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th>Дата и время</th>
-              <th>Пользователь</th>
-              <th>Действие</th>
-              <th>Объект</th>
-              <th>Детали (JSON)</th>
+              <th>Date & time</th>
+              <th>User</th>
+              <th>Action</th>
+              <th>Target</th>
+              <th>Details (JSON)</th>
             </tr>
           </thead>
           <tbody data-admin-audit-tbody>
             <tr>
-              <td colspan="5" class="admin-status">Загрузка журнала…</td>
+              <td colspan="5" class="admin-status">Loading log…</td>
             </tr>
           </tbody>
         </table>

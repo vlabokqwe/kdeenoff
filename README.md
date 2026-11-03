@@ -1,46 +1,62 @@
-# KDeenOff — Slot Casino Leaderboard
+# KDeenOff — Leaderboard & Raffles
 
-Официальный лидерборд и гонка слотов для канала **KDeenOff**, выполненный в стилистике игрового автомата (слота) по мотивам Ganja Snail.
+The official leaderboard, wager race and raffle site for the **KDeenOff** channel.
 
-## Стек технологий
+## Tech stack
 
-- **Фронтенд:** Eleventy (11ty) + Vanilla CSS + Vanilla JS
-- **Сборщик:** esbuild (минификация CSS & JS)
-- **Бэкенд:** Cloudflare Workers (API, SSR реврайты, таймеры)
-- **База данных:** Cloudflare D1 (SQLite)
+- **Frontend:** Eleventy (11ty) + vanilla CSS + vanilla JS
+- **Bundling:** esbuild (CSS & JS minification)
+- **Backend:** Cloudflare Worker (JSON API, page rewrites, scheduled wager growth)
+- **Database:** Cloudflare D1 (SQLite), schema and seed data in `migrations/`
 
-## Быстрый старт
+## Getting started
 
-### Установка зависимостей
+### Install dependencies
+
 ```bash
 npm install
 ```
 
-### Сборка проекта
+### Build
+
 ```bash
 npm run build
 ```
 
-### Локальный предпросмотр статики
+Builds the static site into `dist/` and minifies CSS and JS.
+
+### Local development
+
 ```bash
 npm run serve
 ```
 
-### Деплой в Cloudflare Workers
+Runs the Worker locally at http://localhost:8080 with a local D1 database.
+
+### Deploy to Cloudflare
+
 ```bash
 npm run deploy
 ```
 
-## Функционал
+Builds the project and deploys it with `wrangler deploy`.
 
-- **Главная страница:** Hero-секция с промокодом, интерактивные барабаны слота, пьедестал топ-3, шаги участия и правила.
-- **Лидерборд:** Полноразмерный деревянный кабинет слота, HUD-метры призового банка и таймера, таблица участников с поиском и карточными рангами (A, K, Q, J, 10).
-- **Панель управления (`/admin/`):**
-  - Создание и редактирование лидербордов
-  - Управление участниками (добавление, редактирование вагера, призов, удаление)
-  - Импорт участников из CSV
-  - Авто-ранжирование по обороту
-  - Автоматический рост вагера (Wager Growth) с 72-часовым планом
-  - Настройка фиксированных призов за места (Spot Prizes)
-  - Настройки сайта и промокодов
-  - Журнал аудита действий
+## Features
+
+- **Home page:** hero with the promo code, raffle steps, partner bonuses, leaderboard and contacts.
+- **Raffles (`/raffles/`):** ongoing and past raffles, with prizes and winners.
+- **Leaderboards (`/leaderboards/<slug>/`):** prize pool, countdown timer and a ranked player table.
+- **Admin panel (`/admin/`):**
+  - Create, edit and archive leaderboards
+  - Manage players (add, edit wager and prize, remove)
+  - Import players from CSV
+  - Auto-rank players by wager
+  - Automatic wager growth with a 72-hour schedule preview
+  - Fixed prizes per spot (spot prizes)
+  - Raffle management
+  - Site settings (promo code, partner links, socials)
+  - Audit log of admin actions
+
+## Art pipeline
+
+Generated images are processed by `scripts/process-art-v2.py`, which upscales them with Real-ESRGAN before they are used on the site.

@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = resolve(root, "dist");
 
-const files = ["css/main.css", "css/admin.css"];
+const files = ["css/fonts.css", "css/main.css", "css/admin.css"];
 
 for (const file of files) {
   const path = resolve(distDir, file);

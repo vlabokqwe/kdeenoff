@@ -12,8 +12,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = resolve(root, "dist");
 
 const files = [
+  "js/boards-api.js",
   "js/main.js",
   "js/leaderboard.js",
+  "js/raffles.js",
   "js/wager-growth-schedule.js",
   "admin/admin.js",
 ];

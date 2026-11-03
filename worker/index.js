@@ -11,6 +11,7 @@ import {
   handleListBoards,
   handleListHistory,
 } from "./routes/leaderboards.js";
+import { handlePublicRaffles } from "./routes/raffles.js";
 import { handleAdmin } from "./routes/admin.js";
 import { jsonResponse, notFound } from "./lib/response.js";
 import { ensureCsrfToken } from "./lib/csrf.js";
@@ -33,27 +34,30 @@ export default {
       return handleGetBoard(env, lbMatch[1]);
     }
 
-    // 2. API: Admin
+    // 2. API: Public raffles
+    if (pathname === "/api/raffles" || pathname === "/api/raffles/") {
+      return handlePublicRaffles(env);
+    }
+
+    // 3. API: Admin
     if (pathname.startsWith("/api/admin")) {
       return handleAdmin(request, env, url);
     }
 
-    // 3. Static routing rewrites & CSRF token for web pages
+    // 4. Static routing rewrites & CSRF token for web pages
     const { token: csrfToken, cookieHeader: csrfCookie } = ensureCsrfToken(request);
 
     // Dynamic public board rewrite: /leaderboards/<slug>/ -> /leaderboards/_board/index.html
     const publicBoardMatch = pathname.match(/^\/leaderboards\/([a-z0-9][a-z0-9-]{0,38}[a-z0-9])\/?$/);
     if (publicBoardMatch && env.ASSETS) {
-      const rewriteUrl = new URL("/leaderboards/_board/index.html", url.origin);
-      const res = await env.ASSETS.fetch(new Request(rewriteUrl, request));
+      const res = await fetchAsset(env, request, "/leaderboards/_board/index.html");
       return attachCsrfCookie(res, csrfCookie);
     }
 
     // Dynamic admin board editor rewrite: /admin/leaderboards/<slug>/ -> /admin/leaderboards/board.html
     const adminBoardMatch = pathname.match(/^\/admin\/leaderboards\/([a-z0-9][a-z0-9-]{0,38}[a-z0-9])\/?$/);
     if (adminBoardMatch && env.ASSETS) {
-      const rewriteUrl = new URL("/admin/leaderboards/board.html", url.origin);
-      const res = await env.ASSETS.fetch(new Request(rewriteUrl, request));
+      const res = await fetchAsset(env, request, "/admin/leaderboards/board.html");
       return attachCsrfCookie(res, csrfCookie);
     }
 
@@ -70,6 +74,23 @@ export default {
     ctx.waitUntil(runScheduledWagerGrowth(env));
   },
 };
+
+async function fetchAsset(env, request, pathname) {
+  const url = new URL(request.url);
+  let assetUrl = new URL(pathname, url.origin);
+  let res = await env.ASSETS.fetch(new Request(assetUrl, request));
+
+  // Local asset serving redirects "/file.html" to the extensionless path.
+  // Follow that inside the Worker so the browser keeps the public URL.
+  for (let hop = 0; hop < 3 && res.status >= 300 && res.status < 400; hop++) {
+    const location = res.headers.get("Location");
+    if (!location) break;
+    assetUrl = new URL(location, assetUrl);
+    res = await env.ASSETS.fetch(new Request(assetUrl, request));
+  }
+
+  return res;
+}
 
 function attachCsrfCookie(res, cookieHeader) {
   if (!cookieHeader) return res;

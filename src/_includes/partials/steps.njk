@@ -1,0 +1,42 @@
+<section class="steps" data-steps aria-labelledby="steps-title">
+  <div class="steps__bg" aria-hidden="true"></div>
+  <div class="container">
+    <header class="section-head">
+      <h2 class="title" id="steps-title">How to join <span class="accent">the raffle</span></h2>
+      <p class="lead">Three simple steps — then just catch the draw live on stream.</p>
+    </header>
+
+    <div class="steps__track" data-steps-track>
+      <svg class="steps__svg" data-steps-svg aria-hidden="true" focusable="false">
+        <path class="steps__path-guide" data-steps-shadow d=""></path>
+        <path class="steps__path" data-steps-path d=""></path>
+      </svg>
+      <ol class="steps__list">
+        <li class="step" data-step>
+          <div class="step__art" data-step-anchor>
+            <img src="/img/icons/nav-home.webp" alt="" width="72" height="72" loading="lazy">
+          </div>
+          <span class="step__num">Step 1</span>
+          <h3 class="step__title">Sign up on KDeenOff</h3>
+          <p class="step__text">Create your account on <a href="{{ site.registerUrl }}" target="_blank" rel="noopener noreferrer">kdeenoff.gg</a> — it's your ticket to every raffle.</p>
+        </li>
+        <li class="step" data-step>
+          <div class="step__art" data-step-anchor>
+            <img src="/img/icons/nav-copy.webp" alt="" width="72" height="72" loading="lazy">
+          </div>
+          <span class="step__num">Step 2</span>
+          <h3 class="step__title">Use code KDEENOFF</h3>
+          <p class="step__text">Enter <button type="button" class="inline-code" data-copy="{{ site.promoCode }}">{{ site.promoCode }}<span class="sr-only" data-copy-status></span></button> at our partner casino and play under it.</p>
+        </li>
+        <li class="step" data-step>
+          <div class="step__art" data-step-anchor>
+            <img src="/img/icons/nav-kick.webp" alt="" width="72" height="72" loading="lazy">
+          </div>
+          <span class="step__num">Step 3</span>
+          <h3 class="step__title">Watch the raffles on stream</h3>
+          <p class="step__text">Winners are drawn live on <a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer">Kick</a> — tune in so you don't miss yours.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>

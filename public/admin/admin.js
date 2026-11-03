@@ -19,7 +19,7 @@ const escapeHtml = (s) =>
 
 const moneyFmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const money = (cents) => moneyFmt.format((Number(cents) || 0) / 100);
-const fmtDate = (ms) => (ms ? new Date(Number(ms)).toLocaleString("ru-RU") : "—");
+const fmtDate = (ms) => (ms ? new Date(Number(ms)).toLocaleString("en-US") : "—");
 
 const localISO = (ms) => {
   if (!ms) return "";
@@ -121,7 +121,7 @@ function wireModals() {
         document.getElementById("modal-create-board").hidden = true;
         location.href = `/admin/leaderboards/${res.slug}/`;
       } catch (err) {
-        alert(`Ошибка создания: ${err.message}`);
+        alert(`Create failed: ${err.message}`);
       }
     });
   }
@@ -157,7 +157,7 @@ async function initBoardsTable() {
     }
 
     if (boards.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="admin-status">Лидербордов пока нет. Создайте первый!</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="admin-status">No leaderboards yet. Create the first one!</td></tr>`;
       return;
     }
 
@@ -166,10 +166,10 @@ async function initBoardsTable() {
         const isArchived = b.archived === 1;
         const isEnded = Number(b.ends_at) < Date.now();
         const statusBadge = isArchived
-          ? `<span style="color:var(--adm-muted);">Архив</span>`
+          ? `<span>Archived</span>`
           : isEnded
-            ? `<span style="color:var(--adm-red);">Завершён</span>`
-            : `<span style="color:var(--adm-green); font-weight:700;">● Активен</span>`;
+            ? `<span>Ended</span>`
+            : `<span>● Active</span>`;
 
         return `
           <tr>
@@ -183,12 +183,12 @@ async function initBoardsTable() {
             <td>${fmtDate(b.ends_at)}</td>
             <td>${statusBadge}</td>
             <td>
-              <div style="display:flex; gap:0.4rem;">
+              <div>
                 <a href="/admin/leaderboards/${escapeHtml(b.slug)}/" class="adm-btn adm-btn--secondary adm-btn--sm">
-                  Редактировать
+                  Edit
                 </a>
                 <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-action="toggle-archive" data-slug="${escapeHtml(b.slug)}" data-archived="${b.archived}">
-                  ${isArchived ? "Восстановить" : "В архив"}
+                  ${isArchived ? "Restore" : "Archive"}
                 </button>
               </div>
             </td>
@@ -206,12 +206,12 @@ async function initBoardsTable() {
           await api(endpoint, { method: "POST" });
           initBoardsTable();
         } catch (err) {
-          alert(`Ошибка: ${err.message}`);
+          alert(`Error: ${err.message}`);
         }
       });
     });
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="7" class="admin-status is-error">Ошибка: ${escapeHtml(err.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="admin-status is-error">Error: ${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -250,7 +250,7 @@ async function initBoardEditor() {
       currentPlayers = data.players || [];
       currentSpots = data.spots || [];
 
-      if (titleEl) titleEl.textContent = `Редактор: ${currentBoard.title}`;
+      if (titleEl) titleEl.textContent = `Editor: ${currentBoard.title}`;
 
       // Populate Settings Form
       form.querySelector('[name="title"]').value = currentBoard.title || "";
@@ -269,7 +269,7 @@ async function initBoardEditor() {
       renderPlayers();
       renderSpots();
     } catch (err) {
-      showStatus(statusBox, `Ошибка загрузки: ${err.message}`, "error");
+      showStatus(statusBox, `Load failed: ${err.message}`, "error");
     }
   };
 
@@ -278,10 +278,10 @@ async function initBoardEditor() {
     const countEl = document.querySelector("[data-players-count]");
     if (!tbody) return;
 
-    if (countEl) countEl.textContent = `${currentPlayers.length} участников`;
+    if (countEl) countEl.textContent = `${currentPlayers.length} players`;
 
     if (currentPlayers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="admin-status">В этой гонке пока нет игроков. Нажмите "+ Добавить игрока" или "Импорт CSV".</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="admin-status">No players in this race yet. Click "+ Add player" or "Import CSV".</td></tr>`;
       return;
     }
 
@@ -292,27 +292,27 @@ async function initBoardEditor() {
           <tr data-player-id="${p.id}">
             <td><strong>#${p.rank || "—"}</strong></td>
             <td>
-              <img src="${escapeHtml(avatar)}" alt="" width="32" height="32" style="border-radius:4px; vertical-align:middle;">
+              <img src="${escapeHtml(avatar)}" alt="" width="32" height="32">
             </td>
             <td>
-              <input type="text" class="admin-input" style="width:140px;" data-field="username" value="${escapeHtml(p.username)}">
+              <input type="text" class="admin-input" data-field="username" value="${escapeHtml(p.username)}">
             </td>
             <td>
-              <div style="display:flex; align-items:center; gap:0.25rem;">
+              <div>
                 <span>$</span>
-                <input type="number" class="admin-input" style="width:110px;" step="0.01" data-field="wagered_usd" value="${(p.wagered_cents / 100).toFixed(2)}">
+                <input type="number" class="admin-input" step="0.01" data-field="wagered_usd" value="${(p.wagered_cents / 100).toFixed(2)}">
               </div>
             </td>
             <td>
-              <div style="display:flex; align-items:center; gap:0.25rem;">
+              <div>
                 <span>$</span>
-                <input type="number" class="admin-input" style="width:100px;" step="0.01" data-field="prize_usd" value="${(p.prize_cents / 100).toFixed(2)}">
+                <input type="number" class="admin-input" step="0.01" data-field="prize_usd" value="${(p.prize_cents / 100).toFixed(2)}">
               </div>
             </td>
             <td>
-              <label style="display:flex; align-items:center; gap:0.35rem; font-size:0.8rem; cursor:pointer;">
+              <label>
                 <input type="checkbox" data-field="wag_growth_enabled" ${p.wag_growth_enabled === 1 ? "checked" : ""}>
-                <span>Рост</span>
+                <span>Growth</span>
               </label>
             </td>
             <td>
@@ -320,10 +320,10 @@ async function initBoardEditor() {
                 72h
               </button>
             </td>
-            <td style="text-align: right;">
-              <div style="display:inline-flex; gap:0.3rem;">
+            <td>
+              <div>
                 <button type="button" class="adm-btn adm-btn--primary adm-btn--sm" data-action="save-player" data-player-id="${p.id}">
-                  Сохранить
+                  Save
                 </button>
                 <button type="button" class="adm-btn adm-btn--danger adm-btn--sm" data-action="delete-player" data-player-id="${p.id}">
                   ✕
@@ -354,24 +354,24 @@ async function initBoardEditor() {
             method: "PATCH",
             body: JSON.stringify(payload),
           });
-          showStatus(statusBox, "Игрок сохранён ✓");
+          showStatus(statusBox, "Player saved ✓");
           loadAll();
         } catch (err) {
-          alert(`Ошибка сохранения: ${err.message}`);
+          alert(`Save failed: ${err.message}`);
         }
       });
     });
 
     tbody.querySelectorAll('[data-action="delete-player"]').forEach((btn) => {
       btn.addEventListener("click", async () => {
-        if (!confirm("Удалить этого игрока из гонки?")) return;
+        if (!confirm("Remove this player from the race?")) return;
         const id = btn.getAttribute("data-player-id");
         try {
           await api(`/api/admin/leaderboards/${slug}/players/${id}`, { method: "DELETE" });
-          showStatus(statusBox, "Игрок удалён");
+          showStatus(statusBox, "Player removed");
           loadAll();
         } catch (err) {
-          alert(`Ошибка удаления: ${err.message}`);
+          alert(`Delete failed: ${err.message}`);
         }
       });
     });
@@ -403,20 +403,20 @@ async function initBoardEditor() {
         <tr data-spot-rank="${rank}">
           <td><strong>#${rank}</strong></td>
           <td>
-            <div style="display:flex; align-items:center; gap:0.25rem;">
+            <div>
               <span>$</span>
-              <input type="number" class="admin-input" style="width:120px;" step="0.01" data-spot-prize value="${prizeUsd}">
+              <input type="number" class="admin-input" step="0.01" data-spot-prize value="${prizeUsd}">
             </div>
           </td>
           <td>
-            <label style="display:flex; align-items:center; gap:0.35rem; cursor:pointer;">
+            <label>
               <input type="checkbox" data-spot-hidden ${hidden ? "checked" : ""}>
-              <span>Скрыть</span>
+              <span>Hide</span>
             </label>
           </td>
           <td>
             <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-action="save-spot" data-spot-rank="${rank}">
-              Сохранить
+              Save
             </button>
           </td>
         </tr>
@@ -438,9 +438,9 @@ async function initBoardEditor() {
             method: "PATCH",
             body: JSON.stringify({ prize_cents: Math.round(prizeUsd * 100), hidden }),
           });
-          showStatus(statusBox, `Место #${rank} сохранено ✓`);
+          showStatus(statusBox, `Spot #${rank} saved ✓`);
         } catch (err) {
-          alert(`Ошибка сохранения spot: ${err.message}`);
+          alert(`Failed to save spot: ${err.message}`);
         }
       });
     });
@@ -453,8 +453,8 @@ async function initBoardEditor() {
     const subEl = modal.querySelector("[data-wager-schedule-subtitle]");
     const listEl = modal.querySelector("[data-wager-schedule-list]");
 
-    if (titleEl) titleEl.textContent = `План роста (72ч) · ${player.username}`;
-    if (subEl) subEl.textContent = `Текущий вагер: ${money(player.wagered_cents)}`;
+    if (titleEl) titleEl.textContent = `Growth plan (72h) · ${player.username}`;
+    if (subEl) subEl.textContent = `Current wager: ${money(player.wagered_cents)}`;
 
     const interval = (player.wag_growth_hours ? player.wag_growth_hours * 3600000 : currentBoard.auto_wager_growth_interval_ms) || 43200000;
     const pct = player.wag_growth_pct || currentBoard.auto_wager_growth_pct || 3;
@@ -474,12 +474,12 @@ async function initBoardEditor() {
             .map(
               (it, i) => `
               <li class="growth-timeline__item">
-                <span>Тик #${i + 1} (${new Date(it.at_ms).toLocaleString("ru-RU")})</span>
+                <span>Tick #${i + 1} (${new Date(it.at_ms).toLocaleString("en-US")})</span>
                 <strong>+${it.pct}% → ${money(it.wagered_cents)}</strong>
               </li>`,
             )
             .join("")
-        : `<li class="growth-timeline__item">Авто-рост выключен или интервал не задан.</li>`;
+        : `<li class="growth-timeline__item">Auto-growth is disabled or no interval is set.</li>`;
     }
     modal.hidden = false;
   };
@@ -508,29 +508,29 @@ async function initBoardEditor() {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
-      showStatus(statusBox, "Параметры гонки успешно сохранены ✓");
+      showStatus(statusBox, "Race settings saved ✓");
     } catch (err) {
-      alert(`Ошибка: ${err.message}`);
+      alert(`Error: ${err.message}`);
     }
   });
 
   document.querySelector("[data-btn-auto-rank]")?.addEventListener("click", async () => {
     try {
       const res = await api(`/api/admin/leaderboards/${slug}/players/auto-rank`, { method: "POST" });
-      showStatus(statusBox, `Пересчитано ${res.count} игроков по обороту ✓`);
+      showStatus(statusBox, `Re-ranked ${res.count} players by wager ✓`);
       loadAll();
     } catch (err) {
-      alert(`Ошибка: ${err.message}`);
+      alert(`Error: ${err.message}`);
     }
   });
 
   document.querySelector("[data-btn-apply-growth]")?.addEventListener("click", async () => {
     try {
       const res = await api(`/api/admin/leaderboards/${slug}/players/apply-wager-growth`, { method: "POST" });
-      showStatus(statusBox, `Применён рост: ${res.players.length} игроков обновлено (${res.tickCount} тиков) ✓`);
+      showStatus(statusBox, `Growth applied: ${res.players.length} players updated (${res.tickCount} ticks) ✓`);
       loadAll();
     } catch (err) {
-      alert(`Ошибка: ${err.message}`);
+      alert(`Error: ${err.message}`);
     }
   });
 
@@ -558,10 +558,10 @@ async function initBoardEditor() {
         body: JSON.stringify(payload),
       });
       document.getElementById("modal-add-player").hidden = true;
-      showStatus(statusBox, "Игрок добавлен ✓");
+      showStatus(statusBox, "Player added ✓");
       loadAll();
     } catch (err) {
-      alert(`Ошибка: ${err.message}`);
+      alert(`Error: ${err.message}`);
     }
   });
 
@@ -580,10 +580,10 @@ async function initBoardEditor() {
         body: JSON.stringify({ csv: fd.get("csv_text") }),
       });
       document.getElementById("modal-import-csv").hidden = true;
-      showStatus(statusBox, `Импортировано ${res.imported} игроков ✓`);
+      showStatus(statusBox, `Imported ${res.imported} players ✓`);
       loadAll();
     } catch (err) {
-      alert(`Ошибка импорта: ${err.message}`);
+      alert(`Import failed: ${err.message}`);
     }
   });
 
@@ -611,7 +611,7 @@ async function initSiteSettings() {
     if (s.kick_url) form.querySelector('[name="kick_url"]').value = s.kick_url;
     if (s.telegram_url) form.querySelector('[name="telegram_url"]').value = s.telegram_url;
   } catch (err) {
-    showStatus(statusBox, `Ошибка загрузки: ${err.message}`, "error");
+    showStatus(statusBox, `Load failed: ${err.message}`, "error");
   }
 
   document.querySelector("[data-btn-save-site]")?.addEventListener("click", async () => {
@@ -623,9 +623,9 @@ async function initSiteSettings() {
           body: JSON.stringify({ key: k, value: String(v) }),
         });
       }
-      showStatus(statusBox, "Настройки сайта успешно сохранены ✓");
+      showStatus(statusBox, "Site settings saved ✓");
     } catch (err) {
-      showStatus(statusBox, `Ошибка: ${err.message}`, "error");
+      showStatus(statusBox, `Error: ${err.message}`, "error");
     }
   });
 }
@@ -643,7 +643,7 @@ async function initAuditLog() {
       const data = await api("/api/admin/audit");
       const rows = data.entries || [];
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="admin-status">Записей в журнале пока нет.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="admin-status">No log entries yet.</td></tr>`;
         return;
       }
       tbody.innerHTML = rows
@@ -654,17 +654,153 @@ async function initAuditLog() {
             <td>${escapeHtml(e.actor_email || "admin")}</td>
             <td><code>${escapeHtml(e.action)}</code></td>
             <td>${escapeHtml(e.target || "—")}</td>
-            <td><code style="font-size:0.75rem;">${escapeHtml(e.meta_json || "")}</code></td>
+            <td><code>${escapeHtml(e.meta_json || "")}</code></td>
           </tr>
         `,
         )
         .join("");
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="5" class="admin-status is-error">Ошибка: ${escapeHtml(err.message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="admin-status is-error">Error: ${escapeHtml(err.message)}</td></tr>`;
     }
   };
 
   document.querySelector("[data-btn-refresh-audit]")?.addEventListener("click", load);
+  load();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE: Raffles
+// ─────────────────────────────────────────────────────────────────────────────
+
+function raffleStatus(row) {
+  if (row.hidden) return `<span>Hidden</span>`;
+  const now = Date.now();
+  if (Number(row.ends_at) < now) return `<span>Finished</span>`;
+  if (Number(row.starts_at) > now) return `<span>Upcoming</span>`;
+  return `<span>● Live</span>`;
+}
+
+function initRaffles() {
+  const tbody = document.querySelector("[data-admin-raffles-tbody]");
+  const modal = document.getElementById("modal-raffle");
+  const form = document.querySelector("[data-form-raffle]");
+  if (!tbody || !modal || !form) return;
+
+  const statusBox = document.querySelector("[data-raffles-status]");
+  const titleEl = modal.querySelector("[data-raffle-modal-title]");
+  const submitBtn = modal.querySelector("[data-raffle-submit]");
+  let editingId = null;
+
+  const fillForm = (row) => {
+    form.reset();
+    editingId = row ? row.id : null;
+    if (titleEl) titleEl.textContent = row ? "Edit raffle" : "New raffle";
+    if (submitBtn) submitBtn.textContent = row ? "Save" : "Add";
+    form.elements.title.value = row?.title || "";
+    form.elements.prize.value = row?.prize || "";
+    form.elements.winner.value = row?.winner || "";
+    form.elements.note.value = row?.note || "";
+    form.elements.starts_at_local.value = localISO(row?.starts_at || Date.now());
+    form.elements.ends_at_local.value = localISO(row?.ends_at || Date.now() + 7 * 24 * 3600 * 1000);
+    form.elements.hidden.checked = !!row?.hidden;
+  };
+
+  const openModal = (row) => {
+    fillForm(row);
+    modal.hidden = false;
+  };
+
+  document.querySelectorAll("[data-open-raffle-modal]").forEach((btn) => {
+    btn.addEventListener("click", () => openModal(null));
+  });
+
+  const load = async () => {
+    try {
+      const data = await api("/api/admin/raffles");
+      const rows = data.raffles || [];
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="admin-status">No raffles yet. Add the first one.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows
+        .map(
+          (row) => `
+          <tr>
+            <td><strong>${escapeHtml(row.title)}</strong></td>
+            <td>${escapeHtml(row.prize || "—")}</td>
+            <td>${escapeHtml(row.winner || "—")}</td>
+            <td>${escapeHtml(fmtDate(row.ends_at))}</td>
+            <td>${raffleStatus(row)}</td>
+            <td>
+              <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" data-raffle-edit="${row.id}">Edit</button>
+              <button type="button" class="adm-btn adm-btn--danger adm-btn--sm" data-raffle-delete="${row.id}">Delete</button>
+            </td>
+          </tr>`,
+        )
+        .join("");
+      tbody.querySelectorAll("[data-raffle-edit]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = Number(btn.getAttribute("data-raffle-edit"));
+          const row = rows.find((item) => item.id === id);
+          if (row) openModal(row);
+        });
+      });
+      tbody.querySelectorAll("[data-raffle-delete]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-raffle-delete");
+          if (!confirm("Delete this raffle?")) return;
+          try {
+            await api(`/api/admin/raffles/${id}`, { method: "DELETE" });
+            showStatus(statusBox, "Raffle deleted");
+            await load();
+          } catch (err) {
+            showStatus(statusBox, err.message, "error");
+          }
+        });
+      });
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="admin-status is-error">Error: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const endsAt = fromLocalISO(fd.get("ends_at_local"));
+    if (!endsAt) {
+      showStatus(statusBox, "End date is required", "error");
+      return;
+    }
+    const payload = {
+      title: fd.get("title"),
+      prize: fd.get("prize"),
+      winner: fd.get("winner"),
+      note: fd.get("note"),
+      starts_at: fromLocalISO(fd.get("starts_at_local")) || Date.now(),
+      ends_at: endsAt,
+      hidden: fd.get("hidden") === "1",
+    };
+    try {
+      if (editingId) {
+        await api(`/api/admin/raffles/${editingId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        showStatus(statusBox, "Raffle saved");
+      } else {
+        await api("/api/admin/raffles", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        showStatus(statusBox, "Raffle added");
+      }
+      modal.hidden = true;
+      await load();
+    } catch (err) {
+      showStatus(statusBox, err.message, "error");
+    }
+  });
+
   load();
 }
 
@@ -684,5 +820,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initSiteSettings();
   } else if (page === "audit") {
     initAuditLog();
+  } else if (page === "raffles") {
+    initRaffles();
   }
 });

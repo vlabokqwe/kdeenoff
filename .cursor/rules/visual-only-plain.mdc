@@ -1,0 +1,14 @@
+---
+description: Public site visual system (v2 "emerald night"). Admin panel visuals stay untouched. Project language is English.
+alwaysApply: true
+---
+
+# Visual system
+
+- Dark emerald ground, gold as the only accent. No red-yellow-green flag stripes.
+- Decorative art is generated, never emoji/sticker glyphs. Raw renders go through
+  `scripts/process-art-v2.py` (Real-ESRGAN x4 upscale -> magenta chroma key -> WebP in `public/img/**`).
+- Styles: `public/css/main.css`; font Rubik is self-hosted (`public/css/fonts.css`, `public/fonts/`).
+- Partner styling is keyed by `data-partner` (`stake`, otherwise `generic`); partner bonus cards come from `src/_data/site.json -> partners`.
+- All UI text is English.
+- Do not restyle the admin panel (`public/admin/**`, `public/css/admin.css`).

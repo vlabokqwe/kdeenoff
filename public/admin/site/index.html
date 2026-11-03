@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Настройки сайта · Admin KDeenOff</title>
+  <title>Site Settings · Admin KDeenOff</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body class="admin-body" data-admin-page="site-settings">
@@ -15,26 +15,27 @@
       </a>
 
       <nav class="admin-nav">
-        <a href="/admin/">Обзор</a>
-        <a href="/admin/leaderboards/">Лидерборды</a>
-        <a href="/admin/site/" class="is-active">Настройки сайта</a>
-        <a href="/admin/audit/">Журнал аудита</a>
+        <a href="/admin/">Overview</a>
+        <a href="/admin/leaderboards/">Leaderboards</a>
+        <a href="/admin/raffles/">Raffles</a>
+        <a href="/admin/site/" class="is-active">Site settings</a>
+        <a href="/admin/audit/">Audit log</a>
       </nav>
 
-      <a href="/" class="admin-header__site-link" target="_blank">Перейти на сайт ↗</a>
+      <a href="/" class="admin-header__site-link" target="_blank">Open site ↗</a>
     </div>
   </header>
 
   <main class="admin-main">
     <div class="admin-page-head">
       <div>
-        <h1 class="admin-page-title">Настройки сайта и промокоды</h1>
-        <p class="admin-page-sub">Глобальные ссылки, промокод канала, партнёры и соцсети</p>
+        <h1 class="admin-page-title">Site settings & promo codes</h1>
+        <p class="admin-page-sub">Global links, channel promo code, partners and socials</p>
       </div>
 
       <div class="admin-page-actions">
         <button type="button" class="adm-btn adm-btn--primary" data-btn-save-site>
-          Сохранить настройки
+          Save settings
         </button>
       </div>
     </div>
@@ -45,40 +46,40 @@
       <form data-form-site-settings>
         <div class="admin-form-grid">
           <div class="admin-form-group">
-            <label class="admin-form-label">Промокод канала *</label>
+            <label class="admin-form-label">Channel promo code *</label>
             <input type="text" name="promo_code" class="admin-input" value="KDEENOFF" required>
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Главный заголовок призового банка</label>
+            <label class="admin-form-label">Headline prize pool</label>
             <input type="text" name="headline_prize" class="admin-input" value="$10,000">
           </div>
         </div>
 
         <div class="admin-form-grid">
           <div class="admin-form-group">
-            <label class="admin-form-label">Партнёр по умолчанию</label>
+            <label class="admin-form-label">Default partner</label>
             <input type="text" name="partner_name" class="admin-input" value="Stake">
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Реферальная ссылка партнёра</label>
+            <label class="admin-form-label">Partner referral link</label>
             <input type="url" name="partner_signup_url" class="admin-input" value="https://stake.com/?c=KDEENOFF">
           </div>
         </div>
 
         <div class="admin-form-grid">
           <div class="admin-form-group">
-            <label class="admin-form-label">Kick Канал (Название)</label>
+            <label class="admin-form-label">Kick channel (name)</label>
             <input type="text" name="kick_channel" class="admin-input" value="KDeenOff">
           </div>
           <div class="admin-form-group">
-            <label class="admin-form-label">Ссылка на Kick</label>
+            <label class="admin-form-label">Kick link</label>
             <input type="url" name="kick_url" class="admin-input" value="https://kick.com/kdeenoff">
           </div>
         </div>
 
         <div class="admin-form-grid">
           <div class="admin-form-group">
-            <label class="admin-form-label">Telegram Канал / Чат</label>
+            <label class="admin-form-label">Telegram channel / chat</label>
             <input type="url" name="telegram_url" class="admin-input" value="https://t.me/kdeenoff">
           </div>
         </div>
