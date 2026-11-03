@@ -381,6 +381,176 @@ function initSteps() {
   });
 }
 
+/* ───────────── Kick chat column ───────────── */
+
+const chatKey = "kdeenoff-chat";
+const chatPollMs = 12000;
+const emotePattern = /\[emote:(\d+):([^\]]+)\]/g;
+let onChatToggle = () => {};
+
+function setChat(open) {
+  const was = document.body.classList.contains("chat-open");
+  document.body.classList.toggle("chat-open", open);
+  document.querySelectorAll("[data-kick-chat-toggle]").forEach((btn) => {
+    btn.setAttribute("aria-expanded", String(open));
+  });
+  try { localStorage.setItem(chatKey, open ? "1" : "0"); } catch { /* private mode */ }
+  window.dispatchEvent(new Event("resize"));
+  if (open !== was) onChatToggle(open);
+}
+
+function kickColor(value) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(value)) return "";
+  const r = parseInt(value.slice(1, 3), 16);
+  const g = parseInt(value.slice(3, 5), 16);
+  const b = parseInt(value.slice(5, 7), 16);
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (lum <= 0.62) return value;
+  const scale = 0.55 / lum;
+  const hex = (n) => Math.max(0, Math.min(255, Math.round(n * scale))).toString(16).padStart(2, "0");
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+function appendKickContent(parent, text) {
+  const source = String(text || "");
+  emotePattern.lastIndex = 0;
+  let last = 0;
+  let match;
+  while ((match = emotePattern.exec(source))) {
+    if (match.index > last) parent.append(document.createTextNode(source.slice(last, match.index)));
+    const img = document.createElement("img");
+    img.className = "kick-chat__emote";
+    img.alt = match[2];
+    img.src = `https://files.kick.com/emotes/${match[1]}/fullsize`;
+    img.width = 28;
+    img.height = 28;
+    parent.append(img);
+    last = match.index + match[0].length;
+  }
+  if (last < source.length) parent.append(document.createTextNode(source.slice(last)));
+}
+
+function kickMessageNode(message) {
+  const row = document.createElement("p");
+  row.className = "kick-chat__msg";
+  row.dataset.id = message.id;
+  const name = document.createElement("span");
+  name.className = "kick-chat__name";
+  name.textContent = message.sender?.username || "viewer";
+  const color = kickColor(message.sender?.identity?.color);
+  if (color) name.style.color = color;
+  row.append(name);
+  appendKickContent(row, message.content);
+  return row;
+}
+
+function initKickChat() {
+  const root = document.getElementById("kick-chat");
+  if (!root) return;
+  const slug = root.getAttribute("data-kick-channel");
+  const log = root.querySelector("[data-kick-chat-log]");
+  const seen = new Set();
+  let channelId = 0;
+  let timer = 0;
+  let pinned = true;
+  let loading = false;
+
+  const status = (text) => {
+    log.replaceChildren();
+    const note = document.createElement("p");
+    note.className = "kick-chat__status";
+    note.textContent = text;
+    log.append(note);
+  };
+
+  const stick = () => {
+    if (!pinned) return;
+    log.scrollTop = log.scrollHeight;
+  };
+
+  const appendMessages = (messages, { reset = false } = {}) => {
+    const fresh = [];
+    for (const message of messages) {
+      if (!message || message.id == null || seen.has(message.id)) continue;
+      if (!message.content) continue;
+      seen.add(message.id);
+      fresh.push(message);
+    }
+    if (!fresh.length && !reset) return;
+    if (reset) log.replaceChildren();
+    else log.querySelector(".kick-chat__status")?.remove();
+    for (const message of fresh) log.append(kickMessageNode(message));
+    if (!log.children.length) status("No messages yet.");
+    stick();
+  };
+
+  async function kickJson(url) {
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(String(res.status));
+    return res.json();
+  }
+
+  async function messagePage(cursor) {
+    const url = new URL(`https://kick.com/api/v2/channels/${channelId}/messages`);
+    if (cursor) url.searchParams.set("cursor", cursor);
+    const body = await kickJson(url);
+    return body.data || {};
+  }
+
+  async function refresh({ reset = false } = {}) {
+    if (loading || !slug) return;
+    loading = true;
+    try {
+      if (!channelId) {
+        const channel = await kickJson(`https://kick.com/api/v2/channels/${encodeURIComponent(slug)}`);
+        channelId = Number(channel.id) || 0;
+        if (!channelId) throw new Error("channel");
+      }
+      let page = await messagePage();
+      if (reset && (!page.messages || !page.messages.length) && page.cursor) {
+        page = await messagePage(page.cursor);
+      }
+      const messages = (page.messages || []).slice().reverse();
+      appendMessages(messages, { reset });
+    } catch {
+      if (reset && !seen.size) status("Couldn't load chat.");
+    } finally {
+      loading = false;
+    }
+  }
+
+  const arm = () => {
+    clearInterval(timer);
+    timer = 0;
+    const open = document.body.classList.contains("chat-open");
+    if (!open || document.hidden) return;
+    timer = setInterval(() => refresh(), chatPollMs);
+  };
+
+  onChatToggle = (open) => {
+    arm();
+    if (open) refresh();
+  };
+
+  log.addEventListener("scroll", () => {
+    pinned = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  }, { passive: true });
+
+  root.querySelectorAll("[data-kick-chat-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => setChat(!document.body.classList.contains("chat-open")));
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !document.body.classList.contains("chat-open")) return;
+    if (window.matchMedia("(min-width: 1041px)").matches) return;
+    if (document.body.classList.contains("drawer-open")) return;
+    setChat(false);
+  });
+  document.addEventListener("visibilitychange", arm);
+
+  requestAnimationFrame(() => document.body.classList.add("chat-ready"));
+  refresh({ reset: true }).finally(arm);
+}
+
 /* ───────────── Boot ───────────── */
 
 function boot() {
@@ -392,6 +562,7 @@ function boot() {
   initReveal();
   initParallax();
   initSteps();
+  initKickChat();
 }
 
 if (document.readyState === "loading") {

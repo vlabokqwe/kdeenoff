@@ -10,6 +10,16 @@ pageClass: site--home
 <section class="hero" id="top" aria-labelledby="hero-title">
   <div class="hero__bg" aria-hidden="true"></div>
   <div class="container hero__inner">
+    {% if site.kickChannel %}
+    <div class="hero__player">
+      <iframe
+        src="https://player.kick.com/{{ site.kickChannel }}?autoplay=true&muted=true"
+        title="KDeenOff live on Kick"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+    {% endif %}
     <div class="hero__copy">
       <h1 class="hero__title" id="hero-title">Play with code <button type="button" class="accent hero__codeword" data-copy="{{ site.promoCode }}" aria-label="Copy promo code {{ site.promoCode }}"><span data-copy-status>{{ site.promoCode }}</span></button></h1>
 

@@ -12,6 +12,19 @@
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body class="site{% if pageClass %} {{ pageClass }}{% endif %}">
+  {% if site.kickChannel %}
+  <script>
+    (function () {
+      var open = true;
+      try {
+        var stored = localStorage.getItem("kdeenoff-chat");
+        if (stored === "0" || stored === "1") open = stored === "1";
+        else open = matchMedia("(min-width: 1041px)").matches;
+      } catch (e) {}
+      document.body.classList.toggle("chat-open", open);
+    })();
+  </script>
+  {% endif %}
   <a class="skip-link" href="#main">Skip to content</a>
 
   {% include "partials/drawer.njk" %}
@@ -21,6 +34,25 @@
   </main>
 
   {% include "partials/footer.njk" %}
+
+  {% if site.kickChannel %}
+  <aside class="kick-chat" id="kick-chat" data-kick-channel="{{ site.kickChannel }}" aria-label="Kick chat">
+    <header class="kick-chat__bar">
+      <span class="kick-chat__brand">
+        <img src="/img/brand/kick-logo.svg" alt="KICK" width="72" height="24">
+      </span>
+      <button type="button" class="kick-chat__hide" data-kick-chat-toggle aria-expanded="true" aria-controls="kick-chat-log" aria-label="Hide chat">
+        <span class="kick-chat__chev" aria-hidden="true"></span>
+      </button>
+    </header>
+    <div class="kick-chat__log" id="kick-chat-log" data-kick-chat-log tabindex="0">
+      <p class="kick-chat__status">Loading chat…</p>
+    </div>
+    <button type="button" class="kick-chat__show" data-kick-chat-toggle aria-expanded="false" aria-controls="kick-chat-log" aria-label="Show chat">
+      <img src="/img/brand/kick-logo.svg" alt="" width="72" height="24">
+    </button>
+  </aside>
+  {% endif %}
 
   <script type="module" src="/js/main.js"></script>
   <script type="module" src="/js/leaderboard.js"></script>
