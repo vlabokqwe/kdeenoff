@@ -54,8 +54,8 @@
         <img src="/img/brand/kick-logo-k.svg" alt="" width="14" height="14">
         <span data-kick-account-label>Kick</span>
       </a>
-      <a class="topbar__login" href="{{ site.loginUrl or site.registerUrl }}" target="_blank" rel="noopener noreferrer">Login</a>
-      <a class="topbar__register" href="{{ site.registerUrl }}" target="_blank" rel="noopener noreferrer">Register</a>
+      <button type="button" class="topbar__login" data-auth-open="login">Login</button>
+      <button type="button" class="topbar__register" data-auth-open="register">Register</button>
     </div>
   </header>
 
@@ -82,6 +82,32 @@
     </button>
   </aside>
   {% endif %}
+
+  <dialog class="auth-dialog" data-auth-dialog aria-labelledby="auth-dialog-title">
+    <div class="auth-dialog__card">
+      <header class="auth-dialog__head">
+        <h2 id="auth-dialog-title" data-auth-title>Create your account</h2>
+        <button type="button" class="auth-dialog__close" data-auth-close aria-label="Close">×</button>
+      </header>
+      <p class="auth-dialog__sub" data-auth-sub>We'll email you a code.</p>
+      <p class="auth-dialog__error" data-auth-error hidden></p>
+      <p class="auth-dialog__done" data-auth-done hidden></p>
+      <form class="auth-dialog__form" data-auth-email hidden>
+        <label class="auth-dialog__field">Email address
+          <input type="email" name="email" autocomplete="email" required maxlength="254" data-auth-email-input>
+        </label>
+        <button type="submit" class="auth-dialog__submit" data-auth-send>Send code</button>
+      </form>
+      <form class="auth-dialog__form" data-auth-code hidden>
+        <label class="auth-dialog__field">Code from your email
+          <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required data-auth-code-input>
+        </label>
+        <button type="submit" class="auth-dialog__submit" data-auth-confirm>Confirm</button>
+        <button type="button" class="auth-dialog__back" data-auth-back>Use a different email</button>
+      </form>
+      <a class="auth-dialog__account" href="/account/" data-auth-account hidden>Open your account</a>
+    </div>
+  </dialog>
 
   <script type="module" src="/js/main.js"></script>
   <script type="module" src="/js/leaderboard.js"></script>

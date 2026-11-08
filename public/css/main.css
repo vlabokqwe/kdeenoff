@@ -2577,7 +2577,8 @@ body:not(.drawer-open) .theme-switch__btn[aria-pressed="true"] {
   font-weight: 600;
 }
 
-.step__text a {
+.step__text a,
+.step__text .step__signup {
   font-weight: 800;
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
@@ -2597,7 +2598,8 @@ body:not(.drawer-open) .theme-switch__btn[aria-pressed="true"] {
   color: var(--muted);
 }
 
-.step__text a {
+.step__text a,
+.step__text .step__signup {
   color: var(--gold);
   font-weight: 700;
   text-underline-offset: 3px;
@@ -6595,7 +6597,7 @@ html[data-theme="dark"] .join-mail__avatar {
   line-height: 1.45;
 }
 
-:is(.site--home, .site--raffles) .step__text a {
+:is(.site--home, .site--raffles) .step__text :is(a, .step__signup) {
   color: var(--ink-blue);
   font-weight: 800;
   text-decoration: underline;
@@ -6604,8 +6606,14 @@ html[data-theme="dark"] .join-mail__avatar {
   text-underline-offset: 3px;
 }
 
-:is(.site--home, .site--raffles) .step__text a:hover {
+:is(.site--home, .site--raffles) .step__text :is(a, .step__signup):hover {
   text-decoration-color: var(--ink-blue);
+}
+
+.step__signup {
+  font: inherit;
+  line-height: inherit;
+  vertical-align: baseline;
 }
 
 :is(.site--home, .site--raffles) .steps .inline-code {
@@ -9745,4 +9753,162 @@ html:not([data-theme="dark"]) body.site--home.chat-open .kick-chat {
 
 .kick-account__disconnect:hover {
   color: var(--text);
+}
+
+/* Register and Login open this sheet. Same paper card as the sign-up reel. */
+
+body:has(.auth-dialog[open]) {
+  overflow: hidden;
+}
+
+.auth-dialog {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-blue);
+}
+
+.auth-dialog::backdrop {
+  background: rgba(6, 8, 12, .55);
+}
+
+.auth-dialog__card {
+  display: grid;
+  gap: 14px;
+  max-height: min(640px, calc(100vh - 48px));
+  padding: 22px 22px 20px;
+  overflow: auto;
+  border: 1px solid var(--field-line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .28);
+}
+
+.auth-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auth-dialog__head h2 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+}
+
+.auth-dialog__close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: -6px -6px 0 0;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.auth-dialog__close:hover {
+  background: var(--wash);
+  color: var(--ink-blue);
+}
+
+.auth-dialog__sub,
+.auth-dialog__error,
+.auth-dialog__done {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.auth-dialog__sub,
+.auth-dialog__error {
+  color: var(--ink-soft);
+}
+
+.auth-dialog__done {
+  font-weight: 700;
+}
+
+.auth-dialog__form {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-dialog__field {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-dialog__field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1.5px solid var(--field-line);
+  border-radius: 10px;
+  background: var(--field);
+  color: var(--ink-blue);
+  font: inherit;
+  font-weight: 600;
+}
+
+.auth-dialog__field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.auth-dialog__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--ink-blue);
+  color: var(--on-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-dialog__submit:hover {
+  filter: brightness(1.12);
+}
+
+.auth-dialog__submit:disabled {
+  filter: none;
+  opacity: .6;
+  cursor: default;
+}
+
+.auth-dialog__back,
+.auth-dialog__account {
+  justify-self: start;
+  color: var(--ink-blue);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.auth-dialog__back {
+  justify-self: center;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.auth-dialog__form[hidden],
+.auth-dialog__error[hidden],
+.auth-dialog__done[hidden],
+.auth-dialog__account[hidden],
+.auth-dialog__sub[hidden] {
+  display: none;
 }

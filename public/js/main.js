@@ -1369,6 +1369,30 @@ function initHeroBlocks() {
 
 /* ───────────── Kick account link ───────────── */
 
+let currentAccount = null;
+
+function readCsrf() {
+  const match = document.cookie.match(/(?:^|;\s*)kdeenoff_csrf=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+async function postAccount(path, payload) {
+  const res = await fetch(path, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      "x-csrf": readCsrf(),
+    },
+    body: JSON.stringify(payload || {}),
+  });
+  let body = {};
+  try { body = await res.json(); } catch { /* empty */ }
+  if (!res.ok) throw new Error(body.error || "store");
+  return body;
+}
+
 function initKickAccount() {
   const headerLink = document.querySelector("[data-kick-account]");
   const label = document.querySelector("[data-kick-account-label]");
@@ -1410,11 +1434,6 @@ function initKickAccount() {
   const connectEl = document.querySelector("[data-kick-connect]");
   const disconnectEl = document.querySelector("[data-kick-disconnect]");
 
-  const readCsrf = () => {
-    const match = document.cookie.match(/(?:^|;\s*)kdeenoff_csrf=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : "";
-  };
-
   const safeAvatar = (value) => {
     try {
       const url = new URL(value);
@@ -1436,23 +1455,6 @@ function initKickAccount() {
     if (!emailErrorEl) return;
     emailErrorEl.hidden = false;
     emailErrorEl.textContent = emailErrors[key] || "Something went wrong. Try again.";
-  };
-
-  const postAccount = async (path, payload) => {
-    const res = await fetch(path, {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-        "x-csrf": readCsrf(),
-      },
-      body: JSON.stringify(payload || {}),
-    });
-    let body = {};
-    try { body = await res.json(); } catch { /* empty */ }
-    if (!res.ok) throw new Error(body.error || "store");
-    return body;
   };
 
   const showLoggedOut = () => {
@@ -1499,6 +1501,7 @@ function initKickAccount() {
       if (verified) emailDoneEl.textContent = `Confirmed as ${account.email}`;
     }
     if (emailForm) emailForm.hidden = verified;
+    if (codeForm && verified) codeForm.hidden = true;
     if (emailStatusEl) emailStatusEl.textContent = verified ? "Email confirmed." : "Email is not confirmed.";
     if (signOutEl) signOutEl.hidden = !(verified || (account && account.linked));
   };
@@ -1577,12 +1580,21 @@ function initKickAccount() {
     });
   }
 
+  const applyAccount = (account) => {
+    currentAccount = account;
+    if (account && account.linked) showLinked(account);
+    else showLoggedOut();
+    showEmail(account);
+  };
+
+  document.addEventListener("kdeenoff-account", (event) => {
+    applyAccount(event.detail);
+  });
+
   fetch("/api/kick/me", { credentials: "same-origin", headers: { accept: "application/json" } })
     .then((res) => (res.ok ? res.json() : Promise.reject(new Error("me"))))
     .then((account) => {
-      if (account && account.linked) showLinked(account);
-      else showLoggedOut();
-      showEmail(account);
+      applyAccount(account);
     })
     .catch(() => {
       showLoggedOut();
@@ -1590,6 +1602,177 @@ function initKickAccount() {
       if (statusEl) statusEl.textContent = "Could not check the Kick account.";
       if (emailStatusEl) emailStatusEl.textContent = "Could not check the email.";
     });
+}
+
+function initAuthDialog() {
+  const dialog = document.querySelector("[data-auth-dialog]");
+  if (!dialog || typeof dialog.showModal !== "function") return;
+
+  const titleEl = dialog.querySelector("[data-auth-title]");
+  const subEl = dialog.querySelector("[data-auth-sub]");
+  const errorEl = dialog.querySelector("[data-auth-error]");
+  const doneEl = dialog.querySelector("[data-auth-done]");
+  const emailForm = dialog.querySelector("[data-auth-email]");
+  const codeForm = dialog.querySelector("[data-auth-code]");
+  const emailInput = dialog.querySelector("[data-auth-email-input]");
+  const codeInput = dialog.querySelector("[data-auth-code-input]");
+  const accountLink = dialog.querySelector("[data-auth-account]");
+  const errors = {
+    config: "Email confirmation is not turned on yet.",
+    email: "Enter a valid email address.",
+    wait: "Wait a minute before asking for another code.",
+    limit: "Too many codes were sent. Try again later.",
+    taken: "That email is already confirmed.",
+    send: "The email could not be sent. Try again.",
+    bad: "That code is wrong.",
+    expired: "That code expired. Ask for a new one.",
+    store: "The site could not save the email. Try again.",
+  };
+  const copy = {
+    login: { title: "Log in", sub: "We'll email you a code." },
+    register: { title: "Create your account", sub: "We'll email you a code." },
+  };
+
+  let opener = null;
+  let openSeq = 0;
+  let mode = "register";
+
+  const showError = (key) => {
+    if (!errorEl) return;
+    errorEl.hidden = false;
+    errorEl.textContent = errors[key] || (key && String(key).includes(" ") ? key : "Something went wrong. Try again.");
+  };
+
+  const clearError = () => {
+    if (!errorEl) return;
+    errorEl.hidden = true;
+    errorEl.textContent = "";
+  };
+
+  const showEmailStep = () => {
+    const text = copy[mode] || copy.register;
+    if (titleEl) titleEl.textContent = text.title;
+    if (subEl) {
+      subEl.hidden = false;
+      subEl.textContent = text.sub;
+    }
+    if (doneEl) doneEl.hidden = true;
+    if (accountLink) accountLink.hidden = true;
+    if (emailForm) emailForm.hidden = false;
+    if (codeForm) codeForm.hidden = true;
+    if (emailInput) emailInput.focus();
+  };
+
+  const showCodeStep = () => {
+    if (subEl) {
+      subEl.hidden = false;
+      subEl.textContent = "Enter the code from your email.";
+    }
+    if (doneEl) doneEl.hidden = true;
+    if (accountLink) accountLink.hidden = true;
+    if (emailForm) emailForm.hidden = true;
+    if (codeForm) codeForm.hidden = false;
+    if (codeInput) codeInput.focus();
+  };
+
+  const showDone = (account) => {
+    if (titleEl) titleEl.textContent = "You're signed in";
+    if (subEl) subEl.hidden = true;
+    if (emailForm) emailForm.hidden = true;
+    if (codeForm) codeForm.hidden = true;
+    if (doneEl) {
+      doneEl.hidden = false;
+      doneEl.textContent = `Confirmed as ${account.email}`;
+    }
+    if (accountLink) accountLink.hidden = false;
+    if (accountLink) accountLink.focus();
+  };
+
+  const publish = (account) => {
+    currentAccount = account;
+    document.dispatchEvent(new CustomEvent("kdeenoff-account", { detail: account }));
+  };
+
+  const open = (nextMode, source) => {
+    mode = copy[nextMode] ? nextMode : "register";
+    opener = source || null;
+    clearError();
+    const seq = ++openSeq;
+    if (!dialog.open) dialog.showModal();
+    showEmailStep();
+
+    fetch("/api/kick/me", { credentials: "same-origin", headers: { accept: "application/json" } })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("me"))))
+      .then((account) => {
+        if (seq !== openSeq || !dialog.open) return;
+        currentAccount = account;
+        if (account && account.emailVerified && account.email) showDone(account);
+      })
+      .catch(() => {});
+  };
+
+  document.querySelectorAll("[data-auth-open]").forEach((button) => {
+    button.addEventListener("click", () => open(button.getAttribute("data-auth-open"), button));
+  });
+
+  dialog.querySelector("[data-auth-close]")?.addEventListener("click", () => dialog.close());
+
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+
+  dialog.addEventListener("close", () => {
+    openSeq += 1;
+    if (opener && typeof opener.focus === "function") opener.focus();
+  });
+
+  dialog.querySelector("[data-auth-back]")?.addEventListener("click", () => {
+    clearError();
+    if (codeInput) codeInput.value = "";
+    showEmailStep();
+  });
+
+  if (emailForm) {
+    emailForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const sendBtn = emailForm.querySelector("[data-auth-send]");
+      if (sendBtn) sendBtn.disabled = true;
+      clearError();
+      try {
+        await postAccount("/api/account/email", { email: emailInput ? emailInput.value : "" });
+        showCodeStep();
+      } catch (err) {
+        showError(err && err.message);
+      } finally {
+        if (sendBtn) sendBtn.disabled = false;
+      }
+    });
+  }
+
+  if (codeForm) {
+    codeForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const confirmBtn = codeForm.querySelector("[data-auth-confirm]");
+      if (confirmBtn) confirmBtn.disabled = true;
+      clearError();
+      try {
+        const body = await postAccount("/api/account/email/confirm", {
+          code: codeInput ? codeInput.value : "",
+        });
+        const account = {
+          ...(currentAccount || {}),
+          emailVerified: true,
+          email: body.email,
+        };
+        publish(account);
+        showDone(account);
+      } catch (err) {
+        showError(err && err.message);
+      } finally {
+        if (confirmBtn) confirmBtn.disabled = false;
+      }
+    });
+  }
 }
 
 function boot() {
@@ -1606,6 +1789,7 @@ function boot() {
   initSteps();
   initKickChat();
   initKickAccount();
+  initAuthDialog();
   initClaimFlow();
   initPartnerMascot();
   initDashLive();
