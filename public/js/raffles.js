@@ -20,21 +20,26 @@ function formatWhen(row) {
 
 function card(row, live) {
   const when = formatWhen(row);
+  const art = live ? "/img/deco/mode-raffle.webp" : "/img/deco/mode-boards.webp";
   return `
     <article class="raffle-card${live ? " raffle-card--live" : ""}" data-reveal>
-      <img class="raffle-card__icon" src="/img/icons/nav-${live ? "raffle" : "crown"}.webp" alt="" width="64" height="64" loading="lazy">
-      <div class="raffle-card__body">
-        <h3 class="raffle-card__title">${escapeHtml(row.title)}</h3>
-        ${row.prize ? `<p class="raffle-card__prize">${escapeHtml(row.prize)}</p>` : ""}
-        ${when ? `<p class="raffle-card__when">${escapeHtml(when)}</p>` : ""}
-        ${row.note ? `<p class="raffle-card__note">${escapeHtml(row.note)}</p>` : ""}
+      <div class="raffle-card__art">
+        <img class="raffle-card__icon" src="${art}" alt="" width="420" height="420" loading="lazy">
       </div>
-      <div class="raffle-card__side">
-        ${live
+      <div class="raffle-card__copy">
+        <div class="raffle-card__body">
+          <h3 class="raffle-card__title">${escapeHtml(row.title)}</h3>
+          ${row.prize ? `<p class="raffle-card__prize">${escapeHtml(row.prize)}</p>` : ""}
+          ${when ? `<p class="raffle-card__when">${escapeHtml(when)}</p>` : ""}
+          ${row.note ? `<p class="raffle-card__note">${escapeHtml(row.note)}</p>` : ""}
+        </div>
+        <div class="raffle-card__side">
+          ${live
       ? `<span class="tag tag--live">Live</span><time class="raffle-card__timer" data-raffle-ends="${Number(row.ends_at) || 0}">—</time>`
       : row.winner
         ? `<span class="tag tag--gold">Winner</span><strong class="raffle-card__winner">${escapeHtml(row.winner)}</strong>`
         : `<span class="tag">Ended</span>`}
+        </div>
       </div>
     </article>`;
 }

@@ -1,0 +1,42 @@
+---
+layout: layout.njk
+title: Account
+permalink: /account/
+pageClass: site--account
+---
+<section class="kick-account" aria-labelledby="kick-account-title">
+  <div class="container kick-account__inner">
+    <h1 class="title" id="kick-account-title">Your <span class="accent">account</span></h1>
+    <p class="lead">Confirm your email, then link the Kick account you use on the stream.</p>
+    <div class="kick-account__card" data-email-card>
+      <p class="kick-account__status" data-email-status aria-live="polite">Checking your email…</p>
+      <p class="kick-account__error" data-email-error hidden></p>
+      <p class="kick-account__name" data-email-done hidden></p>
+      <form class="kick-account__form" data-email-form hidden>
+        <label class="kick-account__field">Email
+          <input type="email" name="email" autocomplete="email" required maxlength="254" data-email-input>
+        </label>
+        <button type="submit" class="kick-account__connect" data-email-send>Send code</button>
+      </form>
+      <form class="kick-account__form" data-code-form hidden>
+        <label class="kick-account__field">Code from your email
+          <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required data-code-input>
+        </label>
+        <button type="submit" class="kick-account__connect" data-code-confirm>Confirm</button>
+      </form>
+    </div>
+    <div class="kick-account__card" data-kick-card>
+      <p class="kick-account__status" data-kick-status aria-live="polite">Checking your Kick account…</p>
+      <p class="kick-account__error" data-kick-error hidden></p>
+      <div class="kick-account__who" data-kick-who hidden>
+        <img data-kick-avatar alt="" width="48" height="48" hidden>
+        <p class="kick-account__name" data-kick-name></p>
+      </div>
+      <div class="kick-account__actions">
+        <a class="kick-account__connect" href="/api/kick/connect" data-kick-connect hidden>Connect Kick</a>
+        <button type="button" class="kick-account__disconnect" data-kick-disconnect hidden>Disconnect</button>
+      </div>
+    </div>
+    <button type="button" class="kick-account__disconnect" data-account-signout hidden>Sign out</button>
+  </div>
+</section>

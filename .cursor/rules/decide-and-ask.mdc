@@ -1,0 +1,30 @@
+---
+description: Infer the obvious, and ask before a disputed choice that changes the result
+alwaysApply: true
+---
+
+# Decide the obvious, ask the disputed
+
+Do the work. Fill in what the request leaves open when the codebase, these rules, or ordinary practice already pick a winner. Then, before you build a choice the user would argue about, stop and ask.
+
+## Decide yourself
+
+- File placement, names, which existing component to reuse, spacing, and copy that follows the page around it.
+- Anything already fixed: English UI, partner keys, Worker preview on port 8080, no admin restyle. Palette is not fixed.
+- A smaller reading of the request when one reading is clearly what they asked for.
+
+State the assumption in a sentence and continue. Do not open with a questionnaire.
+
+## Ask first
+
+Ask when two reasonable readings both fit, and they would look or behave differently for a visitor or an admin: layout, what a control does, what gets deleted or published, a new section, a new data field. Also ask before anything destructive or hard to undo.
+
+Use the AskQuestion tool. One question, two or three concrete options. Put the option you would ship first and mark it recommended. Wait for the answer before writing that part.
+
+Skip the question when a rule or the current screen already settles it. Do not ask about pixels, class names, or which file to edit.
+
+```text
+Request: "Add a way to hide a board."
+Decide: hide is a flag on the existing board, same admin page, English label.
+Ask: hidden boards vanish from the public list, or they stay visible and marked closed?
+```

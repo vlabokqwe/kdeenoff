@@ -1,4 +1,4 @@
-<section class="steps" data-steps aria-labelledby="steps-title">
+<section class="steps" aria-labelledby="steps-title">
   <div class="steps__bg" aria-hidden="true"></div>
   <div class="container">
     <header class="section-head">
@@ -6,37 +6,204 @@
       <p class="lead">Three simple steps — then just catch the draw live on stream.</p>
     </header>
 
-    <div class="steps__track" data-steps-track>
-      <svg class="steps__svg" data-steps-svg aria-hidden="true" focusable="false">
-        <path class="steps__path-guide" data-steps-shadow d=""></path>
-        <path class="steps__path" data-steps-path d=""></path>
-      </svg>
-      <ol class="steps__list">
-        <li class="step" data-step>
-          <div class="step__art" data-step-anchor>
-            <img src="/img/icons/nav-home.webp" alt="" width="72" height="72" loading="lazy">
+    <ol class="steps__list">
+      <li class="step">
+        <div class="step__media">
+          <div class="join-reel is-paused" data-join-reel inert aria-hidden="true">
+            {% for beat in ["press", "email", "code"] %}
+            <div class="join-clip join-clip--{{ beat }}{% if loop.first %} is-on{% endif %}">
+              <div class="join-stage">
+                <div class="join-page">
+                  <span class="join-ghost join-ghost--wide"></span>
+                  <span class="join-ghost"></span>
+                  <span class="join-ghost join-ghost--short"></span>
+                </div>
+                <div class="join-dim"></div>
+                <div class="join-bar">
+                  <span class="join-brand">
+                    <span class="join-burger"></span>
+                    <img src="/img/brand/mark-muzzle.png" alt="" width="37" height="26">
+                    <span class="join-word">KDEENOFF</span>
+                  </span>
+                  <span class="join-auth">
+                    <span class="join-login">Login</span>
+                    <span class="join-register">Register<span class="join-ripple"></span></span>
+                  </span>
+                </div>
+                <div class="join-sheet">
+                  <p class="join-title">Create your account</p>
+                  <p class="join-sub">
+                    <span class="join-sub__a">We'll email you a code.</span>
+                    <span class="join-sub__b">Enter the code from your email.</span>
+                  </p>
+                  <div class="join-slot">
+                    <div class="join-field">
+                      <span class="join-placeholder">Email address</span>
+                      <span class="join-value">
+                        {% for letter in [
+                          { ch: "a", w: ".62em" },
+                          { ch: "m", w: ".92em" },
+                          { ch: "y", w: ".60em" },
+                          { ch: "@", w: "1em" },
+                          { ch: "m", w: ".92em" },
+                          { ch: "a", w: ".62em" },
+                          { ch: "i", w: ".32em" },
+                          { ch: "l", w: ".34em" },
+                          { ch: ".", w: ".34em" },
+                          { ch: "c", w: ".58em" },
+                          { ch: "o", w: ".64em" },
+                          { ch: "m", w: ".92em" }
+                        ] %}
+                        <span class="join-char" style="--w: {{ letter.w }}">{{ letter.ch }}</span>
+                        {% endfor %}
+                        <span class="join-caret"></span>
+                      </span>
+                    </div>
+                    <div class="join-boxes">
+                      {% for digit in ["5", "8", "2", "9", "1", "6"] %}
+                      <span class="join-box"><span class="join-digit">{{ digit }}</span></span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <span class="join-send">
+                    <span class="join-send__a">Send code</span>
+                    <span class="join-send__b">Confirm</span>
+                  </span>
+                </div>
+                <aside class="join-mail">
+                  <span class="join-mail__top">
+                    <span class="join-mail__avatar">K</span>
+                    <span class="join-mail__who">
+                      <span class="join-mail__from">KDeenOff</span>
+                      <span class="join-mail__subject">Your code</span>
+                    </span>
+                  </span>
+                  <span class="join-mail__code">582916</span>
+                </aside>
+                <span class="join-cursor">
+                  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                    <path fill="#fff" stroke="#121820" stroke-width="1.4" stroke-linejoin="round" d="M5.2 2.4v15.6l3.9-3.9 3.2 6.3 2.5-1.3-3.2-6.2h6.2L5.2 2.4z"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+            {% endfor %}
           </div>
-          <span class="step__num">Step 1</span>
+        </div>
+        <div class="step__tear" aria-hidden="true"></div>
+        <div class="step__copy">
+          <span class="step__index" aria-hidden="true">01</span>
           <h3 class="step__title">Sign up on KDeenOff</h3>
           <p class="step__text">Create your account on <a href="{{ site.registerUrl }}" target="_blank" rel="noopener noreferrer">kdeenoff.gg</a> — it's your ticket to every raffle.</p>
-        </li>
-        <li class="step" data-step>
-          <div class="step__art" data-step-anchor>
-            <img src="/img/icons/nav-copy.webp" alt="" width="72" height="72" loading="lazy">
+        </div>
+      </li>
+      <li class="step">
+        <div class="step__media">
+          <div class="join-reel join-reel--promo is-paused" data-join-reel inert aria-hidden="true">
+            {% for beat in ["aim", "type", "apply"] %}
+            <div class="join-clip join-clip--{{ beat }}{% if loop.first %} is-on{% endif %}">
+              <div class="join-stage">
+                <div class="join-page">
+                  <span class="join-ghost join-ghost--wide"></span>
+                  <span class="join-ghost"></span>
+                  <span class="join-ghost join-ghost--short"></span>
+                </div>
+                <div class="promo-card">
+                  <p class="promo-title">Promo code</p>
+                  <p class="promo-sub">Add it before you play.</p>
+                  <div class="promo-field">
+                    <span class="promo-placeholder">Enter code</span>
+                    <span class="promo-value">
+                      {% for glyph in [
+                        { ch: "K", w: ".78em" },
+                        { ch: "D", w: ".80em" },
+                        { ch: "E", w: ".68em" },
+                        { ch: "E", w: ".68em" },
+                        { ch: "N", w: ".82em" },
+                        { ch: "O", w: ".84em" },
+                        { ch: "F", w: ".68em" },
+                        { ch: "F", w: ".68em" }
+                      ] %}
+                      <span class="join-char" style="--w: {{ glyph.w }}">{{ glyph.ch }}</span>
+                      {% endfor %}
+                      <span class="join-caret"></span>
+                    </span>
+                  </div>
+                  <span class="promo-apply">
+                    <span class="promo-apply__a">Apply</span>
+                    <span class="promo-apply__b">Applied</span>
+                    <span class="promo-ripple"></span>
+                  </span>
+                </div>
+                <span class="join-cursor">
+                  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                    <path fill="#fff" stroke="#121820" stroke-width="1.4" stroke-linejoin="round" d="M5.2 2.4v15.6l3.9-3.9 3.2 6.3 2.5-1.3-3.2-6.2h6.2L5.2 2.4z"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+            {% endfor %}
           </div>
-          <span class="step__num">Step 2</span>
+        </div>
+        <div class="step__tear" aria-hidden="true"></div>
+        <div class="step__copy">
+          <span class="step__index" aria-hidden="true">02</span>
           <h3 class="step__title">Use code KDEENOFF</h3>
           <p class="step__text">Enter <button type="button" class="inline-code" data-copy="{{ site.promoCode }}">{{ site.promoCode }}<span class="sr-only" data-copy-status></span></button> at our partner casino and play under it.</p>
-        </li>
-        <li class="step" data-step>
-          <div class="step__art" data-step-anchor>
-            <img src="/img/icons/nav-kick.webp" alt="" width="72" height="72" loading="lazy">
+        </div>
+      </li>
+      <li class="step">
+        <div class="step__media">
+          <div class="join-reel join-reel--live is-paused" data-join-reel inert aria-hidden="true">
+            {% for beat in ["live", "pin", "joined"] %}
+            <div class="join-clip join-clip--{{ beat }}{% if loop.first %} is-on{% endif %}">
+              <div class="join-stage">
+                <div class="watch-zoom">
+                  <div class="watch-frame">
+                    <div class="watch-player">
+                      <span class="watch-glow"></span>
+                      <span class="watch-live">Live</span>
+                      <span class="watch-bar"><i></i></span>
+                    </div>
+                    <div class="watch-chat">
+                      <div class="watch-pin">
+                        <span class="watch-pin__tag">Pinned</span>
+                        <span class="watch-pin__text">Raffle draw is open</span>
+                        <span class="watch-pin__link">Enter the draw</span>
+                      </div>
+                      <p class="watch-line"><b>ace****</b> tuned in</p>
+                      <p class="watch-line"><b>rio****</b> ready</p>
+                      <p class="watch-line"><b>nox****</b> watching</p>
+                    </div>
+                  </div>
+                  <span class="join-cursor">
+                    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                      <path fill="#fff" stroke="#121820" stroke-width="1.4" stroke-linejoin="round" d="M5.2 2.4v15.6l3.9-3.9 3.2 6.3 2.5-1.3-3.2-6.2h6.2L5.2 2.4z"/>
+                    </svg>
+                  </span>
+                </div>
+                <div class="watch-done">
+                  <span class="watch-check" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="46" height="46">
+                      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M7.2 12.4 10.4 15.6 16.8 8.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <p class="watch-done__title">You're in</p>
+                  <p class="watch-done__sub">The draw has your entry.</p>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
           </div>
-          <span class="step__num">Step 3</span>
+        </div>
+        <div class="step__tear" aria-hidden="true"></div>
+        <div class="step__copy">
+          <span class="step__index" aria-hidden="true">03</span>
           <h3 class="step__title">Watch the raffles on stream</h3>
           <p class="step__text">Winners are drawn live on <a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer">Kick</a> — tune in so you don't miss yours.</p>
-        </li>
-      </ol>
-    </div>
+        </div>
+      </li>
+    </ol>
   </div>
 </section>

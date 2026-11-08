@@ -5,8 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% if title %}{{ title }} · {% endif %}{{ site.title }}</title>
   <meta name="description" content="{{ site.tagline }}">
-  <meta name="theme-color" content="#08130d">
-  <link rel="icon" href="/img/brand/mark.webp" type="image/webp">
+  <meta name="theme-color" content="#0c1218">
+  <script>
+    (function () {
+      var theme = "dark";
+      try {
+        var stored = localStorage.getItem("kdeenoff-theme-v2");
+        if (stored === "dark" || stored === "light") theme = stored;
+      } catch (e) {}
+      document.documentElement.setAttribute("data-theme", theme);
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#0c1218" : "#f7f7f7");
+    })();
+  </script>
+  <link rel="icon" href="/img/brand/mark-cards.webp" type="image/webp">
   <link rel="preload" href="/fonts/rubik-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/main.css">
@@ -27,6 +39,26 @@
   {% endif %}
   <a class="skip-link" href="#main">Skip to content</a>
 
+  <header class="topbar">
+    <div class="topbar__start">
+      <button type="button" class="topbar__menu" data-drawer-toggle aria-controls="drawer" aria-expanded="false" aria-label="Open menu">
+        <img src="/img/icons/nav-menu.webp" alt="" width="16" height="16">
+      </button>
+      <a class="topbar__mark" href="/" aria-label="KDeenOff home">
+        <img src="/img/brand/mark-muzzle.png" alt="" width="37" height="26">
+        <span class="topbar__word">KDEENOFF</span>
+      </a>
+    </div>
+    <div class="topbar__auth">
+      <a class="topbar__kick" href="/account/" data-kick-account aria-label="Account">
+        <img src="/img/brand/kick-logo-k.svg" alt="" width="14" height="14">
+        <span data-kick-account-label>Kick</span>
+      </a>
+      <a class="topbar__login" href="{{ site.loginUrl or site.registerUrl }}" target="_blank" rel="noopener noreferrer">Login</a>
+      <a class="topbar__register" href="{{ site.registerUrl }}" target="_blank" rel="noopener noreferrer">Register</a>
+    </div>
+  </header>
+
   {% include "partials/drawer.njk" %}
 
   <main id="main" class="main">
@@ -38,9 +70,6 @@
   {% if site.kickChannel %}
   <aside class="kick-chat" id="kick-chat" data-kick-channel="{{ site.kickChannel }}" aria-label="Kick chat">
     <header class="kick-chat__bar">
-      <span class="kick-chat__brand">
-        <img src="/img/brand/kick-logo.svg" alt="KICK" width="72" height="24">
-      </span>
       <button type="button" class="kick-chat__hide" data-kick-chat-toggle aria-expanded="true" aria-controls="kick-chat-log" aria-label="Hide chat">
         <span class="kick-chat__chev" aria-hidden="true"></span>
       </button>
@@ -49,7 +78,7 @@
       <p class="kick-chat__status">Loading chat…</p>
     </div>
     <button type="button" class="kick-chat__show" data-kick-chat-toggle aria-expanded="false" aria-controls="kick-chat-log" aria-label="Show chat">
-      <img src="/img/brand/kick-logo.svg" alt="" width="72" height="24">
+      <img src="/img/brand/kick-logo-k.svg" alt="" width="24" height="24">
     </button>
   </aside>
   {% endif %}

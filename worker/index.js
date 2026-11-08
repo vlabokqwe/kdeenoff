@@ -12,6 +12,17 @@ import {
   handleListHistory,
 } from "./routes/leaderboards.js";
 import { handlePublicRaffles } from "./routes/raffles.js";
+import {
+  handleKickCallback,
+  handleKickConnect,
+  handleKickLogout,
+  handleKickMe,
+} from "./routes/kick.js";
+import {
+  handleAccountEmail,
+  handleAccountEmailConfirm,
+  handleAccountLogout,
+} from "./routes/account.js";
 import { handleAdmin } from "./routes/admin.js";
 import { jsonResponse, notFound } from "./lib/response.js";
 import { ensureCsrfToken } from "./lib/csrf.js";
@@ -39,12 +50,35 @@ export default {
       return handlePublicRaffles(env);
     }
 
-    // 3. API: Admin
+    // 3. API: Kick account link
+    if (pathname === "/api/kick/me" || pathname === "/api/kick/me/") {
+      return handleKickMe(request, env);
+    }
+    if (pathname === "/api/kick/connect" || pathname === "/api/kick/connect/") {
+      return handleKickConnect(request, env);
+    }
+    if (pathname === "/api/kick/callback" || pathname === "/api/kick/callback/") {
+      return handleKickCallback(request, env);
+    }
+    if (pathname === "/api/kick/logout" || pathname === "/api/kick/logout/") {
+      return handleKickLogout(request, env);
+    }
+    if (pathname === "/api/account/email" || pathname === "/api/account/email/") {
+      return handleAccountEmail(request, env);
+    }
+    if (pathname === "/api/account/email/confirm" || pathname === "/api/account/email/confirm/") {
+      return handleAccountEmailConfirm(request, env);
+    }
+    if (pathname === "/api/account/logout" || pathname === "/api/account/logout/") {
+      return handleAccountLogout(request, env);
+    }
+
+    // 4. API: Admin
     if (pathname.startsWith("/api/admin")) {
       return handleAdmin(request, env, url);
     }
 
-    // 4. Static routing rewrites & CSRF token for web pages
+    // 5. Static routing rewrites & CSRF token for web pages
     const { token: csrfToken, cookieHeader: csrfCookie } = ensureCsrfToken(request);
 
     // Dynamic public board rewrite: /leaderboards/<slug>/ -> /leaderboards/_board/index.html

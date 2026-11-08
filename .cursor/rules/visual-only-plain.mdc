@@ -1,11 +1,12 @@
 ---
-description: Public site visual system (v2 "emerald night"). Admin panel visuals stay untouched. Project language is English.
+description: Public site constraints. No house palette. Admin panel visuals stay untouched. Project language is English.
 alwaysApply: true
 ---
 
 # Visual system
 
-- Dark emerald ground, gold as the only accent. No red-yellow-green flag stripes.
+- No house palette. Do not invent a dark emerald ground, gold accents, or an "emerald night" theme. Color comes from the brief or from the page already on screen.
+- No red-yellow-green flag stripes.
 - Decorative art is generated, never emoji/sticker glyphs. Raw renders go through
   `scripts/process-art-v2.py` (Real-ESRGAN x4 upscale -> magenta chroma key -> WebP in `public/img/**`).
 - Styles: `public/css/main.css`; font Rubik is self-hosted (`public/css/fonts.css`, `public/fonts/`).

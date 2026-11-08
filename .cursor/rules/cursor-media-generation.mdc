@@ -1,0 +1,34 @@
+---
+description: >-
+  Pictures and clips use Cursor's built-in GenerateImage and GenerateVideo.
+  Generate several variants without waiting to be told which tool to use.
+alwaysApply: true
+---
+
+# Built-in image and video generation
+
+A request for a picture, mockup, icon, illustration, texture, character, poster, scene, or clip is already a request to generate it. Do not wait for the words "use Cursor's built-in tools". Do not ask permission. Do not answer with a prose description of the image.
+
+## Which tool
+
+- Still image: `GenerateImage` in the `cursor` namespace.
+- Motion, a clip, or "animate this": `GenerateVideo` in the `cursor` namespace.
+- Read the schema with `GetDynamicTools` (`namespace` `cursor`, that tool name) before the first call in the chat.
+- Call it with `CallDynamicTool`. No `mcpDetails` (these are first-party tools).
+- Do not use nano-banana, proxy image APIs, or any other image MCP unless the user names that tool.
+
+## How many
+
+Spend generations. One cautious image is a miss.
+
+- Look not pinned down: 3 `GenerateImage` calls in the same turn. Same subject, different composition or lighting.
+- A set (icons, states, frames, cards): one image per item, in parallel. Do not collapse the set into a single sheet.
+- "Another", "more", or a weak result: generate again in that turn. Do not ask whether to spend another call.
+- Several shots or beats: one `GenerateVideo` call per shot. Do not replace a clip with a still or a paragraph because video is slow.
+
+## Limits that still hold
+
+- No `GenerateImage` for charts, plots, or tables.
+- No `GenerateVideo` for UI demos, kinetic type, or exact on-screen text. Those stay images or code.
+- This rule picks the tool. It does not reopen a look the visual rules already cancelled.
+- Decorative art that is in scope for the public site still goes through `scripts/process-art-v2.py` after the raw render.

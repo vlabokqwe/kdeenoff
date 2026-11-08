@@ -43,6 +43,30 @@ const moneyShortFmt = new Intl.NumberFormat("en-US", {
 export const money = (cents) => moneyFmt.format((Number(cents) || 0) / 100);
 export const moneyShort = (cents) => moneyShortFmt.format((Number(cents) || 0) / 100);
 
+/** 10000 → "10K", 1500 → "1.5K", 1000000 → "1M". */
+export function moneyK(cents) {
+  const value = (Number(cents) || 0) / 100;
+  const sign = value < 0 ? "-" : "";
+  const n = Math.abs(value);
+  const trim = (v) => (v >= 100 ? v.toFixed(0) : v.toFixed(1)).replace(/\.0$/, "");
+  if (n >= 1_000_000) return `${sign}${trim(n / 1_000_000)}M`;
+  if (n >= 1_000) return `${sign}${trim(n / 1_000)}K`;
+  return `${sign}${Math.round(n)}`;
+}
+
+/** WEEKLY / MONTHLY / DAILY from the title, otherwise from the race length. */
+export function boardCadence(board) {
+  const text = `${board?.title || ""} ${board?.subtitle || ""} ${board?.slug || ""}`.toLowerCase();
+  if (/\bweek(ly)?\b/.test(text)) return "WEEKLY";
+  if (/\bmonth(ly)?\b/.test(text)) return "MONTHLY";
+  if (/\bdaily\b|\bday(s)?\b/.test(text)) return "DAILY";
+  const days = (Number(board?.ends_at) - Number(board?.starts_at)) / 86400000;
+  if (days > 0 && days <= 2) return "DAILY";
+  if (days > 2 && days <= 10) return "WEEKLY";
+  if (days > 10 && days <= 45) return "MONTHLY";
+  return "RACE";
+}
+
 const pad = (n) => String(n).padStart(2, "0");
 
 /** "5д 04:12:33" / "04:12:33" */

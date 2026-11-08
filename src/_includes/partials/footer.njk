@@ -1,14 +1,15 @@
 <footer class="footer" role="contentinfo">
   <div class="container footer__inner">
     <div class="footer__brand">
-      <a href="/" class="footer__logo" aria-label="KDeenOff home">
-        <img src="/img/brand/mark.webp" alt="" width="44" height="44" loading="lazy">
-        <img src="/img/brand/logo.webp" alt="KDeenOff" width="160" height="44" loading="lazy">
-      </a>
-      <p>{{ site.tagline }}</p>
+      <div class="footer__lead">
+        <div class="footer__art" aria-hidden="true">
+          <img class="footer__deco" src="/img/footer/mark.webp" alt="" width="742" height="826" loading="lazy">
+        </div>
+        <p>{{ site.tagline }}</p>
+      </div>
       <div class="footer__social">
-        {% if site.kickUrl %}<a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Kick"><img src="/img/icons/nav-kick.webp" alt="" width="44" height="44" loading="lazy"></a>{% endif %}
-        {% if site.telegramUrl %}<a href="{{ site.telegramUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><img src="/img/icons/nav-telegram.webp" alt="" width="44" height="44" loading="lazy"></a>{% endif %}
+        {% if site.kickUrl %}<a href="{{ site.kickUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Kick"><img class="footer__kick" src="/img/brand/kick-logo-k.svg" alt="" width="26" height="26"></a>{% endif %}
+        {% if site.telegramUrl %}<a href="{{ site.telegramUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><img src="/img/icons/nav-telegram.webp" alt="" width="40" height="40" loading="lazy"></a>{% endif %}
       </div>
     </div>
 
@@ -17,7 +18,7 @@
       <a href="/">Home</a>
       <a href="/raffles/">Raffles</a>
       <a href="/leaderboards/">Leaderboards</a>
-      <a href="/#bonus">Bonuses</a>
+      <a href="/bonuses/">Bonuses</a>
     </nav>
 
     <nav class="footer__col" aria-label="Community">
