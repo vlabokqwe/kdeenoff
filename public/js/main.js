@@ -1717,8 +1717,8 @@ function initAuthDialog() {
 
   dialog.querySelector("[data-auth-close]")?.addEventListener("click", () => dialog.close());
 
-  dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) dialog.close();
+  dialog.addEventListener("cancel", (event) => {
+    event.preventDefault();
   });
 
   dialog.addEventListener("close", () => {
