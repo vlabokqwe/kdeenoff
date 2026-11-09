@@ -13,10 +13,10 @@
   "tagline": "Play with code KDEENOFF — join stream raffles, climb the leaderboard and claim exclusive bonuses.",
   "partners": [
     {
-      "id": "stake",
-      "name": "Stake",
+      "id": "500",
+      "name": "500 Casino",
       "theme": "stake",
-      "logo": "/img/partners/stake-wordmark.webp",
+      "logo": "/img/partners/500-wordmark.webp",
       "code": "KDEENOFF",
       "url": "https://stake.com/?c=KDEENOFF",
       "scene": "/img/partners/stake-slot-bg.webp",
@@ -49,7 +49,7 @@
         "Promo code KDEENOFF entered at sign-up",
         "First deposit of $20+ within 7 days"
       ],
-      "cta": "Claim on Stake"
+      "cta": "Claim on 500 Casino"
     }
   ],
   "social": {

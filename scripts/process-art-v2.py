@@ -109,6 +109,7 @@ ASSETS = {
     "v2-partner-stake-field": ("partners/stake-field.webp", "bg", 1800, 84),
     "v2-stake-slot-bg": ("partners/stake-slot-bg.webp", "bg", 1800, 84),
     "v2-stake-wordmark": ("partners/stake-wordmark.webp", "cut", 1400, 92),
+    "v2-500-wordmark": ("partners/500-wordmark.webp", "cut", 1400, 92),
     "v2-stake-btn-bg": ("partners/stake-btn-bg.webp", "bg", 1600, 86),
     "v2-stake-raccoon": ("partners/stake-raccoon.webp", "cut", 1200, 90),
     "v2-partner-pillar": ("partners/pillar.webp", "cut", 1100, 88),

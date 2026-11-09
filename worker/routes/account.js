@@ -123,7 +123,8 @@ export async function handleAccountEmail(request, env) {
       }),
     });
     if (!sent.ok) {
-      console.error("resend send failed", sent.status);
+      const detail = await sent.text();
+      console.error("resend send failed", sent.status, detail.slice(0, 500));
       await env.DB.prepare(`DELETE FROM email_codes WHERE person_id = ? AND created_at = ?`)
         .bind(person.id, now)
         .run();

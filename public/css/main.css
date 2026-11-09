@@ -7693,7 +7693,7 @@ html[data-theme="dark"] .join-mail__avatar {
 
 .site--home .partner-card[data-partner="stake"] .partner-card__name img {
   display: block;
-  width: min(100%, 420px);
+  width: min(100%, 340px);
   height: auto;
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .42));
 }
@@ -7758,14 +7758,14 @@ html[data-theme="dark"] .join-mail__avatar {
 
 .site--home .partner-card[data-partner="stake"] .partner-card__go {
   min-height: 78px;
-  padding: 0 18px;
+  padding: 0 16px;
   border: 0;
   background-color: #f2c14d;
   background-image: none;
   color: #3a2414;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 900;
-  letter-spacing: .08em;
+  letter-spacing: .04em;
   box-shadow: 0 10px 0 #b8860b;
 }
 
@@ -7851,7 +7851,11 @@ html[data-theme="dark"] .join-mail__avatar {
 
   .site--home .partner-card[data-partner="stake"] .partner-card__go {
     min-height: 68px;
-    font-size: 18px;
+    padding: 0 12px;
+    font-size: 14px;
+    letter-spacing: .02em;
+    white-space: normal;
+    text-align: center;
   }
 }
 
