@@ -5,13 +5,13 @@
 
 const SITE = "https://kdeenoff.bet/account/";
 
-function digits(code) {
+function codeDigits(code) {
   const clean = String(code || "").replace(/\D/g, "").slice(0, 6);
-  return clean.padStart(6, "0").split("");
+  return clean.padStart(6, "0");
 }
 
 export function codeEmailText(code) {
-  const value = digits(code).join("");
+  const value = codeDigits(code);
   return [
     "Your KDeenOff code",
     "",
@@ -25,12 +25,7 @@ export function codeEmailText(code) {
 }
 
 export function codeEmailHtml(code) {
-  const cells = digits(code)
-    .map(
-      (digit) =>
-        `<td width="40" height="52" align="center" valign="middle" bgcolor="#0c1218" style="width:40px;height:52px;background:#0c1218;border-radius:10px;font-family:Rubik,Segoe UI,Arial,sans-serif;font-size:26px;line-height:52px;font-weight:800;color:#e7eef6;">${digit}</td>`,
-    )
-    .join('<td width="6" style="width:6px;font-size:0;line-height:0;">&nbsp;</td>');
+  const value = codeDigits(code);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -53,7 +48,9 @@ export function codeEmailHtml(code) {
             <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.05;font-weight:800;letter-spacing:-.02em;color:#e7eef6;">Your code</h1>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.5;color:#93a4b8;">Enter it on your account page. It expires in 10 minutes.</p>
             <table role="presentation" cellpadding="0" cellspacing="0" align="center">
-              <tr>${cells}</tr>
+              <tr>
+                <td align="center" bgcolor="#0c1218" style="background:#0c1218;border-radius:10px;padding:14px 14px 14px 22px;font-family:Rubik,Segoe UI,Arial,sans-serif;font-size:26px;line-height:1;font-weight:800;letter-spacing:.32em;color:#e7eef6;-webkit-user-select:all;user-select:all;">${value}</td>
+              </tr>
             </table>
             <p style="margin:28px 0 0;font-size:14px;line-height:1.5;"><a href="${SITE}" style="color:#9d94ff;text-decoration:none;">Open your account</a></p>
             <p style="margin:18px 0 0;font-size:13px;line-height:1.5;color:#7d8798;">If you did not ask for this code, you can ignore this email.</p>

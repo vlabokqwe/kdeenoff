@@ -970,19 +970,13 @@ body:not(.drawer-open) .drawer__foot {
   gap: 12px;
 }
 
-body:not(.drawer-open) .drawer__account,
 body:not(.drawer-open) .drawer__foot {
   display: none;
 }
 
 body:not(.drawer-open) .drawer__nav,
-body:not(.drawer-open) .drawer__boards-list,
-body:not(.drawer-open) .theme-switch {
+body:not(.drawer-open) .drawer__boards-list {
   gap: 0;
-}
-
-body:not(.drawer-open) .theme-switch {
-  grid-template-columns: 1fr;
 }
 
 body:not(.drawer-open) .drawer-link {
@@ -1000,7 +994,6 @@ body:not(.drawer-open) .drawer-link {
 body:not(.drawer-open) .drawer-link span,
 body:not(.drawer-open) .drawer-account__text,
 body:not(.drawer-open) .drawer-account__actions,
-body:not(.drawer-open) .theme-switch__btn span,
 body:not(.drawer-open) .drawer .code-pill__value {
   position: absolute;
   width: 1px;
@@ -1153,6 +1146,11 @@ body:not(.drawer-open) .side-board__timer time {
   transition: opacity .2s;
 }
 
+/* Collapsed rail sits on the dark sheet. Open cards stay cream, so the icon stays ink there. */
+html[data-theme="dark"] body:not(.drawer-open) .side-board__timer img {
+  filter: var(--icon-filter);
+}
+
 .drawer-link:hover img,
 .drawer-link.is-active img,
 .drawer .code-pill:hover img,
@@ -1174,7 +1172,6 @@ body:not(.drawer-open) .side-board__timer time {
 body:not(.drawer-open) .drawer-link:hover,
 body:not(.drawer-open) .drawer-link.is-active,
 body:not(.drawer-open) .drawer .code-pill--block:hover,
-body:not(.drawer-open) .theme-switch__btn[aria-pressed="true"],
 body:not(.drawer-open) .side-board:hover,
 body:not(.drawer-open) .side-board.is-active {
   box-shadow: none;
@@ -1190,8 +1187,7 @@ body:not(.drawer-open) .side-board.is-active {
   background-color: transparent;
 }
 
-body:not(.drawer-open) .drawer .code-pill--block:hover,
-body:not(.drawer-open) .theme-switch__btn[aria-pressed="true"] {
+body:not(.drawer-open) .drawer .code-pill--block:hover {
   background: var(--wash-strong);
 }
 
@@ -1396,18 +1392,55 @@ body:not(.drawer-open) .theme-switch__btn[aria-pressed="true"] {
   min-width: 0;
 }
 
+.drawer-account__avatar,
+.drawer-account__mark {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.drawer-account__avatar {
+  object-fit: cover;
+  background: var(--wash);
+}
+
+.drawer-account__mark {
+  display: grid;
+  place-items: center;
+  background: var(--ink-blue);
+  color: var(--on-ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .drawer-account__name {
+  overflow: hidden;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
   color: var(--ink-blue);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .drawer-account__sub {
+  overflow: hidden;
   font-size: 12px;
   font-weight: 500;
   line-height: 1.2;
   color: var(--ink-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer__account[hidden],
+.topbar__login[hidden],
+.topbar__register[hidden],
+.drawer-account__avatar[hidden],
+.drawer-account__mark[hidden] {
+  display: none;
 }
 
 .drawer-account__actions {
@@ -1449,41 +1482,6 @@ body:not(.drawer-open) .theme-switch__btn[aria-pressed="true"] {
   filter: brightness(1.12);
 }
 
-.theme-switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-}
-
-.theme-switch__btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 36px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--ink-soft);
-}
-
-.theme-switch__btn svg {
-  width: 16px;
-  height: 16px;
-  flex: none;
-  fill: currentColor;
-}
-
-.theme-switch__btn:hover {
-  background: var(--wash);
-  color: var(--ink-blue);
-}
-
-.theme-switch__btn[aria-pressed="true"] {
-  background: var(--ink-blue);
-  color: var(--on-ink);
-}
-
 .drawer-refer.is-copied {
   background: var(--wash-strong);
 }
@@ -1494,19 +1492,6 @@ body:not(.drawer-open) .drawer-account {
   height: 40px;
   min-height: 0;
   padding: 0;
-}
-
-body:not(.drawer-open) .theme-switch__btn {
-  width: 100%;
-  height: 40px;
-  min-height: 0;
-  border-radius: 0;
-  color: var(--ink-soft);
-}
-
-body:not(.drawer-open) .theme-switch__btn[aria-pressed="true"] {
-  background: transparent;
-  color: var(--ink-blue);
 }
 
 /* Drawer leaderboard card — site style + partner style */

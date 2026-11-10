@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ site.lang | default('en') }}">
+<html lang="{{ site.lang | default('en') }}" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,16 +7,10 @@
   <meta name="description" content="{{ site.tagline }}">
   <meta name="theme-color" content="#0c1218">
   <script>
-    (function () {
-      var theme = "dark";
-      try {
-        var stored = localStorage.getItem("kdeenoff-theme-v2");
-        if (stored === "dark" || stored === "light") theme = stored;
-      } catch (e) {}
-      document.documentElement.setAttribute("data-theme", theme);
-      var meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", theme === "dark" ? "#0c1218" : "#f7f7f7");
-    })();
+    try {
+      localStorage.removeItem("kdeenoff-theme");
+      localStorage.removeItem("kdeenoff-theme-v2");
+    } catch (e) {}
   </script>
   <link rel="icon" href="/img/brand/mark-cards.webp" type="image/webp">
   <link rel="preload" href="/fonts/rubik-latin.woff2" as="font" type="font/woff2" crossorigin>

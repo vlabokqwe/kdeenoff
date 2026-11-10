@@ -1036,32 +1036,6 @@ function initClaimFlow() {
 
 /* ───────────── Boot ───────────── */
 
-/* Dark is the default. The key changed from "kdeenoff-theme" because the old
-   code saved "light" on every visit, so stored values were not real choices. */
-const themeKey = "kdeenoff-theme-v2";
-
-function applyTheme(theme, save) {
-  const next = theme === "light" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", next);
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", next === "dark" ? "#0c1218" : "#f7f7f7");
-  document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
-    btn.setAttribute("aria-pressed", String(btn.getAttribute("data-theme-choice") === next));
-  });
-  if (save) {
-    try { localStorage.setItem(themeKey, next); } catch { /* private mode */ }
-  }
-  document.dispatchEvent(new CustomEvent("themechange", { detail: next }));
-}
-
-function initTheme() {
-  const current = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
-  applyTheme(current, false);
-  document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
-    btn.addEventListener("click", () => applyTheme(btn.getAttribute("data-theme-choice"), true));
-  });
-}
-
 function syncFooterLogo() {
   const art = document.querySelector(".footer__art");
   const text = document.querySelector(".footer__lead p");
@@ -1364,7 +1338,6 @@ function initHeroBlocks() {
   const footer = page.querySelector(".footer");
   if (footer) observer.observe(footer);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
-  document.addEventListener("themechange", () => requestAnimationFrame(paint));
 }
 
 /* ───────────── Kick account link ───────────── */
@@ -1455,6 +1428,55 @@ function initKickAccount() {
     if (!emailErrorEl) return;
     emailErrorEl.hidden = false;
     emailErrorEl.textContent = emailErrors[key] || "Something went wrong. Try again.";
+  };
+
+  const loginBtn = document.querySelector(".topbar__login");
+  const registerBtn = document.querySelector(".topbar__register");
+  const drawerAccount = document.querySelector("[data-drawer-account]");
+  const drawerProfile = document.querySelector("[data-drawer-profile]");
+  const drawerName = document.querySelector("[data-drawer-name]");
+  const drawerSub = document.querySelector("[data-drawer-sub]");
+  const drawerAvatar = document.querySelector("[data-drawer-avatar]");
+  const drawerMark = document.querySelector("[data-drawer-mark]");
+
+  const signedIn = (account) => Boolean(
+    account && ((account.emailVerified && account.email) || account.linked),
+  );
+
+  const paintSession = (account) => {
+    const on = signedIn(account);
+    if (loginBtn) loginBtn.hidden = on;
+    if (registerBtn) registerBtn.hidden = on;
+    if (drawerAccount) drawerAccount.hidden = !on;
+    if (!on) return;
+    const kickName = account.linked && account.name ? account.name : "";
+    const email = account.emailVerified && account.email ? account.email : "";
+    const name = kickName || email || "Account";
+    const sub = kickName && email ? email : kickName ? "Kick" : "Signed in";
+    if (drawerName) drawerName.textContent = name;
+    if (drawerSub) drawerSub.textContent = sub;
+    if (drawerProfile) {
+      drawerProfile.setAttribute("aria-label", email && email !== name ? `${name}, ${email}` : name);
+    }
+    const avatar = account.linked ? safeAvatar(account.avatarUrl) : "";
+    if (drawerAvatar) {
+      drawerAvatar.onerror = () => {
+        drawerAvatar.hidden = true;
+        drawerAvatar.removeAttribute("src");
+        if (drawerMark) drawerMark.hidden = false;
+      };
+      if (avatar) {
+        drawerAvatar.hidden = false;
+        drawerAvatar.src = avatar;
+      } else {
+        drawerAvatar.hidden = true;
+        drawerAvatar.removeAttribute("src");
+      }
+    }
+    if (drawerMark) {
+      drawerMark.hidden = Boolean(avatar);
+      drawerMark.textContent = (name.trim()[0] || "A").toUpperCase();
+    }
   };
 
   const showLoggedOut = () => {
@@ -1557,8 +1579,11 @@ function initKickAccount() {
         const body = await postAccount("/api/account/email/confirm", {
           code: codeInput ? codeInput.value : "",
         });
-        showEmail({ emailVerified: true, email: body.email, linked: disconnectEl && !disconnectEl.hidden });
-        if (codeForm) codeForm.hidden = true;
+        applyAccount({
+          ...(currentAccount || {}),
+          emailVerified: true,
+          email: body.email,
+        });
       } catch (err) {
         showEmailError(err && err.message);
       } finally {
@@ -1585,6 +1610,7 @@ function initKickAccount() {
     if (account && account.linked) showLinked(account);
     else showLoggedOut();
     showEmail(account);
+    paintSession(account);
   };
 
   document.addEventListener("kdeenoff-account", (event) => {
@@ -1599,6 +1625,7 @@ function initKickAccount() {
     .catch(() => {
       showLoggedOut();
       showEmail(null);
+      paintSession(null);
       if (statusEl) statusEl.textContent = "Could not check the Kick account.";
       if (emailStatusEl) emailStatusEl.textContent = "Could not check the email.";
     });
@@ -1778,7 +1805,6 @@ function initAuthDialog() {
 function boot() {
   initSlotHost();
   initCopyButtons();
-  initTheme();
   initDrawer();
   initSideBoards();
   initBoardDash();
