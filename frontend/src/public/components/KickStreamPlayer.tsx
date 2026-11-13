@@ -47,7 +47,10 @@ export function useKickPlayer(channel: string): KickPlayerState {
 }
 
 const OFFLINE_MASCOT_POSTER = "/img/hero/offline-leprechaun.webp";
-const OFFLINE_MASCOT_IDLE_VIDEO = "/img/hero/offline-leprechaun-idle.webm?v=2";
+const OFFLINE_MASCOT_ANGRY_VIDEOS = [
+  "/img/hero/offline-leprechaun-idle.webm?v=3",
+  "/img/hero/offline-leprechaun-angry.webm?v=1",
+] as const;
 const OFFLINE_MASCOT_EMOTE_VIDEOS = [
   "/img/hero/offline-leprechaun.webm",
   "/img/hero/offline-leprechaun-coin.webm",
@@ -92,15 +95,18 @@ export function KickOfflineCard({
     const videos: [HTMLVideoElement, HTMLVideoElement] = [videoA, videoB];
     let emoteBag: number[] = [];
     let lastEmoteIdx: number | undefined;
-    // Start with 2 calm idle cycles (~12s), then 3–4 calm idle cycles (~18–24s) between each active emote
-    let calmRemaining = 2;
+    let angryCursor = 0;
+    // Hold the signature fierce angry emotion ~22–33s (4–6 living clips) vs ~5s (1 clip) for any other emote
+    let angryRemaining = 4;
 
     const pullNextUrl = (): string => {
-      if (calmRemaining > 0) {
-        calmRemaining -= 1;
-        return OFFLINE_MASCOT_IDLE_VIDEO;
+      if (angryRemaining > 0) {
+        angryRemaining -= 1;
+        const url = OFFLINE_MASCOT_ANGRY_VIDEOS[angryCursor % OFFLINE_MASCOT_ANGRY_VIDEOS.length];
+        angryCursor += 1;
+        return url;
       }
-      calmRemaining = 3 + Math.floor(Math.random() * 2);
+      angryRemaining = 4 + Math.floor(Math.random() * 3);
       if (emoteBag.length === 0) {
         emoteBag = buildShuffledIndices(OFFLINE_MASCOT_EMOTE_VIDEOS.length, lastEmoteIdx);
       }
