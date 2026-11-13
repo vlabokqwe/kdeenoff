@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/block-cursor-reload.ps1",
+        "matcher": "CallDynamicTool|browser_cdp",
+        "failClosed": true,
+        "timeout": 15
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/block-cursor-reload.ps1",
+        "matcher": "reloadWindow|restartExtensionHost|Reload Window|Cursor\\.exe|Stop-Process[\\s\\S]{0,80}Cursor|taskkill[\\s\\S]{0,80}Cursor",
+        "failClosed": true,
+        "timeout": 15
+      }
+    ]
+  }
+}

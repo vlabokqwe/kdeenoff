@@ -1,5 +1,21 @@
 node_modules/
 dist/
+*.tsbuildinfo
+*.log
+
+# Local config and data
+.env
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Legacy Cloudflare tooling (no longer used)
 .wrangler/
 .dev.vars
-*.log
+
+# Scratch and Python bytecode
+__pycache__/
+*.pyc
+tmp/
+

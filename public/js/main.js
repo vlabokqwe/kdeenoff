@@ -326,6 +326,7 @@ function initNav() {
   const set = (name) => links.forEach((l) => l.classList.toggle("is-active", l.dataset.navLink === name));
 
   if (path.startsWith("/raffles")) return set("raffles");
+  if (path.startsWith("/cases")) return set("cases");
   if (path.startsWith("/bonuses")) return set("bonus");
   if (path.startsWith("/leaderboards")) return set("leaderboards");
   if (path.startsWith("/account")) return set("kick");
@@ -1344,6 +1345,139 @@ function initHeroBlocks() {
 
 let currentAccount = null;
 
+/** Header token badge. The number always comes from the server; null hides the badge. */
+function paintTokenBadge(count) {
+  const badge = document.querySelector("[data-token-balance]");
+  if (!badge) return;
+  const n = Number(count);
+  if (count == null || !Number.isFinite(n) || n < 0) {
+    badge.hidden = true;
+    return;
+  }
+  const value = Math.floor(n);
+  const countEl = badge.querySelector("[data-token-count]");
+  if (countEl) countEl.textContent = String(value);
+  badge.setAttribute("aria-label", `Tokens: ${value}`);
+  badge.hidden = false;
+}
+
+document.addEventListener("kdeenoff-tokens", (event) => {
+  const n = Number(event.detail && event.detail.tokens);
+  if (!Number.isFinite(n)) return;
+  if (currentAccount) currentAccount = { ...currentAccount, tokens: n };
+  paintTokenBadge(n);
+  loadTokenList();
+});
+
+const tokenDate = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function tokenLeft(ms) {
+  const days = Math.floor(ms / 86400000);
+  if (days >= 1) return `${days} day${days === 1 ? "" : "s"} left`;
+  const hours = Math.max(1, Math.floor(ms / 3600000));
+  return `${hours} hour${hours === 1 ? "" : "s"} left`;
+}
+
+/** Account page token list, from /api/account/tokens. Built with textContent only. */
+async function loadTokenList() {
+  const card = document.querySelector("[data-tokens-card]");
+  if (!card) return;
+  const statusEl = card.querySelector("[data-tokens-status]");
+  const list = card.querySelector("[data-tokens-list]");
+  try {
+    const res = await fetch("/api/account/tokens", {
+      credentials: "same-origin",
+      headers: { accept: "application/json" },
+    });
+    if (!res.ok) throw new Error("tokens");
+    const data = await res.json();
+    if (!data.linked) {
+      card.hidden = false;
+      if (statusEl) statusEl.textContent = "Link your Kick account to collect tokens.";
+      if (list) list.replaceChildren();
+      return;
+    }
+    card.hidden = false;
+    const balance = Number(data.balance) || 0;
+    if (statusEl) statusEl.textContent = `You have ${balance} token${balance === 1 ? "" : "s"}.`;
+    paintTokenBadge(balance);
+    const coinsCard = document.querySelector("[data-coins-card]");
+    if (coinsCard) {
+      const coins = Math.max(0, Math.floor(Number(data.coins) || 0));
+      const coinsStatus = coinsCard.querySelector("[data-coins-status]");
+      if (coinsStatus) coinsStatus.textContent = `You have ${coins} coin${coins === 1 ? "" : "s"}.`;
+      coinsCard.hidden = false;
+    }
+    paintRankCard(data);
+    if (!list) return;
+    const skew = Number(data.serverNow) ? Number(data.serverNow) - Date.now() : 0;
+    const items = (Array.isArray(data.tokens) ? data.tokens : []).map((token) => {
+      const li = document.createElement("li");
+      li.className = "token-list__item";
+      const title = document.createElement("span");
+      title.className = "token-list__title";
+      title.textContent = token.raffleTitle || "Raffle";
+      const when = document.createElement("span");
+      when.className = "token-list__when";
+      const expires = Number(token.expiresAt);
+      when.textContent = `${tokenLeft(expires - (Date.now() + skew))} · until ${tokenDate.format(expires)}`;
+      li.append(title, when);
+      return li;
+    });
+    list.replaceChildren(...items);
+  } catch {
+    card.hidden = false;
+    if (statusEl) statusEl.textContent = "Could not load your tokens.";
+  }
+}
+
+/** Account page rank card: rank, progress to the next one, latest XP. textContent only. */
+function paintRankCard(data) {
+  const card = document.querySelector("[data-rank-card]");
+  if (!card || !data || !data.rank) return;
+  const xp = Math.max(0, Math.floor(Number(data.xp) || 0));
+  const rank = data.rank;
+  const next = data.nextRank;
+  const status = card.querySelector("[data-rank-status]");
+  const nextEl = card.querySelector("[data-rank-next]");
+  const bar = card.querySelector("[data-rank-bar]");
+  const fill = card.querySelector("[data-rank-fill]");
+  if (status) status.textContent = `Rank: ${rank.title} · ${xp} XP`;
+  let pct = 100;
+  if (next) {
+    const span = Math.max(1, Number(next.minXp) - Number(rank.minXp));
+    pct = Math.max(0, Math.min(100, Math.round(((xp - Number(rank.minXp)) / span) * 100)));
+    if (nextEl) nextEl.textContent = `${Math.max(0, Number(next.minXp) - xp)} XP to ${next.title}.`;
+  } else if (nextEl) {
+    nextEl.textContent = "Top rank reached.";
+  }
+  if (fill) fill.style.width = `${pct}%`;
+  if (bar) bar.setAttribute("aria-valuenow", String(pct));
+  const list = card.querySelector("[data-rank-history]");
+  if (list) {
+    const items = (Array.isArray(data.xpHistory) ? data.xpHistory : []).map((row) => {
+      const li = document.createElement("li");
+      li.className = "token-list__item";
+      const title = document.createElement("span");
+      title.className = "token-list__title";
+      const label = row.source === "board" ? "Leaderboard" : "Raffle";
+      title.textContent = `+${Number(row.xp) || 0} XP · ${row.note || label}`;
+      const when = document.createElement("span");
+      when.className = "token-list__when";
+      when.textContent = tokenDate.format(Number(row.createdAt));
+      li.append(title, when);
+      return li;
+    });
+    list.replaceChildren(...items);
+  }
+  card.hidden = false;
+}
+
 function readCsrf() {
   const match = document.cookie.match(/(?:^|;\s*)kdeenoff_csrf=([^;]+)/);
   return match ? decodeURIComponent(match[1]) : "";
@@ -1367,10 +1501,10 @@ async function postAccount(path, payload) {
 }
 
 function initKickAccount() {
-  const headerLink = document.querySelector("[data-kick-account]");
+  const kickLink = document.querySelector("[data-kick-account]");
   const label = document.querySelector("[data-kick-account-label]");
   const card = document.querySelector("[data-kick-card]");
-  if (!headerLink && !card) return;
+  if (!kickLink && !card) return;
 
   const errors = {
     config: "Kick linking is not turned on for this site yet.",
@@ -1448,11 +1582,14 @@ function initKickAccount() {
     if (loginBtn) loginBtn.hidden = on;
     if (registerBtn) registerBtn.hidden = on;
     if (drawerAccount) drawerAccount.hidden = !on;
+    paintTokenBadge(account && account.linked ? account.tokens : null);
     if (!on) return;
     const kickName = account.linked && account.name ? account.name : "";
     const email = account.emailVerified && account.email ? account.email : "";
     const name = kickName || email || "Account";
-    const sub = kickName && email ? email : kickName ? "Kick" : "Signed in";
+    const sub = kickName && account.rankTitle
+      ? `${account.rankTitle} · ${Math.max(0, Number(account.xp) || 0)} XP`
+      : kickName && email ? email : "Signed in";
     if (drawerName) drawerName.textContent = name;
     if (drawerSub) drawerSub.textContent = sub;
     if (drawerProfile) {
@@ -1479,12 +1616,15 @@ function initKickAccount() {
     }
   };
 
+  const showKickPrompt = (visible) => {
+    if (!kickLink) return;
+    kickLink.hidden = !visible;
+    if (visible) kickLink.setAttribute("aria-label", "Authorize Kick");
+  };
+
   const showLoggedOut = () => {
-    if (headerLink) {
-      headerLink.classList.remove("is-linked");
-      headerLink.setAttribute("aria-label", "Account");
-    }
-    if (label) label.textContent = "Kick";
+    showKickPrompt(true);
+    if (label) label.textContent = "Authorize";
     if (whoEl) whoEl.hidden = true;
     if (connectEl) connectEl.hidden = false;
     if (disconnectEl) disconnectEl.hidden = true;
@@ -1493,11 +1633,7 @@ function initKickAccount() {
 
   const showLinked = (account) => {
     const name = account.name || "Kick";
-    if (label) label.textContent = name;
-    if (headerLink) {
-      headerLink.classList.add("is-linked");
-      headerLink.setAttribute("aria-label", `Kick account, ${name}`);
-    }
+    showKickPrompt(false);
     if (statusEl) statusEl.textContent = "Connected.";
     if (nameEl) nameEl.textContent = name;
     if (whoEl) whoEl.hidden = false;
@@ -1605,27 +1741,36 @@ function initKickAccount() {
     });
   }
 
+  let accountSeq = 0;
+
   const applyAccount = (account) => {
     currentAccount = account;
     if (account && account.linked) showLinked(account);
     else showLoggedOut();
     showEmail(account);
     paintSession(account);
+    syncLocalAccountToggle(account);
+    loadTokenList();
   };
 
   document.addEventListener("kdeenoff-account", (event) => {
+    accountSeq += 1;
     applyAccount(event.detail);
   });
 
+  const accountLoad = ++accountSeq;
   fetch("/api/kick/me", { credentials: "same-origin", headers: { accept: "application/json" } })
     .then((res) => (res.ok ? res.json() : Promise.reject(new Error("me"))))
     .then((account) => {
+      if (accountLoad !== accountSeq) return;
       applyAccount(account);
     })
     .catch(() => {
+      if (accountLoad !== accountSeq) return;
       showLoggedOut();
       showEmail(null);
       paintSession(null);
+      syncLocalAccountToggle(null);
       if (statusEl) statusEl.textContent = "Could not check the Kick account.";
       if (emailStatusEl) emailStatusEl.textContent = "Could not check the email.";
     });
@@ -1735,7 +1880,7 @@ function initAuthDialog() {
         currentAccount = account;
         if (account && account.emailVerified && account.email) showDone(account);
       })
-      .catch(() => {});
+      .catch(() => { });
   };
 
   document.querySelectorAll("[data-auth-open]").forEach((button) => {
@@ -1802,6 +1947,83 @@ function initAuthDialog() {
   }
 }
 
+const LOCAL_DEMO_EMAIL = "local@kdeenoff.test";
+const LOCAL_DEMO_NAME = "kdeenoff";
+
+function localDevHost() {
+  const host = location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
+}
+
+function syncLocalAccountToggle(account) {
+  const accountInput = document.querySelector("[data-local-account]");
+  const kickInput = document.querySelector("[data-local-kick]");
+  const demoEmail = Boolean(
+    account && account.emailVerified && account.email === LOCAL_DEMO_EMAIL,
+  );
+  const demoKick = Boolean(
+    account && account.linked && account.name === LOCAL_DEMO_NAME &&
+    (!account.email || account.email === LOCAL_DEMO_EMAIL),
+  );
+  if (accountInput) accountInput.checked = demoEmail;
+  if (kickInput) kickInput.checked = demoKick;
+}
+
+function localPreviewPayload() {
+  return {
+    account: Boolean(document.querySelector("[data-local-account]")?.checked),
+    kick: Boolean(document.querySelector("[data-local-kick]")?.checked),
+  };
+}
+
+function localSwitch(textLabel, aria, attr) {
+  const label = document.createElement("label");
+  label.className = "kick-chat__account";
+  const text = document.createElement("span");
+  text.textContent = textLabel;
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.className = "kick-chat__account-input";
+  input.setAttribute(attr, "");
+  input.setAttribute("role", "switch");
+  input.setAttribute("aria-label", aria);
+  const knob = document.createElement("span");
+  knob.className = "kick-chat__switch";
+  knob.append(input);
+  label.append(text, knob);
+  input.addEventListener("change", () => pushLocalPreview(input));
+  return label;
+}
+
+async function pushLocalPreview(changed) {
+  const inputs = [...document.querySelectorAll("[data-local-account], [data-local-kick]")];
+  inputs.forEach((input) => { input.disabled = true; });
+  try {
+    const account = await postAccount("/api/dev/account", localPreviewPayload());
+    document.dispatchEvent(new CustomEvent("kdeenoff-account", { detail: account }));
+  } catch {
+    changed.checked = !changed.checked;
+  } finally {
+    inputs.forEach((input) => { input.disabled = false; });
+  }
+}
+
+function initLocalAccount() {
+  if (!localDevHost()) return;
+  const bar = document.querySelector("#kick-chat .kick-chat__bar");
+  if (!bar || bar.querySelector("[data-local-account]")) return;
+
+  const modes = document.createElement("div");
+  modes.className = "kick-chat__modes";
+  modes.append(
+    localSwitch("Account", "Local account", "data-local-account"),
+    localSwitch("Kick", "Local Kick login", "data-local-kick"),
+  );
+  const hide = bar.querySelector(".kick-chat__hide");
+  if (hide) bar.insertBefore(modes, hide);
+  else bar.append(modes);
+}
+
 function boot() {
   initSlotHost();
   initCopyButtons();
@@ -1814,6 +2036,7 @@ function boot() {
   initParallax();
   initSteps();
   initKickChat();
+  initLocalAccount();
   initKickAccount();
   initAuthDialog();
   initClaimFlow();

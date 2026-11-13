@@ -31,4 +31,4 @@ Spend generations. One cautious image is a miss.
 - No `GenerateImage` for charts, plots, or tables.
 - No `GenerateVideo` for UI demos, kinetic type, or exact on-screen text. Those stay images or code.
 - This rule picks the tool. It does not reopen a look the visual rules already cancelled.
-- Decorative art that is in scope for the public site still goes through `scripts/process-art-v2.py` after the raw render.
+- Decorative art that is in scope for the public site still goes through `scripts/process-art-v2.py` after the raw render (output lands in `frontend/public/img/**`).

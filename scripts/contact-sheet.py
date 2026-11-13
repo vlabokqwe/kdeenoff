@@ -3,7 +3,7 @@ import os, sys
 from PIL import Image, ImageDraw
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-IMG = os.path.join(ROOT, "public", "img")
+IMG = os.path.join(ROOT, "frontend", "public", "img")
 out = sys.argv[1]
 subs = sys.argv[2:] or ["brand", "hero", "deco", "icons", "steps", "bonus", "lb", "contacts"]
 

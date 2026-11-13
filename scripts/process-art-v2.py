@@ -5,7 +5,7 @@ raw generated image (~1 MP)
   -> Real-ESRGAN x4 AI upscale (cached in <raw_dir>/up/)
   -> cutouts: magenta chroma key + edge un-mix + despill + crop
   -> resize to the target size (about 2x the largest display size, for Retina)
-  -> WebP into public/img/
+  -> WebP into frontend/public/img/
 
 Usage:
   python scripts/process-art-v2.py <raw_dir> [asset names...]
@@ -23,18 +23,28 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "public", "img")
-ESRGAN = os.environ.get("ESRGAN", "")
+OUT = os.path.join(ROOT, "frontend", "public", "img")
+_DEFAULT_ESRGAN = os.path.join(
+    os.environ.get("LOCALAPPDATA", ""),
+    "realesrgan",
+    "bin",
+    "realesrgan-ncnn-vulkan.exe",
+)
+ESRGAN = os.environ.get("ESRGAN") or (_DEFAULT_ESRGAN if os.path.exists(_DEFAULT_ESRGAN) else "")
+ESRGAN_MODEL = os.environ.get("ESRGAN_MODEL", "realesrgan-x4plus-anime")
 
-# name: (output path relative to public/img, mode, max side px, webp quality)
+# name: (output path relative to frontend/public/img, mode, max side px, webp quality)
 ASSETS = {
     # brand
     "v2-logo": ("brand/logo.webp", "cut", 1200, 90),
     "v2-mark": ("brand/mark.webp", "cut", 256, 90),
+    "v2-token": ("brand/token.webp", "cut", 256, 90),
     "v2-logo-cards": ("brand/mark-cards.webp", "cut", 512, 90),
     # hero + decor
     "v2-hero-art": ("hero/treasure.webp", "cut", 1400, 88),
     "v2-hero-bg": ("bg/hero.webp", "bg", 2560, 78),
+    "v2-offline-bg": ("hero/offline-bg.webp", "bg", 2560, 82),
+    "v2-offline-fg": ("hero/offline-fg.webp", "cut", 1600, 90),
     "v2-pattern": ("bg/pattern.webp", "tile", 512, 80),
     "v2-coin": ("deco/coin.webp", "cut", 300, 88),
     "v2-coin-stack": ("deco/coin-stack.webp", "cut", 300, 88),
@@ -68,6 +78,12 @@ ASSETS = {
     "v2-ic-home": ("icons/home.webp", "cut", 192, 88),
     "v2-ic-menu": ("icons/nav-menu.webp", "cut", 192, 88),
     "v2-ic-raffle": ("icons/raffle.webp", "cut", 192, 88),
+    "v2-lr-ticket": ("deco/last-raffles/ticket.webp", "cut", 224, 90),
+    "v2-lr-coins": ("deco/last-raffles/coins.webp", "cut", 224, 90),
+    "v2-lr-gem": ("deco/last-raffles/gem.webp", "cut", 224, 90),
+    "v2-lr-crown": ("deco/last-raffles/crown.webp", "cut", 224, 90),
+    "v2-lr-dice": ("deco/last-raffles/dice.webp", "cut", 224, 90),
+    "v2-lr-medal": ("deco/last-raffles/medal.webp", "cut", 224, 90),
     "v2-ic-trophy": ("icons/trophy.webp", "cut", 192, 88),
     "v2-ic-gift": ("icons/gift.webp", "cut", 192, 88),
     "v2-ic-chat": ("icons/chat.webp", "cut", 192, 88),
@@ -89,12 +105,26 @@ ASSETS = {
     "v2-step-key": ("steps/key.webp", "bg", 1280, 86),
     "v2-step-watch": ("steps/watch.webp", "bg", 1280, 86),
     "v2-footer-mark": ("footer/mark.webp", "cut", 720, 90),
+    "v2-footer-chip-kick": ("footer/chip-kick.webp", "cut", 192, 90),
+    "v2-footer-chip-tg": ("footer/chip-tg.webp", "cut", 192, 90),
+    "v2-footer-chip-x": ("footer/chip-x.webp", "cut", 192, 90),
     # bonus / raffle / contacts
     "v2-bonus-art": ("bonus/art.webp", "cut", 1200, 88),
     "v2-raffle-art": ("raffle/drum.webp", "cut", 1000, 88),
+    "v2-raffle-prize-scene": ("deco/raffle-prize-scene.webp", "bg", 1920, 88),
     "v2-contacts-art": ("contacts/phone.webp", "cut", 1000, 88),
     "v2-contact-telegram": ("contacts/telegram.webp", "cut", 800, 88),
     "v2-contact-kick": ("contacts/kick.webp", "cut", 800, 88),
+    "v2-contact-tg-scene": ("contacts/tg-scene.webp", "bg", 1800, 86),
+    "v2-contact-tg-wordmark": ("contacts/tg-wordmark.webp", "cut", 1400, 92),
+    "v2-contact-tg-props": ("contacts/tg-props.webp", "cut", 1200, 90),
+    "v2-contact-tg-float": ("contacts/tg-float.webp", "cut", 560, 90),
+    "v2-contact-kick-scene": ("contacts/kick-scene.webp", "bg", 1800, 86),
+    "v2-contact-kick-wordmark": ("contacts/kick-wordmark.webp", "cut", 1400, 92),
+    "v2-contact-kick-props": ("contacts/kick-props.webp", "cut", 1200, 90),
+    "v2-contact-kick-float": ("contacts/kick-float.webp", "cut", 560, 90),
+    "v2-contact-x-scene": ("contacts/x-scene.webp", "bg", 1800, 86),
+    "v2-contact-x-wordmark": ("contacts/x-wordmark.webp", "cut", 1200, 92),
     "v2-partner-stake": ("partners/stake-bg.webp", "bg", 1400, 80),
     "v2-partner-generic": ("partners/generic-bg.webp", "bg", 1400, 80),
     "v2-partner-stake-art": ("partners/stake-art.webp", "cut", 640, 88),
@@ -112,10 +142,20 @@ ASSETS = {
     "v2-500-wordmark": ("partners/500-wordmark.webp", "cut", 1400, 92),
     "v2-stake-btn-bg": ("partners/stake-btn-bg.webp", "bg", 1600, 86),
     "v2-stake-raccoon": ("partners/stake-raccoon.webp", "cut", 1200, 90),
+    "v2-zeus-card-bg": ("partners/zeus-card-bg.webp", "bg", 2200, 88),
+    "v2-zeus-raccoon": ("partners/zeus-raccoon.webp", "cut", 1300, 92),
+    "v2-vamp-card-bg": ("partners/vamp-card-bg.webp", "bg", 2200, 88),
+    "v2-vamp-raccoon": ("partners/vamp-raccoon.webp", "cut", 2000, 94),
     "v2-partner-pillar": ("partners/pillar.webp", "cut", 1100, 88),
     "v2-partner-shuffle-field": ("partners/shuffle-field.webp", "bg", 1800, 84),
     "v2-partner-rainbet-field": ("partners/rainbet-field.webp", "bg", 1800, 84),
     "v2-bonus-bg": ("bg/bonus.webp", "bg", 2560, 76),
+    "v2-bonus-scene": ("bg/bonus-scene.webp", "bg", 3840, 90),
+    "v2-bonus-title": ("deco/bonus-title.webp", "cut", 2400, 92),
+    "v2-bonus-claim": ("deco/bonus-claim.webp", "cut", 4000, 94),
+    "v2-bonus-word": ("deco/bonus-word.webp", "cut", 4000, 94),
+    "v2-bonus-go": ("deco/bonus-go.webp", "cut", 4000, 94),
+    "v2-bonus-code": ("deco/bonus-code.webp", "field", 4000, 94),
     "v2-steps-bg": ("bg/steps.webp", "bg", 2560, 76),
     "v2-contacts-bg": ("bg/contacts.webp", "bg", 2560, 76),
     # leaderboard
@@ -124,6 +164,7 @@ ASSETS = {
     "v2-cup-3": ("lb/cup-3.webp", "cut", 640, 88),
     "v2-lb-stage": ("bg/stage.webp", "bg", 2560, 78),
     "v2-lb-bg": ("bg/leaderboard.webp", "bg", 2560, 76),
+    "v2-lb-scene": ("bg/leaderboard-scene.webp", "bg", 5504, 92),
     "v2-crown": ("lb/crown.webp", "cut", 500, 88),
     "v2-prize-pile": ("lb/prize-pile.webp", "cut", 1600, 86),
     "v2-medal-1": ("lb/medal-1.webp", "cut", 240, 88),
@@ -132,6 +173,9 @@ ASSETS = {
     "v2-lb-place-1": ("lb/place-1.webp", "cut", 640, 88),
     "v2-lb-place-2": ("lb/place-2.webp", "cut", 640, 88),
     "v2-lb-place-3": ("lb/place-3.webp", "cut", 640, 88),
+    "v2-zeus-place-1": ("lb/zeus-place-1.webp", "cut", 760, 92),
+    "v2-zeus-place-2": ("lb/zeus-place-2.webp", "cut", 700, 92),
+    "v2-zeus-place-3": ("lb/zeus-place-3.webp", "cut", 700, 92),
     # mode-card studies (full-bleed, keep the field)
     "v2-card-raffle-a": ("deco/cards/raffle-a.webp", "bg", 840, 88),
     "v2-card-raffle-b": ("deco/cards/raffle-b.webp", "bg", 840, 88),
@@ -222,6 +266,11 @@ ASSETS = {
     "v2-slot-lamp": ("lb/slot-lamp.webp", "cut", 1600, 90),
     "v2-slot-jewel": ("lb/slot-gem.webp", "cut", 1400, 90),
     "v2-slot-host": ("lb/slot-host.webp", "cut", 900, 90),
+    # ranks
+    "v2-rank-rookie": ("ranks/rookie.webp", "cut", 256, 90),
+    "v2-rank-regular": ("ranks/regular.webp", "cut", 256, 90),
+    "v2-rank-veteran": ("ranks/veteran.webp", "cut", 256, 90),
+    "v2-rank-legend": ("ranks/legend.webp", "cut", 256, 90),
 }
 
 
@@ -237,12 +286,15 @@ def newest(raw_dir, name):
 
 def upscale(src, raw_dir):
     """Real-ESRGAN x4, cached. Returns a PIL image."""
-    up_dir = os.path.join(raw_dir, "up")
+    src_abs = os.path.abspath(src)
+    up_dir = os.path.abspath(os.path.join(raw_dir, "up"))
     os.makedirs(up_dir, exist_ok=True)
-    dst = os.path.join(up_dir, os.path.splitext(os.path.basename(src))[0] + "_x4.png")
+    dst = os.path.join(up_dir, os.path.splitext(os.path.basename(src_abs))[0] + "_x4.png")
     if not os.path.exists(dst) and ESRGAN and os.path.exists(ESRGAN):
+        model_path = os.path.join(os.path.dirname(ESRGAN), "models", f"{ESRGAN_MODEL}.param")
+        model = ESRGAN_MODEL if os.path.exists(model_path) else "realesrgan-x4plus"
         subprocess.run(
-            [ESRGAN, "-i", src, "-o", dst, "-n", "realesrgan-x4plus"],
+            [ESRGAN, "-i", src_abs, "-o", dst, "-n", model],
             check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             cwd=os.path.dirname(ESRGAN),
         )
@@ -291,6 +343,67 @@ def cutout(img):
     ))
 
 
+def cut_field(img):
+    """Key a flat backdrop by color distance, so a pink subject survives."""
+    rgb = np.asarray(img.convert("RGB")).astype(np.float32)
+    h, w, _ = rgb.shape
+    border = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
+    bg = np.median(border, axis=0)
+    dist = np.linalg.norm(rgb - bg, axis=-1)
+    a = np.clip((dist - 18.0) / 22.0, 0.0, 1.0)
+    a = np.where(a < 0.08, 0.0, a)
+
+    safe = np.maximum(a, 0.05)[..., None]
+    fg = (rgb - (1.0 - safe) * bg) / safe
+    fg = np.where(a[..., None] > 0.98, rgb, fg)
+    fg = np.clip(fg, 0, 255)
+
+    out = Image.fromarray(np.dstack([fg, a * 255.0]).astype(np.uint8), "RGBA")
+    solid = a > 0.5
+    rows = np.where(solid.sum(axis=1) >= 6)[0]
+    cols = np.where(solid.sum(axis=0) >= 6)[0]
+    if len(rows) == 0 or len(cols) == 0:
+        return out
+    pad = 16
+    return out.crop((
+        max(int(cols.min()) - pad, 0),
+        max(int(rows.min()) - pad, 0),
+        min(int(cols.max()) + pad + 1, w),
+        min(int(rows.max()) + pad + 1, h),
+    ))
+
+
+def cut_green(img):
+    """Key a #00FF00 green backdrop cleanly while preserving vivid reds/crimsons."""
+    rgb = np.asarray(img.convert("RGB")).astype(np.float32)
+    h, w, _ = rgb.shape
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    g_excess = g - np.maximum(r, b)
+    a = 1.0 - np.clip((g_excess - 10.0) / 56.0, 0.0, 1.0)
+    a = np.where(g_excess > 64.0, 0.0, a)
+
+    fg = rgb.copy()
+    spill = np.maximum(0.0, fg[..., 1] - np.maximum(fg[..., 0], fg[..., 2]))
+    fg[..., 1] -= spill
+    fg[..., 0] = np.clip(fg[..., 0] + spill * 0.12, 0.0, 255.0)
+    fg[..., 2] = np.clip(fg[..., 2] + spill * 0.12, 0.0, 255.0)
+
+    a = np.where(a < 0.12, 0.0, a)
+    out = Image.fromarray(np.dstack([fg, a * 255.0]).astype(np.uint8), "RGBA")
+    solid = a > 0.5
+    rows = np.where(solid.sum(axis=1) >= 6)[0]
+    cols = np.where(solid.sum(axis=0) >= 6)[0]
+    if len(rows) == 0 or len(cols) == 0:
+        return out
+    pad = 16
+    return out.crop((
+        max(int(cols.min()) - pad, 0),
+        max(int(rows.min()) - pad, 0),
+        min(int(cols.max()) + pad + 1, w),
+        min(int(rows.max()) + pad + 1, h),
+    ))
+
+
 def fit(img, max_side):
     w, h = img.size
     s = min(1.0, max_side / max(w, h))
@@ -314,6 +427,10 @@ def main():
         img = Image.open(src) if mode == "alpha" else upscale(src, raw_dir)
         if mode == "cut":
             img = cutout(img)
+        elif mode == "green":
+            img = cut_green(img)
+        elif mode == "field":
+            img = cut_field(img)
         elif mode == "alpha":
             # black-and-white mask -> white RGBA, alpha = hard-thresholded luminance
             lum = img.convert("L").resize((size, size), Image.LANCZOS)

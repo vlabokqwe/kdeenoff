@@ -1,0 +1,21 @@
+---
+description: Never reload or restart Cursor; it stops every open chat
+alwaysApply: true
+---
+
+# Do not reload Cursor
+
+Reloading or restarting Cursor ends every open chat, including this one. Do not do it, and do not ask the user to do it as a step you then carry out.
+
+## Never
+
+- Run Reload Window, Restart Extension Host, or any command that restarts the editor (`workbench.action.reloadWindow`, `workbench.action.restartExtensionHost`, Developer: Reload Window).
+- Kill, stop, or restart the Cursor process (`Cursor.exe`, `taskkill`, `Stop-Process`, quitting the app and opening it again).
+- Use the shell, computer control, or a click to reload the window, restart the app, or send those commands.
+- Refresh the built-in browser with `browser_cdp` method `Page.reload`. That call reloads this Cursor window and stops every chat. A project hook denies it.
+
+## Instead
+
+Finish the task in the current session. If a change only takes effect after a reload, say so and leave the reload to the user.
+
+To refresh a page in the built-in browser, call `browser_navigate` with the same URL. `location.reload()` inside `Runtime.evaluate` is also safe. Never send `Page.reload`.

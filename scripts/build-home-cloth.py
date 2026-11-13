@@ -14,7 +14,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ICON_DIR = os.path.join(ROOT, "public", "img", "bg")
+ICON_DIR = os.path.join(ROOT, "frontend", "public", "img", "bg")
 OUT = os.path.join(ICON_DIR, "home-cloth.webp")
 
 # Output width matches the desktop background-size so one tile is one repeat.

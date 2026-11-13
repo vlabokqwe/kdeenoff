@@ -1,0 +1,44 @@
+---
+description: The project runs on NestJS (backend) + React/Vite (frontend). Where code lives and how to add to it.
+alwaysApply: true
+---
+
+# Tech stack: NestJS + React/Vite
+
+The site is a monorepo with npm workspaces. Eleventy, Nunjucks, vanilla page scripts, the Cloudflare Worker, `wrangler` and D1 are gone. Do not bring them back, and do not write new code for them.
+
+## Layout
+
+- `backend/` is NestJS 11 + TypeScript on Node. It serves `/api/*`, gates `/admin*`, runs the cron, and serves the built frontend.
+  - `backend/src/main.ts` and `app.module.ts` hold bootstrap and wiring.
+  - `backend/src/database/` holds `DatabaseService` (better-sqlite3), the migration runner, `migrate.cli.ts` and `import-d1.cli.ts`.
+  - `backend/src/common/` holds cookies, CSRF / same-origin checks, security headers, the error filter, the Cloudflare Access guard, and `wager-growth-schedule.ts`.
+  - There is one Nest module per domain: leaderboards, raffles, cases, kick, account, dev-account, ranks, admin, xp, tokens, wager-growth. Each has a controller and a service.
+  - Static serving and SPA routing (the old Worker rewrites) live in the backend frontend/static module.
+- `frontend/` is React 19 + TypeScript + Vite 6 + react-router-dom 7. It has two SPAs:
+  - The public site: `frontend/index.html` loads `frontend/src/public/` (pages, components, hooks, `lib/api.ts`). The build goes to `frontend/dist/public`.
+  - The admin panel: `frontend/admin/index.html` loads `frontend/src/admin/` (router basename `/admin`). It is built by `vite.admin.config.ts` with base `/admin/` into `frontend/dist/admin`.
+  - `frontend/src/shared/` holds code used by both apps: `site.ts` (site data, partners) and `wager-growth-schedule.ts`.
+  - `frontend/public/` holds static files that are copied as-is: `css/`, `fonts/` and `img/`, served at `/css`, `/fonts` and `/img`.
+- `migrations/*.sql` is the SQLite schema. It is applied in name order on backend start and tracked in `d1_migrations`.
+- `frontend/design-boards/` holds old design boards. They are not part of any build.
+
+## Rules for new code
+
+- Backend: TypeScript only. Each new endpoint goes into its domain module's controller, and its logic goes into that module's service. Use `DatabaseService` with prepared statements and `?` bindings; never build SQL from strings with user input. A multi-statement write goes in one transaction.
+- Errors keep the `{ "error": "..." }` JSON shape. A write needs CSRF (cookie `kdeenoff_csrf` → header `x-csrf`) and a same-origin request. A schema change is a new numbered file in `migrations/`. Never edit an applied migration.
+- Config comes from env vars (`.env` in the repo root, template `.env.example`). Never hardcode secrets.
+- Frontend: function components and hooks, in TypeScript. Do not query the DOM for things React renders. Effects clean up their timers and listeners. Internal links use `<Link>`.
+- Public pages are registered in `frontend/src/public/App.tsx`. A new public page also has to be added to the backend's known SPA routes, or it answers 404.
+- API calls go through `lib/api.ts` in each app.
+- If the wager-growth schedule changes, change `frontend/src/shared/wager-growth-schedule.ts` and `backend/src/common/wager-growth-schedule.ts` the same way.
+- New dependencies are installed with `npm i -w backend <pkg>` or `npm i -w frontend <pkg>`.
+
+## Commands
+
+- `npm run serve`: Vite rebuild-watch plus `nest start --watch` at http://localhost:8080/. This is the acceptance preview.
+- `npm run build`: builds the frontend (public + admin), then the backend.
+- `npm start`: runs production (`node backend/dist/main.js`).
+- `npm run typecheck`: runs `tsc` for both workspaces. It must pass before work is reported done.
+- `npm run migrate`: applies migrations. `npm run db:import -w backend -- <dump.sql>` imports a D1 export into an empty database.
+

@@ -1,23 +1,19 @@
 {
   "name": "kdeenoff-leaderboard",
   "private": true,
-  "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.12.0"
   },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
-    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && eleventy && node scripts/build-css.mjs && node scripts/build-js.mjs",
-    "build:fast": "eleventy",
+    "build": "npm run build -w frontend && npm run build -w backend",
     "serve": "node scripts/dev.mjs",
-    "serve:static": "eleventy --serve",
-    "watch": "eleventy --watch",
-    "deploy": "npm run build && wrangler deploy"
-  },
-  "dependencies": {
-    "@11ty/eleventy": "^3.0.0"
-  },
-  "devDependencies": {
-    "esbuild": "^0.28.0",
-    "wrangler": "^4.87.0"
+    "dev:hmr": "node scripts/dev.mjs --hmr",
+    "start": "npm run start:prod -w backend",
+    "migrate": "npm run migrate -w backend",
+    "typecheck": "npm run typecheck -w frontend && npm run typecheck -w backend"
   }
 }

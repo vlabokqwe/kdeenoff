@@ -8,8 +8,8 @@ alwaysApply: true
 - No house palette. Do not invent a dark emerald ground, gold accents, or an "emerald night" theme. Color comes from the brief or from the page already on screen.
 - No red-yellow-green flag stripes.
 - Decorative art is generated, never emoji/sticker glyphs. Raw renders go through
-  `scripts/process-art-v2.py` (Real-ESRGAN x4 upscale -> magenta chroma key -> WebP in `public/img/**`).
-- Styles: `public/css/main.css`; font Rubik is self-hosted (`public/css/fonts.css`, `public/fonts/`).
-- Partner styling is keyed by `data-partner` (`stake`, otherwise `generic`); partner bonus cards come from `src/_data/site.json -> partners`.
+  `scripts/process-art-v2.py` (Real-ESRGAN x4 upscale -> magenta chroma key -> WebP in `frontend/public/img/**`).
+- Styles: `frontend/public/css/main.css` (global stylesheet, linked from `frontend/index.html`; React components use its class names). Font Rubik is self-hosted (`frontend/public/css/fonts.css`, `frontend/public/fonts/`).
+- Partner styling is keyed by `data-partner` (`stake`, otherwise `generic`); partner bonus cards come from `frontend/src/shared/site.ts` -> `partners`.
 - All UI text is English.
-- Do not restyle the admin panel (`public/admin/**`, `public/css/admin.css`).
+- Do not restyle the admin panel (`frontend/src/admin/**`, `frontend/admin/index.html`, `frontend/public/css/admin.css`).

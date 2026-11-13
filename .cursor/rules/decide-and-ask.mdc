@@ -10,7 +10,7 @@ Do the work. Fill in what the request leaves open when the codebase, these rules
 ## Decide yourself
 
 - File placement, names, which existing component to reuse, spacing, and copy that follows the page around it.
-- Anything already fixed: English UI, partner keys, Worker preview on port 8080, no admin restyle. Palette is not fixed.
+- Anything already fixed: English UI, partner keys, NestJS + React/Vite stack (see `tech-stack.mdc`), NestJS preview on port 8080, no admin restyle. Palette is not fixed.
 - A smaller reading of the request when one reading is clearly what they asked for.
 
 State the assumption in a sentence and continue. Do not open with a questionnaire.

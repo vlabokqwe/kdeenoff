@@ -1,27 +1,27 @@
 ---
-description: Local site preview must behave like the deployed Worker
+description: Local site preview must behave like the deployed NestJS server
 alwaysApply: true
 ---
 
 # Local preview matches production
 
-When changing this site, the local version must work the same way as the server. Do not treat `eleventy --serve` as the real site.
+When you change this site, the local version must work the same way as the server. The Vite dev server (`npm run dev -w frontend`, port 5173) is not the real site.
 
-Production is a Cloudflare Worker (`worker/index.js`) in front of Eleventy output (`dist/`). The Worker rewrites public URLs and serves the API. Static Eleventy does neither, so links 404 and boards stay empty.
+In production, the NestJS backend (`backend/`) runs on Node behind the Cloudflare proxy or a Tunnel. It serves the built React apps from `frontend/dist/public` and `frontend/dist/admin`. It also handles the SPA routes, the `/api` routes, the `/admin` gate and the cron, with SQLite (`DATABASE_PATH`). Vite on its own does none of the backend work: it does not gate admin, set the CSRF cookie or return 404 status codes.
 
 ## How to run it
 
-- Preview with `npm run serve` (`scripts/dev.mjs`): Eleventy watch plus `wrangler dev` on http://localhost:8080/, with local D1.
-- `npm run serve:static` is only for markup that does not need routes or `/api`.
+- Preview with `npm run serve` (`scripts/dev.mjs`). It runs `vite build --watch` for both apps and `nest start --watch` on http://localhost:8080/, with the local SQLite file. Migrations are applied on start.
+- `npm run serve -- --hmr` also starts Vite with HMR on :5173 (proxy `/api` → :8080), for quick markup work only.
 
 ## Routing that must keep working
 
-- `/leaderboards/<slug>/` is rewritten to `/leaderboards/_board/index.html`. The browser URL stays the slug.
-- `/admin/leaderboards/<slug>/` is rewritten to `/admin/leaderboards/board.html`. The browser URL stays the slug.
-- `/api/leaderboards/...` and `/api/admin/...` come from the Worker and D1, not from static files.
-
-If an asset fetch redirects (`/file.html` → extensionless path), follow it inside the Worker and return the final body. Do not send that redirect to the browser.
+- These public SPA routes return `frontend/dist/public/index.html` with status 200: `/`, `/raffles/`, `/leaderboards/`, `/leaderboards/<slug>/`, `/account/`, `/bonuses/`, `/cases/`. A path without the trailing slash gets a 301 to the slash version. Any other path returns index.html with status 404, and the SPA renders the not-found view.
+- The browser URL stays `/leaderboards/<slug>/` and `/admin/leaderboards/<slug>/`. React Router reads the slug.
+- Every `/admin*` path, `/admin/assets/*` included, passes the Cloudflare Access check first. Admin pages then return `frontend/dist/admin/index.html`.
+- `/api/...` comes from NestJS and SQLite, never from static files. An unknown `/api` path answers a JSON 404.
+- HTML responses carry the `kdeenoff_csrf` cookie and `cache-control: no-cache`.
 
 ## When you change the site
 
-Verify the changed page through http://localhost:8080/ with the Worker running. Click the header links that the change affects. A page that only works in `eleventy --serve` is not done.
+Verify the changed page through http://localhost:8080/ with `npm run serve` running. Click the header links that the change affects. `npm run typecheck` must pass. A page that only works under the Vite dev server is not done.

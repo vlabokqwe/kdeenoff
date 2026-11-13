@@ -1,0 +1,2653 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   KDeenOff — Raffle Drum Roulette, Elimination States & Streamer Overlay
+   Reuses theme tokens defined in /css/main.css (:root & html[data-theme="dark"])
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Raffle Detail & List Extensions ─── */
+
+.raffle-view__p-cta {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.raffle-view__p-list {
+  position: relative;
+  overflow-x: hidden;
+  overflow-anchor: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-right: 0;
+}
+
+.raffle-view__p-list:not([data-searching="true"])>.raffle-view__p-row:first-child {
+  margin-top: auto;
+}
+
+.raffle-view__p-row {
+  flex: 0 0 auto;
+}
+
+.raffle-view__p-list::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.raffle-view__stream-wrap>.raffle-streamer--slot:only-child,
+.raffle-view__stream-wrap>.raffle-view__player:only-child {
+  border-radius: 24px;
+  border-bottom: 1px solid var(--field-line);
+  box-shadow: 0 16px 34px -22px var(--card-drop);
+}
+
+/* Winners Window on `/raffles/:id/` */
+.raffle-view__winners-box {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: 1px solid var(--field-line);
+  background: var(--sheet);
+  box-shadow: 0 16px 34px -24px var(--card-drop);
+}
+
+.raffle-view__winners-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.raffle-view__winners-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.raffle-view__winners-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex: none;
+  background: color-mix(in srgb, var(--hue-amber) 22%, var(--field-high));
+  color: var(--ink-blue);
+}
+
+.raffle-view__winners-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.raffle-view__winners-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--ink-blue);
+}
+
+.raffle-view__winners-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--hue-amber);
+  color: #14181e;
+  font-size: 11.5px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-view__winners-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--field-line);
+  background: var(--field-high);
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.raffle-view__winners-reset:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--hue-coral) 48%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-coral) 12%, var(--field-high));
+  color: var(--hue-coral-d);
+}
+
+html[data-theme="dark"] .raffle-view__winners-reset:hover:not(:disabled) {
+  color: var(--hue-coral-soft);
+}
+
+.raffle-view__winners-reset:disabled {
+  opacity: 0.48;
+  cursor: default;
+}
+
+.raffle-view__winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 168px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.raffle-view__winners-list::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.raffle-view__winners-empty {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--field-line);
+  background: var(--field);
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.raffle-view__winner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  border-radius: 13px;
+  border: 1px solid color-mix(in srgb, var(--hue-amber) 48%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-amber) 12%, var(--field-high));
+}
+
+.raffle-view__winner-row.is-you {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--hue-amber));
+}
+
+.raffle-view__winner-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.raffle-view__winner-rank {
+  flex: none;
+  min-width: 26px;
+  padding: 3px 6px;
+  border-radius: 7px;
+  background: var(--hue-amber);
+  color: #14181e;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-view__winner-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  background: var(--field-deep);
+}
+
+.raffle-view__winner-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-blue);
+}
+
+.raffle-view__winner-handle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.raffle-view__spotlight--winner {
+  border-color: color-mix(in srgb, var(--hue-amber) 58%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-amber) 18%, var(--field-high));
+}
+
+.raffle-item__top-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.raffle-item__live-pill--ended {
+  background: rgba(20, 24, 30, 0.78);
+}
+
+.raffle-view__p-tag--out {
+  background: color-mix(in srgb, var(--hue-coral) 20%, var(--field-high));
+  color: var(--hue-coral-d);
+}
+
+html[data-theme="dark"] .raffle-view__p-tag--out {
+  color: var(--hue-coral-soft);
+}
+
+.raffle-view__p-row.is-eliminated {
+  opacity: 0.62;
+  background: var(--field);
+}
+
+.raffle-view__p-row.is-eliminated .raffle-view__p-name {
+  text-decoration: line-through;
+}
+
+.raffle-view__p-row.is-eliminated .raffle-view__p-tag {
+  text-decoration: none;
+}
+
+.raffle-view__p-end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.raffle-view__p-manage {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.raffle-view__p-mini-btn {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--field-line);
+  border-radius: 7px;
+  background: var(--sheet);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.raffle-view__p-mini-btn:hover:not(:disabled) {
+  background: var(--field-deep);
+  color: var(--ink-blue);
+}
+
+.raffle-view__p-mini-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.raffle-view__p-mini-btn--del:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--hue-coral) 50%, var(--field-line));
+  color: var(--hue-coral-d);
+}
+
+html[data-theme="dark"] .raffle-view__p-mini-btn--del:hover:not(:disabled) {
+  color: var(--hue-coral-soft);
+}
+
+.local-admin__action.is-active {
+  background: var(--ink-blue);
+  border-color: var(--ink-blue);
+  color: var(--on-ink);
+}
+
+.local-admin__action.is-active:hover:not(:disabled) {
+  background: var(--ink-blue);
+  filter: brightness(1.08);
+}
+
+/* ─── 2. Vertical Raffle Drum Roulette (`RaffleDrumRoulette.tsx`) ─── */
+/* Exact vertical pitch: CARD_HEIGHT = 68px, CARD_GAP = 10px, CARD_STEP = 78px */
+
+.raffle-drum {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.raffle-drum--preparing,
+.raffle-drum--spinning,
+.raffle-drum--settled,
+.raffle-drum--empty {
+  position: relative;
+}
+
+.raffle-drum__head-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.raffle-drum__ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 13px;
+  border-radius: 11px;
+  border: 1px solid var(--field-line);
+  background: var(--field-high);
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    color 0.18s var(--ease),
+    filter 0.18s var(--ease);
+}
+
+.raffle-drum__ctrl-btn:hover:not(:disabled) {
+  background: var(--field-deep);
+}
+
+.raffle-drum__ctrl-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.raffle-drum__ctrl-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.raffle-drum__ctrl-btn--list {
+  background: var(--sheet);
+}
+
+.raffle-drum__ctrl-btn--accent {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--field-line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--sheet));
+  color: var(--accent);
+}
+
+.raffle-drum__ctrl-btn--accent:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 20%, var(--sheet));
+}
+
+html[data-theme="dark"] .raffle-drum__ctrl-btn--accent {
+  border-color: color-mix(in srgb, var(--hue-sky) 42%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-sky) 14%, var(--field-high));
+  color: var(--hue-sky);
+}
+
+html[data-theme="dark"] .raffle-drum__ctrl-btn--accent:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hue-sky) 22%, var(--field-high));
+}
+
+.raffle-drum__empty {
+  flex: 1 1 auto;
+  margin: auto 0;
+  padding: 36px 20px;
+  border-radius: 20px;
+  border: 1px dashed var(--field-line);
+  background: var(--field-high);
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  color: var(--ink-soft);
+}
+
+.raffle-drum__empty strong {
+  color: var(--ink-blue);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.raffle-drum__empty p {
+  margin: 0;
+  max-width: 310px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.raffle-drum__chamber {
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 0;
+  min-height: 360px;
+  border-radius: 20px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  overflow: hidden;
+  box-shadow: inset 0 2px 14px rgba(8, 12, 22, 0.08);
+}
+
+.raffle-drum__mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: min(32%, 128px);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.raffle-drum__mask--top {
+  top: 0;
+  background: linear-gradient(180deg,
+      var(--field) 6%,
+      color-mix(in srgb, var(--field) 78%, transparent) 52%,
+      transparent 100%);
+}
+
+.raffle-drum__mask--bottom {
+  bottom: 0;
+  background: linear-gradient(0deg,
+      var(--field) 6%,
+      color-mix(in srgb, var(--field) 78%, transparent) 52%,
+      transparent 100%);
+}
+
+.raffle-drum__rail {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--field-line) 72%, transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.raffle-drum__rail--l {
+  left: 11px;
+}
+
+.raffle-drum__rail--r {
+  right: 11px;
+}
+
+.raffle-drum__payline {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  right: 2px;
+  transform: translateY(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.raffle-drum__pointer {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 28px;
+  flex: none;
+  color: var(--hue-amber);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+  transition:
+    color 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+
+.raffle-drum__pointer--l {
+  justify-items: end;
+  padding-right: 2px;
+}
+
+.raffle-drum__pointer--r {
+  justify-items: start;
+  padding-left: 2px;
+}
+
+.raffle-drum__payline-box {
+  flex: 1 1 auto;
+  height: 76px;
+  border-radius: 18px;
+  border: 2px solid color-mix(in srgb, var(--hue-amber) 72%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-amber) 5%, transparent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--hue-amber) 14%, transparent),
+    0 14px 32px -14px var(--card-drop);
+  transition:
+    border-color 0.24s var(--ease),
+    box-shadow 0.24s var(--ease),
+    background 0.24s var(--ease);
+}
+
+.raffle-drum--spinning .raffle-drum__pointer {
+  color: var(--accent);
+}
+
+html[data-theme="dark"] .raffle-drum--spinning .raffle-drum__pointer {
+  color: var(--hue-sky);
+}
+
+.raffle-drum--spinning .raffle-drum__payline-box {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 14px 32px -12px var(--card-drop);
+}
+
+.raffle-drum--settled:not(.raffle-drum--elimination):not(.raffle-drum--idle-pool) .raffle-drum__payline-box {
+  border-color: var(--hue-amber);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--hue-amber) 22%, transparent),
+    0 14px 32px -12px rgba(246, 175, 22, 0.35);
+}
+
+.raffle-drum--idle-pool .raffle-drum__pointer {
+  color: var(--ink-soft);
+}
+
+.raffle-drum--idle-pool .raffle-drum__payline-box {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--field-line));
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 12px 26px -14px var(--card-drop);
+}
+
+.raffle-drum--elimination .raffle-drum__pointer,
+html[data-theme="dark"] .raffle-drum--elimination .raffle-drum__pointer {
+  color: var(--hue-coral);
+}
+
+.raffle-drum--elimination.raffle-drum--preparing .raffle-drum__payline-box,
+.raffle-drum--elimination.raffle-drum--spinning .raffle-drum__payline-box,
+.raffle-drum--elimination.raffle-drum--settled .raffle-drum__payline-box {
+  border-color: var(--hue-coral);
+  background: color-mix(in srgb, var(--hue-coral) 6%, transparent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--hue-coral) 20%, transparent),
+    0 14px 32px -12px rgba(255, 93, 58, 0.35);
+}
+
+/* Elimination idle pool before spin: 2-column scrollable roster without fog masks or payline */
+.raffle-drum__chamber--pool {
+  display: flex;
+  flex-direction: column;
+}
+
+.raffle-drum__pool-status {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--field-line);
+  background: var(--field-high);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.raffle-drum__pool-status-count strong {
+  color: var(--ink-blue);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-drum__pool-last-out {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--hue-coral) 36%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-coral) 14%, var(--sheet));
+  color: var(--hue-coral-d);
+  font-size: 11.5px;
+  font-weight: 800;
+  max-width: 100%;
+}
+
+.raffle-drum__pool-last-out strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 170px;
+}
+
+html[data-theme="dark"] .raffle-drum__pool-last-out {
+  color: var(--hue-coral-soft);
+}
+
+.raffle-drum__pool-empty {
+  flex: 1 1 auto;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  padding: 28px 18px;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.raffle-drum__pool-empty strong {
+  color: var(--ink-blue);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.raffle-drum__pool-empty p {
+  margin: 0;
+  max-width: 280px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.raffle-drum__pool {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-content: start;
+  scrollbar-width: thin;
+  scrollbar-color: var(--field-line) transparent;
+}
+
+.raffle-drum__pool::-webkit-scrollbar {
+  width: 6px;
+}
+
+.raffle-drum__pool::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.raffle-drum__pool::-webkit-scrollbar-thumb {
+  background: var(--field-line);
+  border-radius: 999px;
+}
+
+.raffle-drum__pool-card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 50px;
+  padding: 7px 10px;
+  border-radius: 13px;
+  border: 1px solid var(--field-line);
+  background: var(--sheet);
+  color: var(--ink-blue);
+  box-shadow: 0 5px 14px -12px var(--card-drop);
+  transition:
+    border-color 0.18s var(--ease),
+    background 0.18s var(--ease);
+}
+
+.raffle-drum__pool-card.is-you {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--field-line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--sheet));
+}
+
+.raffle-drum__pool-card.is-entering {
+  animation: rafflePoolCardIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rafflePoolCardIn {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+    scale: 0.98;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+.raffle-drum__pool-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.raffle-drum__pool-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  background: var(--field-deep);
+  border: 1px solid var(--field-line);
+}
+
+.raffle-drum__pool-avatar.raffle-drum__avatar--ph {
+  font-size: 13.5px;
+}
+
+.raffle-drum__pool-meta {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.raffle-drum__pool-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ink-blue);
+  line-height: 1.2;
+}
+
+.raffle-drum__pool-ticket {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: var(--field-high);
+  border: 1px solid var(--field-line);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-drum__anchor {
+  position: absolute;
+  top: 50%;
+  left: 26px;
+  right: 26px;
+  height: 0;
+  z-index: 2;
+}
+
+.raffle-drum__track {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  will-change: transform;
+}
+
+.raffle-drum__card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 68px;
+  min-height: 68px;
+  max-height: 68px;
+  flex: 0 0 68px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--field-line);
+  background: var(--sheet);
+  color: var(--ink-blue);
+  box-shadow: 0 6px 16px -12px var(--card-drop);
+  transition:
+    opacity 0.26s var(--ease),
+    transform 0.26s var(--ease),
+    border-color 0.26s var(--ease),
+    background 0.26s var(--ease);
+}
+
+.raffle-drum__card.is-you {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--field-line));
+}
+
+.raffle-drum__card.is-landed-winner {
+  border-color: var(--hue-amber);
+  background: color-mix(in srgb, var(--hue-amber) 14%, var(--sheet));
+  box-shadow: 0 12px 26px -14px rgba(246, 175, 22, 0.45);
+}
+
+.raffle-drum__card.is-landed-eliminated {
+  border-color: var(--hue-coral);
+  background: color-mix(in srgb, var(--hue-coral) 14%, var(--sheet));
+  box-shadow: 0 12px 26px -14px rgba(255, 93, 58, 0.4);
+}
+
+.raffle-drum__card.is-neighbor-near {
+  opacity: 0.68;
+  transform: scale(0.985);
+}
+
+.raffle-drum__card.is-neighbor-far {
+  opacity: 0.38;
+  transform: scale(0.965);
+}
+
+.raffle-drum__card-user {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.raffle-drum__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  background: var(--field-deep);
+  border: 1px solid var(--field-line);
+}
+
+.raffle-drum__avatar--ph {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent) 18%, var(--field-deep));
+  color: var(--ink-blue);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.raffle-drum__card-meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.raffle-drum__card-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--ink-blue);
+  line-height: 1.15;
+}
+
+.raffle-drum__card-handle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.raffle-drum__card-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raffle-drum__ticket {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--field-high);
+  border: 1px solid var(--field-line);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-drum__card.is-landed-winner .raffle-drum__ticket {
+  background: var(--hue-amber);
+  border-color: var(--hue-amber);
+  color: #14181e;
+}
+
+.raffle-drum__card.is-landed-eliminated .raffle-drum__ticket {
+  background: var(--hue-coral);
+  border-color: var(--hue-coral);
+  color: #fff;
+}
+
+@keyframes raffleDrumKnockout {
+  0% {
+    transform: scale(1.015);
+    opacity: 1;
+  }
+
+  70% {
+    transform: scale(0.99);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.95);
+    opacity: 0.35;
+  }
+}
+
+.raffle-drum__card.is-knockout-exit {
+  animation: raffleDrumKnockout 0.85s var(--ease) forwards;
+}
+
+@media (max-width: 1080px) {
+  .raffle-drum__chamber {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 640px) {
+  .raffle-drum__anchor {
+    left: 18px;
+    right: 18px;
+  }
+
+  .raffle-drum__payline {
+    left: 0;
+    right: 0;
+  }
+
+  .raffle-drum__pointer {
+    width: 16px;
+  }
+
+  .raffle-drum__card {
+    padding: 0 11px;
+    gap: 9px;
+  }
+
+  .raffle-drum__pool {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 10px;
+    gap: 7px;
+  }
+}
+
+/* ─── 3. Streamer Raffle Panel & Overlay (`StreamerRaffleOverlay.tsx`) ─── */
+/* Inline player-slot deck on `/raffles/:id/`; floating widget on `/raffles/` */
+
+.raffle-streamer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  background: var(--sheet);
+  color: var(--ink-blue);
+}
+
+/* Inline Streamer Panel replacing the Kick stream player inside `.raffle-view__stream-wrap` */
+.raffle-streamer--slot {
+  position: relative;
+  width: 100%;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  border: 1px solid var(--field-line);
+  background: var(--sheet);
+  box-shadow: 0 16px 34px -22px var(--card-drop);
+}
+
+.raffle-streamer__slot-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--field-line);
+}
+
+.raffle-streamer__slot-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.raffle-streamer__slot-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--ink-blue);
+}
+
+.raffle-streamer__slot-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.raffle-streamer__pool-pill--out {
+  background: color-mix(in srgb, var(--hue-coral) 16%, var(--field-high));
+  border-color: color-mix(in srgb, var(--hue-coral) 42%, var(--field-line));
+}
+
+.raffle-streamer--slot .raffle-streamer__body {
+  overflow: visible;
+}
+
+.raffle-streamer--slot .raffle-streamer__stack {
+  gap: 12px;
+}
+
+.raffle-streamer--slot .raffle-streamer__tabs {
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.raffle-streamer--slot .raffle-streamer__tab {
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.raffle-streamer--slot .raffle-streamer__section {
+  gap: 9px;
+}
+
+.raffle-streamer--slot .raffle-streamer__row,
+.raffle-streamer--slot .raffle-streamer__switch-row {
+  min-height: 38px;
+}
+
+.raffle-streamer--slot .raffle-streamer__label {
+  font-size: 12px;
+}
+
+.raffle-streamer--slot .raffle-streamer__seg-btn {
+  min-height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.raffle-streamer--slot .raffle-streamer__btn {
+  min-height: 42px;
+  border-radius: 12px;
+  font-size: 13.5px;
+}
+
+.raffle-streamer--slot .raffle-streamer__input {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+
+/* Floating widget variant used on `/raffles/` list page */
+.raffle-streamer--floating {
+  position: fixed;
+  z-index: 89;
+  top: auto;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(334px, calc(100vw - 32px));
+  max-height: calc(100dvh - var(--head-h) - 32px);
+  padding: 11px;
+  overflow: hidden;
+  border: 1px solid var(--field-line);
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(6, 8, 18, 0.28);
+  transition:
+    left 0.22s var(--ease),
+    right 0.22s var(--ease);
+}
+
+.raffle-streamer--floating.raffle-streamer--left {
+  left: calc(var(--peek) + 16px);
+  right: auto;
+}
+
+.raffle-streamer--floating.raffle-streamer--right {
+  right: max(16px, env(safe-area-inset-right));
+  left: auto;
+}
+
+@media (min-width: 1041px) {
+  body.drawer-open .raffle-streamer--floating.raffle-streamer--left {
+    left: calc(var(--side-w) + 16px);
+  }
+}
+
+@media (min-width: 801px) {
+  body.chat-open .raffle-streamer--floating.raffle-streamer--right {
+    right: calc(var(--chat-w) + 16px);
+  }
+
+  body:not(.chat-open):has(.local-admin.is-collapsed) .raffle-streamer--floating.raffle-streamer--right {
+    right: 68px;
+  }
+
+  body:not(.chat-open):has(.local-admin:not(.is-collapsed)) .raffle-streamer--floating.raffle-streamer--right {
+    right: 328px;
+  }
+}
+
+@media (min-width: 960px) {
+  body:has(.raffle-modal-backdrop) .raffle-streamer--floating {
+    z-index: 520;
+  }
+}
+
+.raffle-streamer--floating.is-collapsed {
+  gap: 0;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: 0 8px 22px rgba(6, 8, 18, 0.28);
+}
+
+.raffle-streamer--floating.is-collapsed:hover {
+  background: var(--field);
+}
+
+.raffle-streamer__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 28px;
+  flex: none;
+}
+
+.raffle-streamer.is-collapsed .raffle-streamer__bar {
+  height: 100%;
+}
+
+.raffle-streamer__toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.raffle-streamer__toggle:focus-visible,
+.raffle-streamer__dock-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.raffle-streamer__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raffle-streamer__pool-pill {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  color: var(--ink-blue);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-streamer__chev {
+  flex: none;
+  width: 0;
+  height: 0;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  border-top: 5px solid currentColor;
+}
+
+.raffle-streamer:not(.is-collapsed) .raffle-streamer__chev {
+  transform: rotate(180deg);
+}
+
+.raffle-streamer.is-collapsed .raffle-streamer__toggle {
+  position: relative;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: 50%;
+}
+
+.raffle-streamer.is-collapsed .raffle-streamer__title,
+.raffle-streamer.is-collapsed .raffle-streamer__chev,
+.raffle-streamer.is-collapsed .raffle-streamer__pool-pill {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.raffle-streamer.is-collapsed .raffle-streamer__toggle::after {
+  content: "S";
+  font-size: 13.5px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+}
+
+.raffle-streamer__dock-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border: 1px solid var(--field-line);
+  border-radius: 7px;
+  background: var(--field);
+  color: var(--ink-blue);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.raffle-streamer__dock-btn:hover {
+  background: var(--field-deep);
+}
+
+.raffle-streamer__body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.raffle-streamer__body[hidden] {
+  display: none;
+}
+
+.raffle-streamer__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.raffle-streamer__tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+}
+
+.raffle-streamer__tab {
+  min-height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.raffle-streamer__tab:hover:not(.is-active) {
+  color: var(--ink-blue);
+}
+
+.raffle-streamer__tab.is-active {
+  background: var(--sheet);
+  color: var(--ink-blue);
+  box-shadow: 0 2px 6px rgba(10, 14, 22, 0.09);
+}
+
+.raffle-streamer__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.raffle-streamer__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+}
+
+.raffle-streamer__row--time {
+  flex-wrap: wrap;
+}
+
+.raffle-streamer__time-controls {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.raffle-streamer__time-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  color: var(--ink-blue);
+  cursor: text;
+  transition:
+    border-color 0.16s var(--ease),
+    background 0.16s var(--ease);
+}
+
+.raffle-streamer--slot .raffle-streamer__time-custom {
+  min-height: 32px;
+}
+
+.raffle-streamer__time-custom:focus-within {
+  border-color: var(--accent);
+}
+
+.raffle-streamer__time-custom.is-custom {
+  border-color: var(--ink-blue);
+  background: var(--field-high);
+}
+
+.raffle-streamer__time-input {
+  width: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.raffle-streamer__time-input::-webkit-outer-spin-button,
+.raffle-streamer__time-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.raffle-streamer__time-unit {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+}
+
+.raffle-streamer__switch-row {
+  min-height: 34px;
+}
+
+.raffle-streamer__label {
+  color: var(--ink-blue);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.raffle-streamer__seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+}
+
+.raffle-streamer__seg--full {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+.raffle-streamer__seg-btn {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.raffle-streamer__seg-btn:hover:not(:disabled):not(.is-active) {
+  color: var(--ink-blue);
+}
+
+.raffle-streamer__seg-btn.is-active {
+  background: var(--ink-blue);
+  color: var(--on-ink);
+}
+
+.raffle-streamer__seg-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.raffle-streamer__cta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0 2px;
+}
+
+.raffle-streamer__winner-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--hue-amber) 18%, var(--field-high));
+  border: 1px solid color-mix(in srgb, var(--hue-amber) 45%, var(--field-line));
+  font-size: 12px;
+}
+
+.raffle-streamer__winner-banner span {
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.raffle-streamer__winner-banner strong {
+  color: var(--ink-blue);
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raffle-streamer__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    filter 0.16s var(--ease),
+    background 0.16s var(--ease);
+}
+
+.raffle-streamer__btn:hover:not(:disabled) {
+  background: var(--field-deep);
+}
+
+.raffle-streamer__btn:disabled {
+  opacity: 0.52;
+  cursor: default;
+}
+
+.raffle-streamer__btn--ghost {
+  background: var(--field-high);
+  color: var(--ink-blue);
+}
+
+.raffle-streamer__btn--ghost:hover:not(:disabled) {
+  background: var(--field-deep);
+}
+
+.raffle-streamer__btn--primary {
+  border-color: transparent;
+  background: var(--hue-amber);
+  color: #14181e;
+}
+
+.raffle-streamer__btn--primary:hover:not(:disabled) {
+  background: var(--hue-amber);
+  filter: brightness(1.06);
+}
+
+.raffle-streamer__btn--elim {
+  border-color: transparent;
+  background: var(--hue-indigo);
+  color: #fff;
+}
+
+.raffle-streamer__btn--elim:hover:not(:disabled) {
+  background: var(--hue-indigo);
+  filter: brightness(1.08);
+}
+
+/* Combined Elimination Spin + Auto Spins Button Bar */
+.raffle-streamer__spin-combo {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 36px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--hue-indigo);
+  color: #fff;
+  transition: background 0.16s var(--ease);
+}
+
+.raffle-streamer--slot .raffle-streamer__spin-combo {
+  min-height: 42px;
+  border-radius: 12px;
+}
+
+.raffle-streamer__spin-combo.is-auto-on {
+  background: var(--hue-coral);
+}
+
+.raffle-streamer__spin-main {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.16s var(--ease);
+}
+
+.raffle-streamer--slot .raffle-streamer__spin-main {
+  font-size: 13.5px;
+}
+
+.raffle-streamer__spin-main:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.raffle-streamer__spin-main:disabled {
+  opacity: 0.54;
+  cursor: default;
+}
+
+.raffle-streamer__spin-auto {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 13px;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.raffle-streamer--slot .raffle-streamer__spin-auto {
+  padding: 0 15px;
+  font-size: 12.5px;
+}
+
+.raffle-streamer__spin-auto:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.raffle-streamer__spin-auto.is-active {
+  background: var(--hue-amber);
+  color: #14181e;
+}
+
+.raffle-streamer__spin-auto.is-active:hover:not(:disabled) {
+  background: var(--hue-amber);
+  filter: brightness(1.05);
+}
+
+.raffle-streamer__spin-auto:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.raffle-streamer__spin-auto-ind {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  border: 1.5px solid currentColor;
+  background: transparent;
+}
+
+.raffle-streamer__spin-auto.is-active .raffle-streamer__spin-auto-ind {
+  background: #14181e;
+  border-color: #14181e;
+}
+
+.raffle-streamer__btn--danger {
+  border-color: transparent;
+  background: var(--hue-coral);
+  color: #fff;
+}
+
+.raffle-streamer__btn--danger:hover:not(:disabled) {
+  background: var(--hue-coral);
+  filter: brightness(1.06);
+}
+
+.raffle-streamer__btn--danger-soft {
+  border-color: color-mix(in srgb, var(--hue-coral) 45%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-coral) 12%, var(--sheet));
+  color: var(--ink-blue);
+}
+
+.raffle-streamer__btn--danger-soft:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hue-coral) 20%, var(--sheet));
+}
+
+.raffle-streamer__btn-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.raffle-streamer__btn-pair:empty {
+  display: none;
+}
+
+.raffle-streamer__form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.raffle-streamer__field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.raffle-streamer__field>span {
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.raffle-streamer__field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.raffle-streamer__field-grid> :only-child {
+  grid-column: 1 / -1;
+}
+
+.raffle-streamer__input {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--field-line);
+  border-radius: 8px;
+  background: var(--field-high);
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.raffle-streamer__input option {
+  background: var(--sheet);
+  color: var(--ink-blue);
+}
+
+.raffle-streamer__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.raffle-streamer__danger-row {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--field-line);
+}
+
+.raffle-streamer__feedback {
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--hue-aqua) 16%, var(--sheet));
+  border: 1px solid color-mix(in srgb, var(--hue-aqua) 40%, var(--field-line));
+  color: var(--ink-blue);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.raffle-streamer__feedback.is-error {
+  background: color-mix(in srgb, var(--hue-coral) 16%, var(--sheet));
+  border-color: color-mix(in srgb, var(--hue-coral) 42%, var(--field-line));
+}
+
+.raffle-streamer__kpis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  background: var(--field-high);
+  border: 1px solid var(--field-line);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.raffle-streamer__kpis strong {
+  color: var(--ink-blue);
+  font-weight: 900;
+}
+
+.raffle-streamer__list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.raffle-streamer__empty {
+  margin: 4px 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.raffle-streamer__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: var(--field-high);
+  border: 1px solid var(--field-line);
+}
+
+.raffle-streamer__item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.raffle-streamer__item-title {
+  color: var(--ink-blue);
+  font-size: 12.5px;
+  font-weight: 800;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raffle-streamer__item-title:hover {
+  text-decoration: underline;
+}
+
+.raffle-streamer__item-sub {
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raffle-streamer__item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+
+@media (max-width: 800px) {
+
+  .raffle-streamer--floating,
+  .raffle-streamer--floating.raffle-streamer--left,
+  .raffle-streamer--floating.raffle-streamer--right {
+    left: max(12px, env(safe-area-inset-left));
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 121;
+    width: min(326px, calc(100vw - 24px));
+  }
+
+  body:has(.local-admin) .raffle-streamer--floating,
+  body:has(.local-admin) .raffle-streamer--floating.raffle-streamer--left,
+  body:has(.local-admin) .raffle-streamer--floating.raffle-streamer--right {
+    width: min(316px, calc(100vw - 72px));
+  }
+
+  .raffle-streamer--floating.is-collapsed,
+  body:has(.local-admin) .raffle-streamer--floating.is-collapsed {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 640px) {
+  .raffle-streamer--slot {
+    padding: 15px 14px;
+  }
+
+  .raffle-streamer--slot .raffle-streamer__field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── 4. Live Bottom-Up Entrant Stream Choreography ─── */
+
+/* Initial visible rows cascade upward when opening raffle */
+.raffle-view__p-row.is-initial-reveal {
+  animation: raffleRowInitialIn 0.34s var(--ease) calc(min(var(--p-i, 0), 11) * 24ms) backwards;
+}
+
+/* Regular player card flying up from the bottom in Elimination Drum idle pool:
+   - `is-entering-b78`: 1st card rises 78px into center when track stays at pos=0
+   - `is-entering-b39`: 2nd & 3rd cards add +39px to the track's 39px upward shift (= 78px total)
+   - `is-entering-stream`: 4th+ cards ride the track's full 78px upward glide cleanly from the bottom mask */
+.raffle-drum__card.is-entering-b78 {
+  animation: raffleDrumEnterBottom78 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.raffle-drum__card.is-entering-b39 {
+  animation: raffleDrumEnterBottom39 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.raffle-drum__card.is-entering-stream {
+  animation: raffleDrumEnterStream 0.22s ease-out both;
+}
+
+/* Counter badge bump on participant count & raffle list entrant pills */
+.raffle-view__p-count.is-bump-a {
+  animation: raffleCountBumpA 0.38s var(--pop);
+}
+
+.raffle-view__p-count.is-bump-b {
+  animation: raffleCountBumpB 0.38s var(--pop);
+}
+
+.raffle-item__entries-pill.is-bump-a {
+  animation: raffleEntriesPillBumpA 0.42s var(--pop);
+}
+
+.raffle-item__entries-pill.is-bump-b {
+  animation: raffleEntriesPillBumpB 0.42s var(--pop);
+}
+
+/* Supporting micro-entrances */
+.raffle-view__p-search {
+  animation: raffleSubtleFadeDown 0.26s var(--ease) backwards;
+}
+
+.raffle-view__joined-pill {
+  animation: raffleJoinedPillPop 0.32s var(--pop) backwards;
+}
+
+.raffle-view__winner-row {
+  animation: raffleWinnerRowIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes raffleRowInitialIn {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes raffleDrumEnterBottom78 {
+  0% {
+    opacity: 0;
+    translate: 0 78px;
+  }
+
+  45% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes raffleDrumEnterBottom39 {
+  0% {
+    opacity: 0;
+    translate: 0 39px;
+  }
+
+  45% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes raffleDrumEnterStream {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes raffleCountBumpA {
+  0% {
+    scale: 1;
+  }
+
+  38% {
+    scale: 1.16;
+  }
+
+  100% {
+    scale: 1;
+  }
+}
+
+@keyframes raffleCountBumpB {
+  0% {
+    scale: 1;
+  }
+
+  38% {
+    scale: 1.16;
+  }
+
+  100% {
+    scale: 1;
+  }
+}
+
+@keyframes raffleEntriesPillBumpA {
+  0% {
+    scale: 1;
+  }
+
+  38% {
+    scale: 1.12;
+  }
+
+  100% {
+    scale: 1;
+  }
+}
+
+@keyframes raffleEntriesPillBumpB {
+  0% {
+    scale: 1;
+  }
+
+  38% {
+    scale: 1.12;
+  }
+
+  100% {
+    scale: 1;
+  }
+}
+
+@keyframes raffleSubtleFadeDown {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes raffleJoinedPillPop {
+  from {
+    opacity: 0;
+    scale: 0.92;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes raffleWinnerRowIn {
+  from {
+    opacity: 0;
+    translate: 0 -8px;
+    scale: 0.98;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .raffle-view__p-row.is-initial-reveal,
+  .raffle-drum__card.is-entering-b78,
+  .raffle-drum__card.is-entering-b39,
+  .raffle-drum__card.is-entering-stream,
+  .raffle-drum__pool-card.is-entering,
+  .raffle-drum__card.is-knockout-exit,
+  .raffle-view__p-count.is-bump-a,
+  .raffle-view__p-count.is-bump-b,
+  .raffle-item__entries-pill.is-bump-a,
+  .raffle-item__entries-pill.is-bump-b,
+  .raffle-view__p-search,
+  .raffle-view__joined-pill,
+  .raffle-view__winner-row {
+    animation: none !important;
+  }
+}
+
+/* ─── 7. Streamer / Admin Player Inspection & Moderation Overlay ─── */
+
+.raffle-view__p-row.is-clickable,
+.raffle-view__winner-row.is-clickable,
+.raffle-drum__card.is-clickable,
+.raffle-drum__pool-card.is-clickable {
+  cursor: pointer;
+}
+
+.raffle-view__p-row.is-clickable:hover {
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--field-line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--field-high));
+}
+
+.raffle-view__winner-row.is-clickable:hover {
+  border-color: color-mix(in srgb, var(--hue-amber) 72%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-amber) 18%, var(--field-high));
+}
+
+.raffle-drum__card.is-clickable:hover,
+.raffle-drum__pool-card.is-clickable:hover {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--field-line));
+  background: color-mix(in srgb, var(--accent) 6%, var(--sheet));
+}
+
+.raffle-view__p-row.is-clickable:focus-visible,
+.raffle-view__winner-row.is-clickable:focus-visible,
+.raffle-drum__card.is-clickable:focus-visible,
+.raffle-drum__pool-card.is-clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.raffle-player-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 980;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.raffle-player-pop__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 18, 0.56);
+  backdrop-filter: blur(5px);
+  animation: rafflePopScrimIn 0.18s var(--ease) both;
+}
+
+.raffle-player-pop__card {
+  position: relative;
+  z-index: 1;
+  width: min(410px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--field-line);
+  background: var(--sheet);
+  color: var(--ink-blue);
+  box-shadow:
+    0 24px 56px -18px rgba(0, 0, 0, 0.44),
+    0 0 0 1px color-mix(in srgb, var(--field-line) 55%, transparent);
+  animation: rafflePopCardIn 0.22s var(--pop, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.raffle-player-pop__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.raffle-player-pop__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.raffle-player-pop__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  border: 1px solid var(--field-line);
+  background: var(--field-high);
+}
+
+.raffle-player-pop__who {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.raffle-player-pop__title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.raffle-player-pop__name {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--ink-blue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raffle-player-pop__ticket {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid var(--field-line);
+  background: var(--field-high);
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-player-pop__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.raffle-player-pop__badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--field-high);
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.raffle-player-pop__badge--win {
+  background: color-mix(in srgb, var(--hue-amber) 24%, var(--field-high));
+  color: var(--ink-blue);
+}
+
+.raffle-player-pop__badge--out,
+.raffle-player-pop__badge--ban {
+  background: color-mix(in srgb, var(--hue-coral) 20%, var(--field-high));
+  color: var(--hue-coral-d);
+}
+
+html[data-theme="dark"] .raffle-player-pop__badge--out,
+html[data-theme="dark"] .raffle-player-pop__badge--ban {
+  color: var(--hue-coral-soft);
+}
+
+.raffle-player-pop__badge--timeout {
+  background: color-mix(in srgb, var(--hue-amber) 18%, var(--field-high));
+  color: var(--ink-blue);
+}
+
+.raffle-player-pop__close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    color 0.16s var(--ease),
+    border-color 0.16s var(--ease);
+}
+
+.raffle-player-pop__close:hover {
+  background: var(--field-high);
+  color: var(--ink-blue);
+}
+
+.raffle-player-pop__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.raffle-player-pop__field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+}
+
+.raffle-player-pop__field-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.raffle-player-pop__field-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.raffle-player-pop__field-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-blue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raffle-player-pop__field-value.is-empty {
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-style: italic;
+}
+
+.raffle-player-pop__copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 10px;
+  border: 1px solid var(--field-line);
+  background: var(--sheet);
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.raffle-player-pop__copy:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--field-line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--sheet));
+}
+
+.raffle-player-pop__copy.is-copied {
+  border-color: color-mix(in srgb, var(--hue-aqua) 60%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-aqua) 18%, var(--sheet));
+}
+
+.raffle-player-pop__copy:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.raffle-player-pop__mod {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--field-line);
+}
+
+.raffle-player-pop__mod-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.raffle-player-pop__mod-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.raffle-player-pop__presets {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.raffle-player-pop__preset {
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    color 0.15s var(--ease);
+}
+
+.raffle-player-pop__preset:hover {
+  color: var(--ink-blue);
+  background: var(--field-high);
+}
+
+.raffle-player-pop__preset.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--field-high));
+  color: var(--ink-blue);
+}
+
+.raffle-player-pop__min-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 26px;
+  padding: 0 7px;
+  border-radius: 8px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+.raffle-player-pop__min-input input {
+  width: 38px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.raffle-player-pop__min-input input:focus {
+  outline: none;
+}
+
+.raffle-player-pop__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.raffle-player-pop__btn {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 12px;
+  border: 1px solid var(--field-line);
+  background: var(--field-high);
+  color: var(--ink-blue);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease),
+    filter 0.16s var(--ease);
+}
+
+.raffle-player-pop__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.raffle-player-pop__btn--timeout {
+  border-color: color-mix(in srgb, var(--hue-amber) 58%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-amber) 18%, var(--field-high));
+  color: var(--ink-blue);
+}
+
+.raffle-player-pop__btn--timeout:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hue-amber) 28%, var(--field-high));
+}
+
+.raffle-player-pop__btn--ban {
+  border-color: color-mix(in srgb, var(--hue-coral) 62%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-coral) 16%, var(--field-high));
+  color: var(--hue-coral-d);
+}
+
+html[data-theme="dark"] .raffle-player-pop__btn--ban {
+  color: var(--hue-coral-soft);
+}
+
+.raffle-player-pop__btn--ban:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hue-coral) 26%, var(--field-high));
+}
+
+.raffle-player-pop__btn--unban {
+  border-color: color-mix(in srgb, var(--hue-aqua) 60%, var(--field-line));
+  background: color-mix(in srgb, var(--hue-aqua) 18%, var(--field-high));
+  color: var(--ink-blue);
+}
+
+.raffle-player-pop__btn--unban:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hue-aqua) 28%, var(--field-high));
+}
+
+.raffle-player-pop__btn--ghost:hover:not(:disabled) {
+  background: var(--field);
+}
+
+.raffle-player-pop__feedback {
+  margin: 0;
+  padding: 8px 11px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.raffle-player-pop__feedback.is-ok {
+  background: color-mix(in srgb, var(--hue-aqua) 16%, var(--field));
+  border: 1px solid color-mix(in srgb, var(--hue-aqua) 48%, var(--field-line));
+  color: var(--ink-blue);
+}
+
+.raffle-player-pop__feedback.is-error {
+  background: color-mix(in srgb, var(--hue-coral) 15%, var(--field));
+  border: 1px solid color-mix(in srgb, var(--hue-coral) 48%, var(--field-line));
+  color: var(--hue-coral-d);
+}
+
+html[data-theme="dark"] .raffle-player-pop__feedback.is-error {
+  color: var(--hue-coral-soft);
+}
+
+@keyframes rafflePopScrimIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rafflePopCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .raffle-player-pop__scrim,
+  .raffle-player-pop__card {
+    animation: none !important;
+  }
+}
