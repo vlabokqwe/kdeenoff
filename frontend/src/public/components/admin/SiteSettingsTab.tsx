@@ -191,27 +191,27 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
 
   if (loading) {
     return (
-      <div className="ad-card ad-panel">
-        <p className="ad-muted">Loading site configuration…</p>
+      <div className="kadm-card kadm-panel">
+        <p className="kadm-muted">Loading site configuration…</p>
       </div>
     );
   }
 
   return (
-    <div className="ad-settings-layout">
-      <form className="ad-settings-main" onSubmit={(e) => void handleSave(e)}>
-        <div className="ad-toolbar">
+    <div className="kadm-settings-layout">
+      <form className="kadm-settings-main" onSubmit={(e) => void handleSave(e)}>
+        <div className="kadm-toolbar">
           <div>
-            <h2 className="ad-section-title">Global Site Configuration</h2>
-            <p className="ad-muted">
+            <h2 className="kadm-section-title">Global Site Configuration</h2>
+            <p className="kadm-muted">
               Manage promo codes, default partner referral links, and community channels.
             </p>
           </div>
-          <div className="ad-toolbar__actions">
+          <div className="kadm-toolbar__actions">
             {isDirty && (
               <button
                 type="button"
-                className="ad-btn ad-btn--ghost ad-btn--sm"
+                className="kadm-btn kadm-btn--ghost kadm-btn--sm"
                 onClick={() => setDraft({ ...original })}
               >
                 Discard
@@ -219,7 +219,7 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
             )}
             <button
               type="button"
-              className="ad-btn ad-btn--secondary ad-btn--sm"
+              className="kadm-btn kadm-btn--secondary kadm-btn--sm"
               onClick={() => void load()}
             >
               <IconRefresh size={14} />
@@ -227,7 +227,7 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
             </button>
             <button
               type="submit"
-              className="ad-btn ad-btn--primary ad-btn--sm"
+              className="kadm-btn kadm-btn--primary kadm-btn--sm"
               disabled={saving || !isDirty}
             >
               <IconCheck size={15} />
@@ -243,27 +243,27 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
             ["socials", "Stream & Community Channels"],
           ] as const
         ).map(([groupKey, groupTitle]) => (
-          <section key={groupKey} className="ad-card ad-panel">
-            <div className="ad-panel__head">
-              <h3 className="ad-panel__title">{groupTitle}</h3>
+          <section key={groupKey} className="kadm-card kadm-panel">
+            <div className="kadm-panel__head">
+              <h3 className="kadm-panel__title">{groupTitle}</h3>
             </div>
-            <div className="ad-form-grid">
+            <div className="kadm-form-grid">
               {KNOWN_FIELDS.filter((f) => f.group === groupKey).map((field) => {
                 const changed = (original[field.key] ?? "") !== (draft[field.key] ?? "");
                 return (
-                  <label key={field.key} className="ad-field">
-                    <span className="ad-field__label">
+                  <label key={field.key} className="kadm-field">
+                    <span className="kadm-field__label">
                       <span>{field.label}</span>
-                      {changed && <span className="ad-badge ad-badge--warn">Modified</span>}
+                      {changed && <span className="kadm-badge kadm-badge--warn">Modified</span>}
                     </span>
                     <input
                       type={field.type || "text"}
-                      className="ad-input"
+                      className="kadm-input"
                       placeholder={field.placeholder}
                       value={draft[field.key] ?? ""}
                       onChange={(e) => setField(field.key, e.target.value)}
                     />
-                    <span className="ad-field__hint">{field.hint}</span>
+                    <span className="kadm-field__hint">{field.hint}</span>
                   </label>
                 );
               })}
@@ -272,28 +272,28 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
         ))}
 
         {/* Custom Key-Value Store */}
-        <section className="ad-card ad-panel">
-          <div className="ad-panel__head">
+        <section className="kadm-card kadm-panel">
+          <div className="kadm-panel__head">
             <div>
-              <h3 className="ad-panel__title">Custom Key-Value Parameters</h3>
-              <p className="ad-panel__sub">Additional runtime flags stored in `site_settings`</p>
+              <h3 className="kadm-panel__title">Custom Key-Value Parameters</h3>
+              <p className="kadm-panel__sub">Additional runtime flags stored in `site_settings`</p>
             </div>
           </div>
 
           {customKeys.length > 0 && (
-            <div className="ad-kv-list">
+            <div className="kadm-kv-list">
               {customKeys.map((key) => (
-                <div key={key} className="ad-kv-row">
-                  <code className="ad-code">{key}</code>
+                <div key={key} className="kadm-kv-row">
+                  <code className="kadm-code">{key}</code>
                   <input
                     type="text"
-                    className="ad-input"
+                    className="kadm-input"
                     value={draft[key] ?? ""}
                     onChange={(e) => setField(key, e.target.value)}
                   />
                   <button
                     type="button"
-                    className="ad-btn ad-btn--danger ad-btn--xs"
+                    className="kadm-btn kadm-btn--danger kadm-btn--xs"
                     title={`Delete ${key}`}
                     onClick={() => void handleDeleteCustom(key)}
                   >
@@ -304,24 +304,24 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
             </div>
           )}
 
-          <div className="ad-kv-add">
+          <div className="kadm-kv-add">
             <input
               type="text"
-              className="ad-input"
+              className="kadm-input"
               placeholder="custom_key_name"
               value={newKey}
               onChange={(e) => setNewKey(e.target.value)}
             />
             <input
               type="text"
-              className="ad-input"
+              className="kadm-input"
               placeholder="Value"
               value={newVal}
               onChange={(e) => setNewVal(e.target.value)}
             />
             <button
               type="button"
-              className="ad-btn ad-btn--secondary ad-btn--sm"
+              className="kadm-btn kadm-btn--secondary kadm-btn--sm"
               onClick={(e) => handleAddCustom(e as unknown as FormEvent)}
             >
               <IconPlus size={14} />
@@ -332,21 +332,21 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
       </form>
 
       {/* Live Preview Sidebar */}
-      <aside className="ad-settings-preview">
-        <div className="ad-card ad-panel ad-promo-preview">
-          <span className="ad-badge ad-badge--live">Live Card Preview</span>
-          <div className="ad-promo-preview__prize">{draft.headline_prize || "$10,000"}</div>
-          <p className="ad-promo-preview__partner">
+      <aside className="kadm-settings-preview">
+        <div className="kadm-card kadm-panel kadm-cfg-preview">
+          <span className="kadm-badge kadm-badge--live">Live Card Preview</span>
+          <div className="kadm-cfg-preview__prize">{draft.headline_prize || "$10,000"}</div>
+          <p className="kadm-cfg-preview__partner">
             Partnered with <strong>{draft.partner_name || "Stake"}</strong>
           </p>
-          <div className="ad-promo-preview__code-box">
+          <div className="kadm-cfg-preview__code-box">
             <div>
-              <span className="ad-promo-preview__kicker">PROMO CODE</span>
-              <strong className="ad-promo-preview__code">{draft.promo_code || "KDEENOFF"}</strong>
+              <span className="kadm-cfg-preview__kicker">PROMO CODE</span>
+              <strong className="kadm-cfg-preview__code">{draft.promo_code || "KDEENOFF"}</strong>
             </div>
             <button
               type="button"
-              className="ad-btn ad-btn--secondary ad-btn--xs"
+              className="kadm-btn kadm-btn--secondary kadm-btn--xs"
               onClick={handleCopyCode}
             >
               {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
@@ -354,25 +354,25 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
             </button>
           </div>
 
-          <div className="ad-promo-preview__links">
+          <div className="kadm-cfg-preview__links">
             {draft.partner_signup_url && (
               <a
                 href={draft.partner_signup_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ad-btn ad-btn--primary ad-btn--sm"
+                className="kadm-btn kadm-btn--primary kadm-btn--sm"
               >
                 <span>Test Partner Link</span>
                 <IconExternal size={14} />
               </a>
             )}
-            <div className="ad-promo-preview__socials">
+            <div className="kadm-cfg-preview__socials">
               {draft.kick_url && (
                 <a
                   href={draft.kick_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ad-btn ad-btn--ghost ad-btn--xs"
+                  className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                 >
                   <span>Kick ({draft.kick_channel || "stream"})</span>
                   <IconExternal size={12} />
@@ -383,7 +383,7 @@ export function SiteSettingsTab({ notify, onChanged }: SiteSettingsTabProps) {
                   href={draft.telegram_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ad-btn ad-btn--ghost ad-btn--xs"
+                  className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                 >
                   <span>Telegram</span>
                   <IconExternal size={12} />

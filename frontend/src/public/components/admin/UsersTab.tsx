@@ -193,32 +193,32 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
   };
 
   return (
-    <div className="ad-stack">
+    <div className="kadm-stack">
       {/* Mini KPI Strip */}
       {stats && (
-        <div className="ad-mini-stats">
-          <div className="ad-card ad-mini-stat">
-            <span className="ad-mini-label">Total Accounts</span>
+        <div className="kadm-mini-stats">
+          <div className="kadm-card kadm-mini-stat">
+            <span className="kadm-mini-label">Total Accounts</span>
             <strong>{stats.totalUsers}</strong>
           </div>
-          <div className="ad-card ad-mini-stat">
-            <span className="ad-mini-label">Kick Linked</span>
+          <div className="kadm-card kadm-mini-stat">
+            <span className="kadm-mini-label">Kick Linked</span>
             <strong>{stats.linkedKick}</strong>
           </div>
-          <div className="ad-card ad-mini-stat">
-            <span className="ad-mini-label">Verified Emails</span>
+          <div className="kadm-card kadm-mini-stat">
+            <span className="kadm-mini-label">Verified Emails</span>
             <strong>{stats.verifiedEmails}</strong>
           </div>
-          <div className="ad-card ad-mini-stat">
-            <span className="ad-mini-label">Active Sessions</span>
+          <div className="kadm-card kadm-mini-stat">
+            <span className="kadm-mini-label">Active Sessions</span>
             <strong>{stats.activeSessions}</strong>
           </div>
         </div>
       )}
 
       {/* Toolbar */}
-      <div className="ad-toolbar">
-        <div className="ad-seg" role="tablist" aria-label="User directory filter">
+      <div className="kadm-toolbar">
+        <div className="kadm-seg" role="tablist" aria-label="User directory filter">
           {(
             [
               ["all", "All"],
@@ -234,7 +234,7 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
               type="button"
               role="tab"
               aria-selected={filter === key}
-              className={`ad-seg__btn${filter === key ? " is-active" : ""}`}
+              className={`kadm-seg__btn${filter === key ? " is-active" : ""}`}
               onClick={() => setFilter(key)}
             >
               {label}
@@ -242,12 +242,12 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
           ))}
         </div>
 
-        <div className="ad-toolbar__actions">
-          <div className="ad-search">
+        <div className="kadm-toolbar__actions">
+          <div className="kadm-search">
             <IconSearch size={15} />
             <input
               type="search"
-              className="ad-search__input"
+              className="kadm-search__input"
               placeholder="Search Kick handle, email, ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -255,7 +255,7 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
           </div>
           <button
             type="button"
-            className="ad-btn ad-btn--secondary ad-btn--sm"
+            className="kadm-btn kadm-btn--secondary kadm-btn--sm"
             disabled={!filteredUsers.length}
             onClick={exportUsersCsv}
           >
@@ -264,7 +264,7 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
           </button>
           <button
             type="button"
-            className="ad-btn ad-btn--ghost ad-btn--sm"
+            className="kadm-btn kadm-btn--ghost kadm-btn--sm"
             onClick={() => void loadUsers()}
           >
             <IconRefresh size={14} />
@@ -273,10 +273,10 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
       </div>
 
       {/* Directory + Optional User Inspector */}
-      <div className={selectedId ? "ad-users-layout has-inspector" : "ad-users-layout"}>
-        <div className="ad-card ad-table-card">
-          <div className="ad-table-wrap">
-            <table className="ad-table">
+      <div className={selectedId ? "kadm-users-layout has-inspector" : "kadm-users-layout"}>
+        <div className="kadm-card kadm-table-card">
+          <div className="kadm-table-wrap">
+            <table className="kadm-table">
               <thead>
                 <tr>
                   <th>Identity</th>
@@ -289,13 +289,13 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
               <tbody>
                 {loading && users.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="ad-table__empty">
+                    <td colSpan={5} className="kadm-table__empty">
                       Loading community directory…
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="ad-table__empty">
+                    <td colSpan={5} className="kadm-table__empty">
                       No accounts match your filter.
                     </td>
                   </tr>
@@ -312,17 +312,17 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                         onClick={() => setSelectedId(isSelected ? null : u.id)}
                       >
                         <td>
-                          <div className="ad-user-cell">
+                          <div className="kadm-user-cell">
                             {avatar ? (
                               <img
                                 src={avatar}
                                 alt=""
                                 width={30}
                                 height={30}
-                                className="ad-user-cell__avatar"
+                                className="kadm-user-cell__avatar"
                               />
                             ) : (
-                              <span className="ad-user-cell__avatar ad-user-cell__avatar--ph">
+                              <span className="kadm-user-cell__avatar kadm-user-cell__avatar--ph">
                                 {(primary[0] || "U").toUpperCase()}
                               </span>
                             )}
@@ -330,13 +330,13 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                                 <strong>{primary}</strong>
                                 {u.role === "admin" && (
-                                  <span className="ad-badge ad-badge--warn">Admin</span>
+                                  <span className="kadm-badge kadm-badge--warn">Admin</span>
                                 )}
                                 {u.role === "streamer" && (
-                                  <span className="ad-badge ad-badge--info">Streamer</span>
+                                  <span className="kadm-badge kadm-badge--info">Streamer</span>
                                 )}
                               </div>
-                              <div className="ad-subtext">
+                              <div className="kadm-subtext">
                                 {u.kick_user_id ? `Kick #${u.kick_user_id}` : "Email-only account"}
                               </div>
                             </div>
@@ -347,36 +347,36 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                             <div>
                               <span>{u.email}</span>{" "}
                               <span
-                                className={`ad-badge ad-badge--${u.email_verified ? "live" : "warn"}`}
+                                className={`kadm-badge kadm-badge--${u.email_verified ? "live" : "warn"}`}
                               >
                                 {u.email_verified ? "Verified" : "Pending"}
                               </span>
                             </div>
                           ) : (
-                            <span className="ad-muted">Not linked</span>
+                            <span className="kadm-muted">Not linked</span>
                           )}
                         </td>
-                        <td className="ad-nowrap">
+                        <td className="kadm-nowrap">
                           <span>{u.raffle_entries_count} entries</span>
                           {u.raffles_won_count > 0 && (
-                            <span className="ad-badge ad-badge--live" style={{ marginLeft: 6 }}>
+                            <span className="kadm-badge kadm-badge--live" style={{ marginLeft: 6 }}>
                               <IconTrophy size={11} />
                               <span>{u.raffles_won_count} won</span>
                             </span>
                           )}
                         </td>
-                        <td className="ad-nowrap">
+                        <td className="kadm-nowrap">
                           {u.active_sessions > 0 ? (
-                            <span className="ad-badge ad-badge--info">
+                            <span className="kadm-badge kadm-badge--info">
                               {u.active_sessions} active
                             </span>
                           ) : (
-                            <span className="ad-muted">0</span>
+                            <span className="kadm-muted">0</span>
                           )}
                         </td>
-                        <td className="ad-nowrap">
+                        <td className="kadm-nowrap">
                           <div>{relTime(u.updated_at, now)}</div>
-                          <span className="ad-subtext">{fmtDateTime(u.created_at)}</span>
+                          <span className="kadm-subtext">{fmtDateTime(u.created_at)}</span>
                         </td>
                       </tr>
                     );
@@ -389,12 +389,12 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
 
         {/* User Inspector Panel */}
         {selectedId && (
-          <aside className="ad-card ad-panel ad-user-inspector">
-            <div className="ad-panel__head">
-              <h3 className="ad-panel__title">Account Inspector</h3>
+          <aside className="kadm-card kadm-panel kadm-user-inspector">
+            <div className="kadm-panel__head">
+              <h3 className="kadm-panel__title">Account Inspector</h3>
               <button
                 type="button"
-                className="ad-btn ad-btn--ghost ad-btn--xs"
+                className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                 onClick={() => setSelectedId(null)}
               >
                 <IconClose size={15} />
@@ -402,41 +402,41 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
             </div>
 
             {loadingDetail && !detail ? (
-              <p className="ad-muted">Loading profile details…</p>
+              <p className="kadm-muted">Loading profile details…</p>
             ) : detail ? (
-              <div className="ad-stack-sm">
-                <div className="ad-user-hero">
+              <div className="kadm-stack-sm">
+                <div className="kadm-user-hero">
                   {safeAvatar(detail.user.avatar_url || undefined) ? (
                     <img
                       src={safeAvatar(detail.user.avatar_url || undefined)}
                       alt=""
                       width={46}
                       height={46}
-                      className="ad-user-cell__avatar"
+                      className="kadm-user-cell__avatar"
                     />
                   ) : (
                     <span
-                      className="ad-user-cell__avatar ad-user-cell__avatar--ph"
+                      className="kadm-user-cell__avatar kadm-user-cell__avatar--ph"
                       style={{ width: 46, height: 46 }}
                     >
                       <IconUsers size={20} />
                     </span>
                   )}
                   <div>
-                    <strong className="ad-user-hero__name">
+                    <strong className="kadm-user-hero__name">
                       {detail.user.kick_name || detail.user.email || detail.user.id}
                     </strong>
-                    <div className="ad-subtext">ID: {detail.user.id}</div>
+                    <div className="kadm-subtext">ID: {detail.user.id}</div>
                   </div>
                 </div>
 
-                <div className="ad-kv-summary">
+                <div className="kadm-kv-summary">
                   <div>
-                    <span className="ad-mini-label">Email</span>
+                    <span className="kadm-mini-label">Email</span>
                     <strong>{detail.user.email || "—"}</strong>
                   </div>
                   <div>
-                    <span className="ad-mini-label">Email Verified</span>
+                    <span className="kadm-mini-label">Email Verified</span>
                     <strong>
                       {detail.user.email_verified
                         ? fmtDateTime(detail.user.email_verified_at)
@@ -444,7 +444,7 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                     </strong>
                   </div>
                   <div>
-                    <span className="ad-mini-label">Kick Account</span>
+                    <span className="kadm-mini-label">Kick Account</span>
                     <strong>
                       {detail.user.kick_user_id
                         ? `${detail.user.kick_name || "Linked"} (#${detail.user.kick_user_id})`
@@ -452,19 +452,19 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                     </strong>
                   </div>
                   <div>
-                    <span className="ad-mini-label">Created</span>
+                    <span className="kadm-mini-label">Created</span>
                     <strong>{fmtDateTime(detail.user.created_at)}</strong>
                   </div>
                 </div>
 
                 {/* Account Role */}
-                <div className="ad-subpanel">
-                  <div className="ad-subpanel__head">
+                <div className="kadm-subpanel">
+                  <div className="kadm-subpanel__head">
                     <strong>
                       <IconShield size={14} /> Access Role
                     </strong>
                   </div>
-                  <div className="ad-seg" role="radiogroup" aria-label="Account role">
+                  <div className="kadm-seg" role="radiogroup" aria-label="Account role">
                     {(
                       [
                         ["player", "Player"],
@@ -480,7 +480,7 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                           role="radio"
                           aria-checked={active}
                           disabled={busyAction === "role"}
-                          className={`ad-seg__btn${active ? " is-active" : ""}`}
+                          className={`kadm-seg__btn${active ? " is-active" : ""}`}
                           onClick={() => {
                             if (!active) void handleRoleChange(detail.user.id, roleKey);
                           }}
@@ -490,21 +490,21 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                       );
                     })}
                   </div>
-                  <p className="ad-subtext" style={{ marginTop: 6 }}>
+                  <p className="kadm-subtext" style={{ marginTop: 6 }}>
                     Streamers can create, edit, spin, eliminate, and reroll raffles via the Raffle Overlay without full Admin access.
                   </p>
                 </div>
 
                 {/* Active Sessions */}
-                <div className="ad-subpanel">
-                  <div className="ad-subpanel__head">
+                <div className="kadm-subpanel">
+                  <div className="kadm-subpanel__head">
                     <strong>
                       <IconShield size={14} /> Active Sessions ({detail.sessions.length})
                     </strong>
                     {detail.sessions.length > 0 && (
                       <button
                         type="button"
-                        className="ad-btn ad-btn--secondary ad-btn--xs"
+                        className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                         disabled={busyAction === "revoke"}
                         onClick={() => void handleRevokeSessions(detail.user.id)}
                       >
@@ -513,13 +513,13 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                     )}
                   </div>
                   {detail.sessions.length === 0 ? (
-                    <p className="ad-subtext">No active browser sessions.</p>
+                    <p className="kadm-subtext">No active browser sessions.</p>
                   ) : (
-                    <ul className="ad-mini-list">
+                    <ul className="kadm-mini-list">
                       {detail.sessions.slice(0, 6).map((s, idx) => (
                         <li key={idx}>
                           <span>Signed in {relTime(s.created_at, now)}</span>
-                          <span className="ad-subtext">Expires {fmtDateTime(s.expires_at)}</span>
+                          <span className="kadm-subtext">Expires {fmtDateTime(s.expires_at)}</span>
                         </li>
                       ))}
                     </ul>
@@ -527,16 +527,16 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                 </div>
 
                 {/* Raffle Participation */}
-                <div className="ad-subpanel">
-                  <div className="ad-subpanel__head">
+                <div className="kadm-subpanel">
+                  <div className="kadm-subpanel__head">
                     <strong>
                       <IconTicket size={14} /> Raffle Entries ({detail.entries.length})
                     </strong>
                   </div>
                   {detail.entries.length === 0 ? (
-                    <p className="ad-subtext">Has not entered any raffles yet.</p>
+                    <p className="kadm-subtext">Has not entered any raffles yet.</p>
                   ) : (
-                    <ul className="ad-mini-list">
+                    <ul className="kadm-mini-list">
                       {detail.entries.slice(0, 8).map((e) => {
                         const won =
                           Boolean(e.winner) &&
@@ -546,9 +546,9 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                           <li key={e.id}>
                             <div>
                               <strong>{e.title || `Raffle #${e.raffle_id}`}</strong>{" "}
-                              {won && <span className="ad-badge ad-badge--live">Won</span>}
+                              {won && <span className="kadm-badge kadm-badge--live">Won</span>}
                             </div>
-                            <span className="ad-subtext">
+                            <span className="kadm-subtext">
                               {e.prize ? `${e.prize} · ` : ""}
                               {fmtDateTime(e.created_at)}
                             </span>
@@ -560,19 +560,19 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                 </div>
 
                 {/* Danger Zone */}
-                <div className="ad-danger-box">
+                <div className="kadm-danger-box">
                   <div>
                     <strong>Delete Account</strong>
-                    <span className="ad-field__hint">
+                    <span className="kadm-field__hint">
                       Removes sessions, verification codes, and account record.
                     </span>
                   </div>
-                  <div className="ad-row-actions">
+                  <div className="kadm-row-actions">
                     {confirmDelete ? (
                       <>
                         <button
                           type="button"
-                          className="ad-btn ad-btn--danger ad-btn--xs"
+                          className="kadm-btn kadm-btn--danger kadm-btn--xs"
                           disabled={busyAction === "delete"}
                           onClick={() => void handleDeleteUser(detail.user.id)}
                         >
@@ -580,7 +580,7 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                         </button>
                         <button
                           type="button"
-                          className="ad-btn ad-btn--ghost ad-btn--xs"
+                          className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                           onClick={() => setConfirmDelete(false)}
                         >
                           Cancel
@@ -589,7 +589,7 @@ export function UsersTab({ notify, onChanged }: UsersTabProps) {
                     ) : (
                       <button
                         type="button"
-                        className="ad-btn ad-btn--danger ad-btn--xs"
+                        className="kadm-btn kadm-btn--danger kadm-btn--xs"
                         onClick={() => setConfirmDelete(true)}
                       >
                         <IconTrash size={13} />

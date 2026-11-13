@@ -883,8 +883,8 @@ export function LeaderboardsTab({
   if (boardSlug) {
     if (loadingDetail && !detail) {
       return (
-        <div className="ad-card ad-panel">
-          <p className="ad-muted">Loading Race Studio for "{boardSlug}"…</p>
+        <div className="kadm-card kadm-panel">
+          <p className="kadm-muted">Loading Race Studio for "{boardSlug}"…</p>
         </div>
       );
     }
@@ -951,21 +951,21 @@ export function LeaderboardsTab({
         : [];
 
     return (
-      <div className="ad-stack">
+      <div className="kadm-stack">
         {/* Studio Header */}
-        <div className="ad-card ad-studio-bar">
-          <div className="ad-studio-bar__left">
+        <div className="kadm-card kadm-studio-bar">
+          <div className="kadm-studio-bar__left">
             <button
               type="button"
-              className="ad-btn ad-btn--ghost ad-btn--sm"
+              className="kadm-btn kadm-btn--ghost kadm-btn--sm"
               onClick={() => onSelectBoardSlug(null)}
             >
               <IconArrowLeft size={15} />
               <span>All Races</span>
             </button>
-            <div className="ad-studio-bar__select-wrap">
+            <div className="kadm-studio-bar__select-wrap">
               <select
-                className="ad-select"
+                className="kadm-select"
                 aria-label="Switch leaderboard"
                 value={board.slug}
                 onChange={(e) => onSelectBoardSlug(e.target.value)}
@@ -977,26 +977,26 @@ export function LeaderboardsTab({
                 ))}
               </select>
             </div>
-            <span className={`ad-badge ad-badge--${boardTone}`}>{boardStatusText}</span>
+            <span className={`kadm-badge kadm-badge--${boardTone}`}>{boardStatusText}</span>
             {Boolean(board.is_demo) && (
-              <span className="ad-badge ad-badge--warn">DEMO</span>
+              <span className="kadm-badge kadm-badge--warn">DEMO</span>
             )}
             {board.badge?.trim() && (
-              <span className="ad-badge ad-badge--info">{board.badge.trim().toUpperCase()}</span>
+              <span className="kadm-badge kadm-badge--info">{board.badge.trim().toUpperCase()}</span>
             )}
-            <span className="ad-badge ad-badge--muted">{partnerLabel(board.partner)}</span>
+            <span className="kadm-badge kadm-badge--muted">{partnerLabel(board.partner)}</span>
             {board.show_in_drawer !== 0 && (
-              <span className="ad-badge ad-badge--muted">Sidebar</span>
+              <span className="kadm-badge kadm-badge--muted">Sidebar</span>
             )}
             {board.show_on_home !== 0 && (
-              <span className="ad-badge ad-badge--muted">Home</span>
+              <span className="kadm-badge kadm-badge--muted">Home</span>
             )}
           </div>
 
-          <div className="ad-studio-bar__right">
+          <div className="kadm-studio-bar__right">
             <button
               type="button"
-              className="ad-btn ad-btn--secondary ad-btn--sm"
+              className="kadm-btn kadm-btn--secondary kadm-btn--sm"
               disabled={busyAction === "growth-tick"}
               onClick={() => void handleStudioApplyGrowth()}
               title="Immediately apply any due scheduled wager growth ticks"
@@ -1006,7 +1006,7 @@ export function LeaderboardsTab({
             </button>
             <button
               type="button"
-              className="ad-btn ad-btn--secondary ad-btn--sm"
+              className="kadm-btn kadm-btn--secondary kadm-btn--sm"
               disabled={busyAction === "auto-rank"}
               onClick={() => void handleStudioAutoRank()}
               title="Sort and re-rank all players by wagered amount"
@@ -1017,7 +1017,7 @@ export function LeaderboardsTab({
             {!board.archived && (
               <button
                 type="button"
-                className="ad-btn ad-btn--ghost ad-btn--sm"
+                className="kadm-btn kadm-btn--ghost kadm-btn--sm"
                 onClick={() => onOpenPublicPath(boardHref(board.slug))}
               >
                 <span>Open Live</span>
@@ -1028,13 +1028,13 @@ export function LeaderboardsTab({
         </div>
 
         {/* Studio Sub-navigation + Quick Stats */}
-        <div className="ad-toolbar">
-          <div className="ad-seg" role="tablist" aria-label="Race Studio sections">
+        <div className="kadm-toolbar">
+          <div className="kadm-seg" role="tablist" aria-label="Race Studio sections">
             <button
               type="button"
               role="tab"
               aria-selected={studioTab === "players"}
-              className={`ad-seg__btn${studioTab === "players" ? " is-active" : ""}`}
+              className={`kadm-seg__btn${studioTab === "players" ? " is-active" : ""}`}
               onClick={() => setStudioTab("players")}
             >
               Players &amp; Wagers ({players.length})
@@ -1043,7 +1043,7 @@ export function LeaderboardsTab({
               type="button"
               role="tab"
               aria-selected={studioTab === "spots"}
-              className={`ad-seg__btn${studioTab === "spots" ? " is-active" : ""}`}
+              className={`kadm-seg__btn${studioTab === "spots" ? " is-active" : ""}`}
               onClick={() => setStudioTab("spots")}
             >
               Spot Prizes ({moneyShort(allocatedSpotCents)})
@@ -1052,14 +1052,14 @@ export function LeaderboardsTab({
               type="button"
               role="tab"
               aria-selected={studioTab === "settings"}
-              className={`ad-seg__btn${studioTab === "settings" ? " is-active" : ""}`}
+              className={`kadm-seg__btn${studioTab === "settings" ? " is-active" : ""}`}
               onClick={() => setStudioTab("settings")}
             >
               Race Settings
             </button>
           </div>
 
-          <div className="ad-studio-metrics">
+          <div className="kadm-studio-metrics">
             <span>
               Pool: <strong>{moneyShort(board.prize_pool_cents)}</strong>
             </span>
@@ -1075,44 +1075,44 @@ export function LeaderboardsTab({
 
         {/* Sub-tab 1: Players & Wagers */}
         {studioTab === "players" && (
-          <div className="ad-stack">
+          <div className="kadm-stack">
             {/* Quick Add Bar */}
-            <form className="ad-card ad-quick-form" onSubmit={(e) => void handleQuickAddPlayer(e)}>
-              <div className="ad-quick-form__field ad-quick-form__field--grow">
-                <label className="ad-mini-label">Player Username</label>
+            <form className="kadm-card kadm-quick-form" onSubmit={(e) => void handleQuickAddPlayer(e)}>
+              <div className="kadm-quick-form__field kadm-quick-form__field--grow">
+                <label className="kadm-mini-label">Player Username</label>
                 <input
                   type="text"
-                  className="ad-input"
+                  className="kadm-input"
                   placeholder="e.g. HighRoller77"
                   value={quickUser}
                   onChange={(e) => setQuickUser(e.target.value)}
                 />
               </div>
-              <div className="ad-quick-form__field">
-                <label className="ad-mini-label">Wagered (USD)</label>
+              <div className="kadm-quick-form__field">
+                <label className="kadm-mini-label">Wagered (USD)</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0"
-                  className="ad-input"
+                  className="kadm-input"
                   placeholder="2500.00"
                   value={quickWagerUsd}
                   onChange={(e) => setQuickWagerUsd(e.target.value)}
                 />
               </div>
-              <div className="ad-quick-form__field">
-                <label className="ad-mini-label">Override Prize (USD)</label>
+              <div className="kadm-quick-form__field">
+                <label className="kadm-mini-label">Override Prize (USD)</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0"
-                  className="ad-input"
+                  className="kadm-input"
                   placeholder="0 (uses spot)"
                   value={quickPrizeUsd}
                   onChange={(e) => setQuickPrizeUsd(e.target.value)}
                 />
               </div>
-              <label className="ad-switch-label ad-quick-form__switch">
+              <label className="kadm-switch-label kadm-quick-form__switch">
                 <input
                   type="checkbox"
                   checked={quickGrowth}
@@ -1122,7 +1122,7 @@ export function LeaderboardsTab({
               </label>
               <button
                 type="submit"
-                className="ad-btn ad-btn--primary ad-btn--sm"
+                className="kadm-btn kadm-btn--primary kadm-btn--sm"
                 disabled={addingPlayer}
               >
                 <IconPlus size={15} />
@@ -1131,21 +1131,21 @@ export function LeaderboardsTab({
             </form>
 
             {/* Filter & CSV Toolbar */}
-            <div className="ad-toolbar">
-              <div className="ad-search">
+            <div className="kadm-toolbar">
+              <div className="kadm-search">
                 <IconSearch size={15} />
                 <input
                   type="search"
-                  className="ad-search__input"
+                  className="kadm-search__input"
                   placeholder="Filter players by username or rank…"
                   value={playerSearch}
                   onChange={(e) => setPlayerSearch(e.target.value)}
                 />
               </div>
-              <div className="ad-toolbar__actions">
+              <div className="kadm-toolbar__actions">
                 <button
                   type="button"
-                  className={`ad-btn ad-btn--secondary ad-btn--sm${csvOpen ? " is-active" : ""}`}
+                  className={`kadm-btn kadm-btn--secondary kadm-btn--sm${csvOpen ? " is-active" : ""}`}
                   onClick={() => setCsvOpen((v) => !v)}
                 >
                   <IconUpload size={14} />
@@ -1153,7 +1153,7 @@ export function LeaderboardsTab({
                 </button>
                 <button
                   type="button"
-                  className="ad-btn ad-btn--ghost ad-btn--sm"
+                  className="kadm-btn kadm-btn--ghost kadm-btn--sm"
                   disabled={!players.length}
                   onClick={handleExportPlayersCsv}
                 >
@@ -1165,16 +1165,16 @@ export function LeaderboardsTab({
 
             {/* CSV Import Drawer */}
             {csvOpen && (
-              <div className="ad-card ad-panel">
-                <div className="ad-panel__head">
+              <div className="kadm-card kadm-panel">
+                <div className="kadm-panel__head">
                   <div>
-                    <h3 className="ad-panel__title">Bulk CSV Player Import</h3>
-                    <p className="ad-panel__sub">
+                    <h3 className="kadm-panel__title">Bulk CSV Player Import</h3>
+                    <p className="kadm-panel__sub">
                       Format: <code>username, wagered_usd, prize_usd</code> (one player per line)
                     </p>
                   </div>
-                  <div className="ad-toolbar__actions">
-                    <label className="ad-btn ad-btn--secondary ad-btn--xs" style={{ cursor: "pointer" }}>
+                  <div className="kadm-toolbar__actions">
+                    <label className="kadm-btn kadm-btn--secondary kadm-btn--xs" style={{ cursor: "pointer" }}>
                       <IconUpload size={13} />
                       <span>Load .csv file</span>
                       <input
@@ -1186,7 +1186,7 @@ export function LeaderboardsTab({
                     </label>
                     <button
                       type="button"
-                      className="ad-btn ad-btn--ghost ad-btn--xs"
+                      className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                       onClick={() =>
                         setCsvText(
                           "username,wagered_usd,prize_usd\nZeusSpinner,48500,0\nOlympusKing,31200,0\nSpartanbet,19450,0",
@@ -1197,18 +1197,18 @@ export function LeaderboardsTab({
                     </button>
                     <button
                       type="button"
-                      className="ad-btn ad-btn--ghost ad-btn--xs"
+                      className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                       onClick={() => setCsvOpen(false)}
                     >
                       <IconClose size={14} />
                     </button>
                   </div>
                 </div>
-                <div className="ad-form-grid" style={{ marginBottom: 12 }}>
-                  <label className="ad-switch-row">
+                <div className="kadm-form-grid" style={{ marginBottom: 12 }}>
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Update existing usernames &amp; add new</strong>
-                      <span className="ad-field__hint">Merge CSV rows by username without removing unlisted players.</span>
+                      <span className="kadm-field__hint">Merge CSV rows by username without removing unlisted players.</span>
                     </div>
                     <input
                       type="radio"
@@ -1217,10 +1217,10 @@ export function LeaderboardsTab({
                       onChange={() => setCsvMode("merge")}
                     />
                   </label>
-                  <label className="ad-switch-row">
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Replace entire player list</strong>
-                      <span className="ad-field__hint">Clear current players on this board and import fresh from CSV.</span>
+                      <span className="kadm-field__hint">Clear current players on this board and import fresh from CSV.</span>
                     </div>
                     <input
                       type="radio"
@@ -1231,16 +1231,16 @@ export function LeaderboardsTab({
                   </label>
                 </div>
                 <textarea
-                  className="ad-textarea"
+                  className="kadm-textarea"
                   rows={5}
                   placeholder={"username,wagered_usd,prize_usd\nPlayerOne,12500,0"}
                   value={csvText}
                   onChange={(e) => setCsvText(e.target.value)}
                 />
-                <div className="ad-form-foot">
+                <div className="kadm-form-foot">
                   <button
                     type="button"
-                    className="ad-btn ad-btn--primary ad-btn--sm"
+                    className="kadm-btn kadm-btn--primary kadm-btn--sm"
                     disabled={importingCsv || !csvText.trim()}
                     onClick={() => void handleImportCsv()}
                   >
@@ -1253,34 +1253,34 @@ export function LeaderboardsTab({
 
             {/* 72h Wager Growth Projection Inspector */}
             {inspectedPlayer && inspectedDraft && (
-              <div className="ad-card ad-panel ad-growth-panel">
-                <div className="ad-panel__head">
+              <div className="kadm-card kadm-panel kadm-growth-panel">
+                <div className="kadm-panel__head">
                   <div>
-                    <h3 className="ad-panel__title">
+                    <h3 className="kadm-panel__title">
                       72-Hour Deterministic Growth Plan · {inspectedPlayer.username}
                     </h3>
-                    <p className="ad-panel__sub">
+                    <p className="kadm-panel__sub">
                       Preview matches server-side cron schedule (`buildWagerGrowthSchedule`).
                     </p>
                   </div>
                   <button
                     type="button"
-                    className="ad-btn ad-btn--ghost ad-btn--xs"
+                    className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                     onClick={() => setGrowthInspectId(null)}
                   >
                     <IconClose size={15} />
                   </button>
                 </div>
 
-                <div className="ad-growth-controls">
-                  <label className="ad-field">
-                    <span className="ad-field__label">Target Growth % per Tick</span>
+                <div className="kadm-growth-controls">
+                  <label className="kadm-field">
+                    <span className="kadm-field__label">Target Growth % per Tick</span>
                     <input
                       type="number"
                       min="0"
                       max="500"
                       step="1"
-                      className="ad-input"
+                      className="kadm-input"
                       placeholder={`Board default (${board.auto_wager_growth_pct ?? 3}%)`}
                       value={inspectedDraft.wagGrowthPct}
                       onChange={(e) =>
@@ -1288,14 +1288,14 @@ export function LeaderboardsTab({
                       }
                     />
                   </label>
-                  <label className="ad-field">
-                    <span className="ad-field__label">Tick Interval (Hours)</span>
+                  <label className="kadm-field">
+                    <span className="kadm-field__label">Tick Interval (Hours)</span>
                     <input
                       type="number"
                       min="0.1"
                       max="720"
                       step="0.5"
-                      className="ad-input"
+                      className="kadm-input"
                       placeholder={`Board default (${Math.round(((Number(board.auto_wager_growth_interval_ms) || 43_200_000) / 3_600_000) * 10) / 10}h)`}
                       value={inspectedDraft.wagGrowthHours}
                       onChange={(e) =>
@@ -1303,10 +1303,10 @@ export function LeaderboardsTab({
                       }
                     />
                   </label>
-                  <div className="ad-growth-controls__cta">
+                  <div className="kadm-growth-controls__cta">
                     <button
                       type="button"
-                      className="ad-btn ad-btn--primary ad-btn--sm"
+                      className="kadm-btn kadm-btn--primary kadm-btn--sm"
                       disabled={savingPlayerId === inspectedPlayer.id}
                       onClick={() => void handleSavePlayer(inspectedPlayer)}
                     >
@@ -1317,8 +1317,8 @@ export function LeaderboardsTab({
                 </div>
 
                 {schedulePreview.length > 0 ? (
-                  <div className="ad-growth-grid">
-                    <div className="ad-growth-chart">
+                  <div className="kadm-growth-grid">
+                    <div className="kadm-growth-chart">
                       {(() => {
                         const startCents = usdInputToCents(inspectedDraft.wageredUsd);
                         const pts = [
@@ -1339,7 +1339,7 @@ export function LeaderboardsTab({
                         const finalWager = pts[pts.length - 1].wagered_cents;
                         return (
                           <>
-                            <div className="ad-growth-chart__summary">
+                            <div className="kadm-growth-chart__summary">
                               <span>
                                 Now: <strong>{money(startCents)}</strong>
                               </span>
@@ -1349,10 +1349,10 @@ export function LeaderboardsTab({
                                 {schedulePreview.length} ticks)
                               </span>
                             </div>
-                            <svg viewBox="0 0 460 148" className="ad-chart__svg">
-                              <line x1={16} x2={444} y1={132} y2={132} className="ad-chart__grid" />
-                              <line x1={16} x2={444} y1={80} y2={80} className="ad-chart__grid" />
-                              <line x1={16} x2={444} y1={28} y2={28} className="ad-chart__grid" />
+                            <svg viewBox="0 0 460 148" className="kadm-chart__svg">
+                              <line x1={16} x2={444} y1={132} y2={132} className="kadm-chart__grid" />
+                              <line x1={16} x2={444} y1={80} y2={80} className="kadm-chart__grid" />
+                              <line x1={16} x2={444} y1={28} y2={28} className="kadm-chart__grid" />
                               <polyline
                                 fill="none"
                                 stroke="var(--accent)"
@@ -1381,8 +1381,8 @@ export function LeaderboardsTab({
                         );
                       })()}
                     </div>
-                    <div className="ad-growth-ticks">
-                      <table className="ad-table ad-table--compact">
+                    <div className="kadm-growth-ticks">
+                      <table className="kadm-table kadm-table--compact">
                         <thead>
                           <tr>
                             <th>Tick</th>
@@ -1397,7 +1397,7 @@ export function LeaderboardsTab({
                               <td>#{idx + 1}</td>
                               <td>{fmtShortDate(t.at_ms)}</td>
                               <td>
-                                <span className="ad-badge ad-badge--info">+{t.pct}%</span>
+                                <span className="kadm-badge kadm-badge--info">+{t.pct}%</span>
                               </td>
                               <td>
                                 <strong>{money(t.wagered_cents)}</strong>
@@ -1409,7 +1409,7 @@ export function LeaderboardsTab({
                     </div>
                   </div>
                 ) : (
-                  <p className="ad-muted">
+                  <p className="kadm-muted">
                     Increase growth % or shorten tick interval to see ticks within 72h.
                   </p>
                 )}
@@ -1417,9 +1417,9 @@ export function LeaderboardsTab({
             )}
 
             {/* Players Table */}
-            <div className="ad-card ad-table-card">
-              <div className="ad-table-wrap">
-                <table className="ad-table">
+            <div className="kadm-card kadm-table-card">
+              <div className="kadm-table-wrap">
+                <table className="kadm-table">
                   <thead>
                     <tr>
                       <th style={{ width: 92 }}>Rank</th>
@@ -1433,7 +1433,7 @@ export function LeaderboardsTab({
                   <tbody>
                     {visiblePlayers.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="ad-table__empty">
+                        <td colSpan={6} className="kadm-table__empty">
                           {players.length === 0
                             ? "No players on this leaderboard yet. Use the quick-add bar above or import CSV."
                             : "No players match your search."}
@@ -1451,16 +1451,16 @@ export function LeaderboardsTab({
 
                         return (
                           <tr key={p.id} className={dirty ? "is-dirty" : undefined}>
-                            <td className="ad-nowrap">
-                              <div className="ad-rank-cell">
-                                <span className={`ad-rank-pill ad-rank-pill--${rankNum <= 3 ? rankNum : "n"}`}>
+                            <td className="kadm-nowrap">
+                              <div className="kadm-rank-cell">
+                                <span className={`kadm-rank-pill kadm-rank-pill--${rankNum <= 3 ? rankNum : "n"}`}>
                                   #{rankNum}
                                 </span>
                                 {!playerSearch && (
-                                  <span className="ad-rank-arrows">
+                                  <span className="kadm-rank-arrows">
                                     <button
                                       type="button"
-                                      className="ad-icon-btn"
+                                      className="kadm-icon-btn"
                                       disabled={fullIdx <= 0 || busyAction === "reorder"}
                                       title="Move up"
                                       onClick={() => void handleMovePlayer(fullIdx, -1)}
@@ -1469,7 +1469,7 @@ export function LeaderboardsTab({
                                     </button>
                                     <button
                                       type="button"
-                                      className="ad-icon-btn"
+                                      className="kadm-icon-btn"
                                       disabled={
                                         fullIdx === -1 ||
                                         fullIdx >= players.length - 1 ||
@@ -1485,23 +1485,23 @@ export function LeaderboardsTab({
                               </div>
                             </td>
                             <td>
-                              <div className="ad-player-edit">
+                              <div className="kadm-player-edit">
                                 {avatar ? (
                                   <img
                                     src={avatar}
                                     alt=""
                                     width={30}
                                     height={30}
-                                    className="ad-player-edit__avatar"
+                                    className="kadm-player-edit__avatar"
                                   />
                                 ) : (
-                                  <span className="ad-player-edit__avatar ad-player-edit__avatar--ph">
+                                  <span className="kadm-player-edit__avatar kadm-player-edit__avatar--ph">
                                     {(d.username[0] || "P").toUpperCase()}
                                   </span>
                                 )}
                                 <input
                                   type="text"
-                                  className="ad-input ad-input--compact"
+                                  className="kadm-input kadm-input--compact"
                                   value={d.username}
                                   onChange={(e) =>
                                     setPlayerField(p.id, { username: e.target.value })
@@ -1510,28 +1510,28 @@ export function LeaderboardsTab({
                               </div>
                             </td>
                             <td>
-                              <div className="ad-wager-edit">
+                              <div className="kadm-wager-edit">
                                 <input
                                   type="number"
                                   step="0.01"
                                   min="0"
-                                  className="ad-input ad-input--compact ad-input--num"
+                                  className="kadm-input kadm-input--compact kadm-input--num"
                                   value={d.wageredUsd}
                                   onChange={(e) =>
                                     setPlayerField(p.id, { wageredUsd: e.target.value })
                                   }
                                 />
-                                <div className="ad-bump-group">
+                                <div className="kadm-bump-group">
                                   <button
                                     type="button"
-                                    className="ad-bump"
+                                    className="kadm-bump"
                                     onClick={() => bumpPlayerWager(p.id, 100)}
                                   >
                                     +$100
                                   </button>
                                   <button
                                     type="button"
-                                    className="ad-bump"
+                                    className="kadm-bump"
                                     onClick={() => bumpPlayerWager(p.id, 1000)}
                                   >
                                     +$1K
@@ -1540,27 +1540,27 @@ export function LeaderboardsTab({
                               </div>
                             </td>
                             <td>
-                              <div className="ad-prize-edit">
+                              <div className="kadm-prize-edit">
                                 <input
                                   type="number"
                                   step="0.01"
                                   min="0"
-                                  className="ad-input ad-input--compact ad-input--num"
+                                  className="kadm-input kadm-input--compact kadm-input--num"
                                   value={d.prizeUsd}
                                   onChange={(e) =>
                                     setPlayerField(p.id, { prizeUsd: e.target.value })
                                   }
                                 />
                                 {usdInputToCents(d.prizeUsd) === 0 && spotFallback > 0 && (
-                                  <span className="ad-subtext">
+                                  <span className="kadm-subtext">
                                     Spot: {moneyShort(spotFallback)}
                                   </span>
                                 )}
                               </div>
                             </td>
-                            <td className="ad-nowrap">
-                              <div className="ad-growth-cell">
-                                <label className="ad-switch-label">
+                            <td className="kadm-nowrap">
+                              <div className="kadm-growth-cell">
+                                <label className="kadm-switch-label">
                                   <input
                                     type="checkbox"
                                     checked={d.wagGrowthEnabled}
@@ -1574,7 +1574,7 @@ export function LeaderboardsTab({
                                 </label>
                                 <button
                                   type="button"
-                                  className={`ad-btn ad-btn--ghost ad-btn--xs${growthInspectId === p.id ? " is-active" : ""}`}
+                                  className={`kadm-btn kadm-btn--ghost kadm-btn--xs${growthInspectId === p.id ? " is-active" : ""}`}
                                   onClick={() =>
                                     setGrowthInspectId(growthInspectId === p.id ? null : p.id)
                                   }
@@ -1583,11 +1583,11 @@ export function LeaderboardsTab({
                                 </button>
                               </div>
                             </td>
-                            <td className="ad-nowrap" style={{ textAlign: "right" }}>
-                              <div className="ad-row-actions">
+                            <td className="kadm-nowrap" style={{ textAlign: "right" }}>
+                              <div className="kadm-row-actions">
                                 <button
                                   type="button"
-                                  className={`ad-btn ${dirty ? "ad-btn--primary" : "ad-btn--secondary"} ad-btn--xs`}
+                                  className={`kadm-btn ${dirty ? "kadm-btn--primary" : "kadm-btn--secondary"} kadm-btn--xs`}
                                   disabled={!dirty || savingPlayerId === p.id}
                                   onClick={() => void handleSavePlayer(p)}
                                 >
@@ -1598,7 +1598,7 @@ export function LeaderboardsTab({
                                   <>
                                     <button
                                       type="button"
-                                      className="ad-btn ad-btn--danger ad-btn--xs"
+                                      className="kadm-btn kadm-btn--danger kadm-btn--xs"
                                       disabled={savingPlayerId === p.id}
                                       onClick={() => void handleDeletePlayer(p)}
                                     >
@@ -1606,7 +1606,7 @@ export function LeaderboardsTab({
                                     </button>
                                     <button
                                       type="button"
-                                      className="ad-btn ad-btn--ghost ad-btn--xs"
+                                      className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                                       onClick={() => setConfirmDeletePlayerId(null)}
                                     >
                                       Cancel
@@ -1615,7 +1615,7 @@ export function LeaderboardsTab({
                                 ) : (
                                   <button
                                     type="button"
-                                    className="ad-btn ad-btn--ghost ad-btn--xs"
+                                    className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                                     title="Remove player"
                                     onClick={() => setConfirmDeletePlayerId(p.id)}
                                   >
@@ -1637,21 +1637,21 @@ export function LeaderboardsTab({
 
         {/* Sub-tab 2: Spot Prizes */}
         {studioTab === "spots" && (
-          <div className="ad-stack">
+          <div className="kadm-stack">
             {/* Podium Visual Cards */}
-            <div className="ad-podium-preview">
+            <div className="kadm-podium-preview">
               {[1, 2, 3].map((r) => {
                 const spot = spotDrafts.find((s) => s.rank === r);
                 const holder = players.find((p, i) => (p.rank ?? i + 1) === r);
                 return (
-                  <div key={r} className={`ad-card ad-podium-card ad-podium-card--${r}`}>
-                    <span className="ad-podium-card__place">
+                  <div key={r} className={`kadm-card kadm-podium-card kadm-podium-card--${r}`}>
+                    <span className="kadm-podium-card__place">
                       {r === 1 ? "#1 Champion" : r === 2 ? "#2 Runner-Up" : "#3 Third Place"}
                     </span>
-                    <div className="ad-podium-card__prize">
+                    <div className="kadm-podium-card__prize">
                       {moneyShort(usdInputToCents(spot?.prizeUsd || "0"))}
                     </div>
-                    <span className="ad-podium-card__holder">
+                    <span className="kadm-podium-card__holder">
                       {holder ? `${holder.username} · ${money(holder.wagered_cents)}` : "Unclaimed slot"}
                     </span>
                   </div>
@@ -1660,47 +1660,47 @@ export function LeaderboardsTab({
             </div>
 
             {/* Allocation Bar & Auto-Split Presets */}
-            <div className="ad-card ad-panel">
-              <div className="ad-panel__head">
+            <div className="kadm-card kadm-panel">
+              <div className="kadm-panel__head">
                 <div>
-                  <h3 className="ad-panel__title">Prize Pool Distribution</h3>
-                  <p className="ad-panel__sub">
+                  <h3 className="kadm-panel__title">Prize Pool Distribution</h3>
+                  <p className="kadm-panel__sub">
                     Allocated <strong>{money(allocatedSpotCents)}</strong> of{" "}
                     <strong>{money(poolCents)}</strong> headline pool ({poolPct}%)
                   </p>
                 </div>
-                <div className="ad-toolbar__actions">
+                <div className="kadm-toolbar__actions">
                   <button
                     type="button"
-                    className="ad-btn ad-btn--secondary ad-btn--xs"
+                    className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                     onClick={() => applySpotPreset(TOP_10_WEIGHTS)}
                   >
                     Auto-Split Top 10
                   </button>
                   <button
                     type="button"
-                    className="ad-btn ad-btn--secondary ad-btn--xs"
+                    className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                     onClick={() => applySpotPreset(TOP_5_WEIGHTS)}
                   >
                     Auto-Split Top 5
                   </button>
                   <button
                     type="button"
-                    className="ad-btn ad-btn--secondary ad-btn--xs"
+                    className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                     onClick={() => applySpotPreset(TOP_3_WEIGHTS)}
                   >
                     Top 3 Podium
                   </button>
                   <button
                     type="button"
-                    className="ad-btn ad-btn--ghost ad-btn--xs"
+                    className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                     onClick={() => applySpotPreset([])}
                   >
                     Clear All
                   </button>
                   <button
                     type="button"
-                    className="ad-btn ad-btn--primary ad-btn--sm"
+                    className="kadm-btn kadm-btn--primary kadm-btn--sm"
                     disabled={savingSpots}
                     onClick={() => void handleSaveAllSpots()}
                   >
@@ -1712,19 +1712,19 @@ export function LeaderboardsTab({
                 </div>
               </div>
 
-              <div className="ad-race-bar__track" style={{ marginBottom: 16 }}>
-                <span className="ad-race-bar__fill" style={{ width: `${poolPct}%` }} />
+              <div className="kadm-race-bar__track" style={{ marginBottom: 16 }}>
+                <span className="kadm-race-bar__fill" style={{ width: `${poolPct}%` }} />
               </div>
 
-              <div className="ad-spots-grid">
+              <div className="kadm-spots-grid">
                 {spotDrafts.map((spot, idx) => (
-                  <div key={spot.rank} className="ad-spot-item">
-                    <span className="ad-spot-item__rank">#{spot.rank}</span>
+                  <div key={spot.rank} className="kadm-spot-item">
+                    <span className="kadm-spot-item__rank">#{spot.rank}</span>
                     <input
                       type="number"
                       min="0"
                       step="1"
-                      className="ad-input ad-input--compact ad-input--num"
+                      className="kadm-input kadm-input--compact kadm-input--num"
                       placeholder="0"
                       value={spot.prizeUsd}
                       onChange={(e) => {
@@ -1737,7 +1737,7 @@ export function LeaderboardsTab({
                     />
                     <button
                       type="button"
-                      className={`ad-icon-btn${spot.hidden ? " is-muted" : ""}`}
+                      className={`kadm-icon-btn${spot.hidden ? " is-muted" : ""}`}
                       title={spot.hidden ? "Spot prize hidden on public table" : "Spot prize visible"}
                       onClick={() => {
                         setSpotDrafts((prev) =>
@@ -1753,10 +1753,10 @@ export function LeaderboardsTab({
               </div>
 
               {spotCount < 30 && (
-                <div className="ad-form-foot" style={{ justifyContent: "space-between" }}>
+                <div className="kadm-form-foot" style={{ justifyContent: "space-between" }}>
                   <button
                     type="button"
-                    className="ad-btn ad-btn--ghost ad-btn--xs"
+                    className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                     onClick={() => {
                       const nextMax = Math.min(30, spotCount + 5);
                       const extra: SpotDraft[] = [];
@@ -1778,18 +1778,18 @@ export function LeaderboardsTab({
 
         {/* Sub-tab 3: Race Settings */}
         {studioTab === "settings" && (
-          <form className="ad-stack" onSubmit={(e) => void handleSaveSettings(e)}>
-            <div className="ad-card ad-panel">
-              <div className="ad-panel__head">
+          <form className="kadm-stack" onSubmit={(e) => void handleSaveSettings(e)}>
+            <div className="kadm-card kadm-panel">
+              <div className="kadm-panel__head">
                 <div>
-                  <h3 className="ad-panel__title">Identity, Partner &amp; Schedule</h3>
-                  <p className="ad-panel__sub">
+                  <h3 className="kadm-panel__title">Identity, Partner &amp; Schedule</h3>
+                  <p className="kadm-panel__sub">
                     Public URL: <code>{boardHref(board.slug)}</code>
                   </p>
                 </div>
                 <button
                   type="submit"
-                  className="ad-btn ad-btn--primary ad-btn--sm"
+                  className="kadm-btn kadm-btn--primary kadm-btn--sm"
                   disabled={savingCfg}
                 >
                   <IconCheck size={14} />
@@ -1797,45 +1797,45 @@ export function LeaderboardsTab({
                 </button>
               </div>
 
-              <div className="ad-form-grid">
-                <label className="ad-field">
-                  <span className="ad-field__label">Race Title</span>
+              <div className="kadm-form-grid">
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Race Title</span>
                   <input
                     type="text"
-                    className="ad-input"
+                    className="kadm-input"
                     required
                     value={cfgTitle}
                     onChange={(e) => setCfgTitle(e.target.value)}
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">URL Slug</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">URL Slug</span>
                   <input
                     type="text"
-                    className="ad-input"
+                    className="kadm-input"
                     placeholder="monthly-10k-race"
                     value={cfgNewSlug}
                     onChange={(e) => setCfgNewSlug(slugifyInput(e.target.value))}
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Subtitle / Tagline</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Subtitle / Tagline</span>
                   <input
                     type="text"
-                    className="ad-input"
+                    className="kadm-input"
                     placeholder="Optional subtitle shown under headline"
                     value={cfgSubtitle}
                     onChange={(e) => setCfgSubtitle(e.target.value)}
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Badge (Blank = Auto)</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Badge (Blank = Auto)</span>
                   <input
                     type="text"
-                    className="ad-input"
+                    className="kadm-input"
                     maxLength={24}
                     placeholder="MONTHLY, WEEKLY, DAILY, VIP"
                     value={cfgBadge}
@@ -1843,23 +1843,23 @@ export function LeaderboardsTab({
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Headline Prize Pool (USD)</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Headline Prize Pool (USD)</span>
                   <input
                     type="number"
                     min="0"
                     step="1"
-                    className="ad-input"
+                    className="kadm-input"
                     value={cfgPoolUsd}
                     onChange={(e) => setCfgPoolUsd(e.target.value)}
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Promo Code</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Promo Code</span>
                   <input
                     type="text"
-                    className="ad-input"
+                    className="kadm-input"
                     maxLength={40}
                     placeholder="KDEENOFF"
                     value={cfgPromoCode}
@@ -1867,54 +1867,54 @@ export function LeaderboardsTab({
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Partner Brand Key</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Partner Brand Key</span>
                   <input
                     type="text"
-                    className="ad-input"
+                    className="kadm-input"
                     placeholder="stake / 500casino"
                     value={cfgPartner}
                     onChange={(e) => setCfgPartner(e.target.value)}
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Sort Order</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Sort Order</span>
                   <input
                     type="number"
                     step="1"
-                    className="ad-input"
+                    className="kadm-input"
                     value={cfgSortOrder}
                     onChange={(e) => setCfgSortOrder(e.target.value)}
                   />
                 </label>
 
-                <label className="ad-field ad-field--full">
-                  <span className="ad-field__label">Partner Signup / Claim URL</span>
+                <label className="kadm-field kadm-field--full">
+                  <span className="kadm-field__label">Partner Signup / Claim URL</span>
                   <input
                     type="url"
-                    className="ad-input"
+                    className="kadm-input"
                     placeholder="https://stake.com/?c=KDEENOFF"
                     value={cfgPartnerUrl}
                     onChange={(e) => setCfgPartnerUrl(e.target.value)}
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Starts At</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Starts At</span>
                   <input
                     type="datetime-local"
-                    className="ad-input"
+                    className="kadm-input"
                     value={cfgStartsAt}
                     onChange={(e) => setCfgStartsAt(e.target.value)}
                   />
                 </label>
 
-                <label className="ad-field">
-                  <span className="ad-field__label">Ends At</span>
+                <label className="kadm-field">
+                  <span className="kadm-field__label">Ends At</span>
                   <input
                     type="datetime-local"
-                    className="ad-input"
+                    className="kadm-input"
                     value={cfgEndsAt}
                     onChange={(e) => setCfgEndsAt(e.target.value)}
                   />
@@ -1922,16 +1922,16 @@ export function LeaderboardsTab({
               </div>
             </div>
 
-            <div className="ad-split-grid">
-              <div className="ad-card ad-panel">
-                <div className="ad-panel__head">
-                  <h3 className="ad-panel__title">Collector Avatars &amp; Ranking Rules</h3>
+            <div className="kadm-split-grid">
+              <div className="kadm-card kadm-panel">
+                <div className="kadm-panel__head">
+                  <h3 className="kadm-panel__title">Collector Avatars &amp; Ranking Rules</h3>
                 </div>
-                <div className="ad-stack-sm">
-                  <label className="ad-field">
-                    <span className="ad-field__label">Player Avatar Style</span>
+                <div className="kadm-stack-sm">
+                  <label className="kadm-field">
+                    <span className="kadm-field__label">Player Avatar Style</span>
                     <select
-                      className="ad-select"
+                      className="kadm-select"
                       value={cfgAvatarStyle}
                       onChange={(e) => setCfgAvatarStyle(e.target.value)}
                     >
@@ -1943,7 +1943,7 @@ export function LeaderboardsTab({
                   </label>
 
                   {cfgAvatarStyle !== "none" && (
-                    <div className="ad-avatar-sample-strip">
+                    <div className="kadm-avatar-sample-strip">
                       {["lucky_ape", "slotking_77", "highroller_x", "crypto_wolf", "moonshot99"].map((seed) => {
                         const q =
                           cfgAvatarStyle === "kdeenoff-luxe"
@@ -1958,17 +1958,17 @@ export function LeaderboardsTab({
                             alt=""
                             width={38}
                             height={38}
-                            className="ad-avatar-sample"
+                            className="kadm-avatar-sample"
                           />
                         );
                       })}
                     </div>
                   )}
 
-                  <label className="ad-switch-row">
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Auto-Rank Players by Wagered Volume</strong>
-                      <span className="ad-field__hint">
+                      <span className="kadm-field__hint">
                         Automatically re-sorts ranks whenever wagers update.
                       </span>
                     </div>
@@ -1979,10 +1979,10 @@ export function LeaderboardsTab({
                     />
                   </label>
 
-                  <label className="ad-switch-row">
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Show in Left Sidebar</strong>
-                      <span className="ad-field__hint">
+                      <span className="kadm-field__hint">
                         Display race card in the persistent left drawer.
                       </span>
                     </div>
@@ -1993,10 +1993,10 @@ export function LeaderboardsTab({
                     />
                   </label>
 
-                  <label className="ad-switch-row">
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Show on Home Page</strong>
-                      <span className="ad-field__hint">
+                      <span className="kadm-field__hint">
                         Include in Home race overview cards and switcher.
                       </span>
                     </div>
@@ -2007,10 +2007,10 @@ export function LeaderboardsTab({
                     />
                   </label>
 
-                  <label className="ad-switch-row">
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Demo / Test Data</strong>
-                      <span className="ad-field__hint">
+                      <span className="kadm-field__hint">
                         Flags this leaderboard so it can be purged with one click in Overview.
                       </span>
                     </div>
@@ -2021,10 +2021,10 @@ export function LeaderboardsTab({
                     />
                   </label>
 
-                  <label className="ad-switch-row">
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Hide Leaderboard from Public Navigation</strong>
-                      <span className="ad-field__hint">
+                      <span className="kadm-field__hint">
                         Keep as draft without archiving or deleting.
                       </span>
                     </div>
@@ -2035,13 +2035,13 @@ export function LeaderboardsTab({
                     />
                   </label>
 
-                  <label className="ad-field">
-                    <span className="ad-field__label">Hide Ranks Below # (0 = show all)</span>
+                  <label className="kadm-field">
+                    <span className="kadm-field__label">Hide Ranks Below # (0 = show all)</span>
                     <input
                       type="number"
                       min="0"
                       max="500"
-                      className="ad-input"
+                      className="kadm-input"
                       value={cfgAutoHiddenRank}
                       onChange={(e) => setCfgAutoHiddenRank(e.target.value)}
                     />
@@ -2049,15 +2049,15 @@ export function LeaderboardsTab({
                 </div>
               </div>
 
-              <div className="ad-card ad-panel">
-                <div className="ad-panel__head">
-                  <h3 className="ad-panel__title">Automated Wager Growth Engine</h3>
+              <div className="kadm-card kadm-panel">
+                <div className="kadm-panel__head">
+                  <h3 className="kadm-panel__title">Automated Wager Growth Engine</h3>
                 </div>
-                <div className="ad-stack-sm">
-                  <label className="ad-switch-row">
+                <div className="kadm-stack-sm">
+                  <label className="kadm-switch-row">
                     <div>
                       <strong>Enable Board-Wide Scheduled Growth</strong>
-                      <span className="ad-field__hint">
+                      <span className="kadm-field__hint">
                         Applies deterministic growth ticks to players marked Growth=On.
                       </span>
                     </div>
@@ -2068,42 +2068,42 @@ export function LeaderboardsTab({
                     />
                   </label>
 
-                  <label className="ad-field">
-                    <span className="ad-field__label">Default Growth % per Tick</span>
+                  <label className="kadm-field">
+                    <span className="kadm-field__label">Default Growth % per Tick</span>
                     <input
                       type="number"
                       min="0"
                       max="500"
-                      className="ad-input"
+                      className="kadm-input"
                       value={cfgGrowthPct}
                       onChange={(e) => setCfgGrowthPct(e.target.value)}
                     />
                   </label>
 
-                  <label className="ad-field">
-                    <span className="ad-field__label">Default Tick Interval (Hours)</span>
+                  <label className="kadm-field">
+                    <span className="kadm-field__label">Default Tick Interval (Hours)</span>
                     <input
                       type="number"
                       min="0.1"
                       max="720"
                       step="0.5"
-                      className="ad-input"
+                      className="kadm-input"
                       value={cfgGrowthHours}
                       onChange={(e) => setCfgGrowthHours(e.target.value)}
                     />
                   </label>
 
-                  <div className="ad-danger-box">
+                  <div className="kadm-danger-box">
                     <div>
                       <strong>Lifecycle Controls</strong>
-                      <span className="ad-field__hint">
+                      <span className="kadm-field__hint">
                         Archive finished races or permanently delete draft boards.
                       </span>
                     </div>
-                    <div className="ad-row-actions">
+                    <div className="kadm-row-actions">
                       <button
                         type="button"
-                        className="ad-btn ad-btn--secondary ad-btn--xs"
+                        className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                         onClick={() => void handleArchiveToggle(board)}
                       >
                         <IconArchive size={13} />
@@ -2113,14 +2113,14 @@ export function LeaderboardsTab({
                         <>
                           <button
                             type="button"
-                            className="ad-btn ad-btn--danger ad-btn--xs"
+                            className="kadm-btn kadm-btn--danger kadm-btn--xs"
                             onClick={() => void handleDeleteBoard(board)}
                           >
                             Confirm Delete
                           </button>
                           <button
                             type="button"
-                            className="ad-btn ad-btn--ghost ad-btn--xs"
+                            className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                             onClick={() => setConfirmDeleteSlug(null)}
                           >
                             Cancel
@@ -2129,7 +2129,7 @@ export function LeaderboardsTab({
                       ) : (
                         <button
                           type="button"
-                          className="ad-btn ad-btn--danger ad-btn--xs"
+                          className="kadm-btn kadm-btn--danger kadm-btn--xs"
                           onClick={() => setConfirmDeleteSlug(board.slug)}
                         >
                           <IconTrash size={13} />
@@ -2150,9 +2150,9 @@ export function LeaderboardsTab({
   /* ───────────── Render Mode A: Races List ───────────── */
 
   return (
-    <div className="ad-stack">
-      <div className="ad-toolbar">
-        <div className="ad-seg" role="tablist" aria-label="Leaderboard status filter">
+    <div className="kadm-stack">
+      <div className="kadm-toolbar">
+        <div className="kadm-seg" role="tablist" aria-label="Leaderboard status filter">
           {(
             [
               ["all", `All (${counts.all})`],
@@ -2167,7 +2167,7 @@ export function LeaderboardsTab({
               type="button"
               role="tab"
               aria-selected={filter === key}
-              className={`ad-seg__btn${filter === key ? " is-active" : ""}`}
+              className={`kadm-seg__btn${filter === key ? " is-active" : ""}`}
               onClick={() => setFilter(key)}
             >
               {label}
@@ -2175,12 +2175,12 @@ export function LeaderboardsTab({
           ))}
         </div>
 
-        <div className="ad-toolbar__actions">
-          <div className="ad-search">
+        <div className="kadm-toolbar__actions">
+          <div className="kadm-search">
             <IconSearch size={15} />
             <input
               type="search"
-              className="ad-search__input"
+              className="kadm-search__input"
               placeholder="Search races…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -2188,14 +2188,14 @@ export function LeaderboardsTab({
           </div>
           <button
             type="button"
-            className="ad-btn ad-btn--ghost ad-btn--sm"
+            className="kadm-btn kadm-btn--ghost kadm-btn--sm"
             onClick={() => void loadBoards()}
           >
             <IconRefresh size={14} />
           </button>
           <button
             type="button"
-            className="ad-btn ad-btn--primary ad-btn--sm"
+            className="kadm-btn kadm-btn--primary kadm-btn--sm"
             onClick={() => setCreateOpen((v) => !v)}
           >
             <IconPlus size={15} />
@@ -2206,29 +2206,29 @@ export function LeaderboardsTab({
 
       {/* Create Leaderboard Drawer */}
       {createOpen && (
-        <form className="ad-card ad-panel" onSubmit={(e) => void handleCreateBoard(e)}>
-          <div className="ad-panel__head">
+        <form className="kadm-card kadm-panel" onSubmit={(e) => void handleCreateBoard(e)}>
+          <div className="kadm-panel__head">
             <div>
-              <h3 className="ad-panel__title">Launch New Leaderboard Race</h3>
-              <p className="ad-panel__sub">
+              <h3 className="kadm-panel__title">Launch New Leaderboard Race</h3>
+              <p className="kadm-panel__sub">
                 Creates the board and opens Race Studio to configure players and spot prizes.
               </p>
             </div>
             <button
               type="button"
-              className="ad-btn ad-btn--ghost ad-btn--xs"
+              className="kadm-btn kadm-btn--ghost kadm-btn--xs"
               onClick={() => setCreateOpen(false)}
             >
               <IconClose size={15} />
             </button>
           </div>
 
-          <div className="ad-form-grid">
-            <label className="ad-field">
-              <span className="ad-field__label">Race Title *</span>
+          <div className="kadm-form-grid">
+            <label className="kadm-field">
+              <span className="kadm-field__label">Race Title *</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="e.g. Monthly $10,000 Wager Race"
                 required
                 value={newTitle}
@@ -2239,11 +2239,11 @@ export function LeaderboardsTab({
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">URL Slug</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">URL Slug</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="monthly-10k-race"
                 value={newSlug}
                 onChange={(e) => {
@@ -2253,44 +2253,44 @@ export function LeaderboardsTab({
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Prize Pool (USD)</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Prize Pool (USD)</span>
               <input
                 type="number"
                 min="0"
                 step="1"
-                className="ad-input"
+                className="kadm-input"
                 value={newPoolUsd}
                 onChange={(e) => setNewPoolUsd(e.target.value)}
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Partner Key</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Partner Key</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="stake"
                 value={newPartner}
                 onChange={(e) => setNewPartner(e.target.value)}
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Subtitle (Optional)</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Subtitle (Optional)</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="Wager with code KDEENOFF to climb!"
                 value={newSubtitle}
                 onChange={(e) => setNewSubtitle(e.target.value)}
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Avatar Style</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Avatar Style</span>
               <select
-                className="ad-select"
+                className="kadm-select"
                 value={newAvatarStyle}
                 onChange={(e) => setNewAvatarStyle(e.target.value)}
               >
@@ -2301,11 +2301,11 @@ export function LeaderboardsTab({
               </select>
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Badge (Blank = Auto)</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Badge (Blank = Auto)</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 maxLength={24}
                 placeholder="MONTHLY, WEEKLY, DAILY, VIP"
                 value={newBadge}
@@ -2313,11 +2313,11 @@ export function LeaderboardsTab({
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Promo Code</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Promo Code</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 maxLength={40}
                 placeholder="KDEENOFF"
                 value={newPromoCode}
@@ -2325,21 +2325,21 @@ export function LeaderboardsTab({
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Sort Order</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Sort Order</span>
               <input
                 type="number"
                 step="1"
-                className="ad-input"
+                className="kadm-input"
                 value={newSortOrder}
                 onChange={(e) => setNewSortOrder(e.target.value)}
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Initial Spot Prizes</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Initial Spot Prizes</span>
               <select
-                className="ad-select"
+                className="kadm-select"
                 value={newSpotPreset}
                 onChange={(e) => setNewSpotPreset(e.target.value as InitialSpotPreset)}
               >
@@ -2350,35 +2350,35 @@ export function LeaderboardsTab({
               </select>
             </label>
 
-            <label className="ad-field ad-field--full">
-              <span className="ad-field__label">Partner Signup URL</span>
+            <label className="kadm-field kadm-field--full">
+              <span className="kadm-field__label">Partner Signup URL</span>
               <input
                 type="url"
-                className="ad-input"
+                className="kadm-input"
                 value={newPartnerUrl}
                 onChange={(e) => setNewPartnerUrl(e.target.value)}
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Starts At</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Starts At</span>
               <input
                 type="datetime-local"
-                className="ad-input"
+                className="kadm-input"
                 value={newStartsAt}
                 onChange={(e) => setNewStartsAt(e.target.value)}
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">
+            <label className="kadm-field">
+              <span className="kadm-field__label">
                 <span>Ends At</span>
-                <span className="ad-inline-pills">
+                <span className="kadm-inline-pills">
                   {[7, 14, 30].map((d) => (
                     <button
                       key={d}
                       type="button"
-                      className="ad-bump"
+                      className="kadm-bump"
                       onClick={() => applyDurationPreset(d)}
                     >
                       +{d}d
@@ -2388,16 +2388,16 @@ export function LeaderboardsTab({
               </span>
               <input
                 type="datetime-local"
-                className="ad-input"
+                className="kadm-input"
                 value={newEndsAt}
                 onChange={(e) => setNewEndsAt(e.target.value)}
               />
             </label>
 
-            <label className="ad-switch-row">
+            <label className="kadm-switch-row">
               <div>
                 <strong>Show in left sidebar</strong>
-                <span className="ad-field__hint">Visible in site-wide drawer navigation.</span>
+                <span className="kadm-field__hint">Visible in site-wide drawer navigation.</span>
               </div>
               <input
                 type="checkbox"
@@ -2406,10 +2406,10 @@ export function LeaderboardsTab({
               />
             </label>
 
-            <label className="ad-switch-row">
+            <label className="kadm-switch-row">
               <div>
                 <strong>Show on home page</strong>
-                <span className="ad-field__hint">Visible in Home race cards &amp; switcher.</span>
+                <span className="kadm-field__hint">Visible in Home race cards &amp; switcher.</span>
               </div>
               <input
                 type="checkbox"
@@ -2418,10 +2418,10 @@ export function LeaderboardsTab({
               />
             </label>
 
-            <label className="ad-switch-row ad-field--full">
+            <label className="kadm-switch-row kadm-field--full">
               <div>
                 <strong>Mark as demo data</strong>
-                <span className="ad-field__hint">
+                <span className="kadm-field__hint">
                   Flags this board as test/demo data so you can purge all demo items later in one click.
                 </span>
               </div>
@@ -2433,17 +2433,17 @@ export function LeaderboardsTab({
             </label>
           </div>
 
-          <div className="ad-form-foot">
+          <div className="kadm-form-foot">
             <button
               type="button"
-              className="ad-btn ad-btn--ghost ad-btn--sm"
+              className="kadm-btn kadm-btn--ghost kadm-btn--sm"
               onClick={() => setCreateOpen(false)}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="ad-btn ad-btn--primary ad-btn--sm"
+              className="kadm-btn kadm-btn--primary kadm-btn--sm"
               disabled={creating}
             >
               <IconTrophy size={15} />
@@ -2455,15 +2455,15 @@ export function LeaderboardsTab({
 
       {/* Leaderboards List */}
       {loadingList && boards.length === 0 ? (
-        <div className="ad-card ad-panel">
-          <p className="ad-muted">Loading leaderboards…</p>
+        <div className="kadm-card kadm-panel">
+          <p className="kadm-muted">Loading leaderboards…</p>
         </div>
       ) : filteredBoards.length === 0 ? (
-        <div className="ad-card ad-empty">
+        <div className="kadm-card kadm-empty">
           <p>No leaderboards match the selected filter.</p>
           <button
             type="button"
-            className="ad-btn ad-btn--primary ad-btn--sm"
+            className="kadm-btn kadm-btn--primary kadm-btn--sm"
             onClick={() => setCreateOpen(true)}
           >
             <IconPlus size={14} />
@@ -2471,7 +2471,7 @@ export function LeaderboardsTab({
           </button>
         </div>
       ) : (
-        <div className="ad-board-grid">
+        <div className="kadm-board-grid">
           {filteredBoards.map((b) => {
             const left = (Number(b.ends_at) || 0) - now;
             const timer = countdown(left);
@@ -2491,68 +2491,68 @@ export function LeaderboardsTab({
                   : `Live · ${timer}`;
 
             return (
-              <article key={b.slug} className="ad-card ad-board-card">
-                <div className="ad-board-card__head">
+              <article key={b.slug} className="kadm-card kadm-board-card">
+                <div className="kadm-board-card__head">
                   <div>
-                    <div className="ad-board-card__badges">
-                      <span className={`ad-badge ad-badge--${statusTone}`}>{statusText}</span>
+                    <div className="kadm-board-card__badges">
+                      <span className={`kadm-badge kadm-badge--${statusTone}`}>{statusText}</span>
                       {Boolean(b.is_demo) && (
-                        <span className="ad-badge ad-badge--warn">[DEMO]</span>
+                        <span className="kadm-badge kadm-badge--warn">[DEMO]</span>
                       )}
                       {b.badge?.trim() && (
-                        <span className="ad-badge ad-badge--info">{b.badge.trim().toUpperCase()}</span>
+                        <span className="kadm-badge kadm-badge--info">{b.badge.trim().toUpperCase()}</span>
                       )}
-                      <span className="ad-badge ad-badge--muted">{partnerLabel(b.partner)}</span>
+                      <span className="kadm-badge kadm-badge--muted">{partnerLabel(b.partner)}</span>
                       {b.show_in_drawer !== 0 && (
-                        <span className="ad-badge ad-badge--muted">Sidebar</span>
+                        <span className="kadm-badge kadm-badge--muted">Sidebar</span>
                       )}
                       {b.show_on_home !== 0 && (
-                        <span className="ad-badge ad-badge--muted">Home</span>
+                        <span className="kadm-badge kadm-badge--muted">Home</span>
                       )}
                       {Boolean(b.auto_wager_growth_enabled) && (
-                        <span className="ad-badge ad-badge--info">Auto-Growth</span>
+                        <span className="kadm-badge kadm-badge--info">Auto-Growth</span>
                       )}
                     </div>
-                    <h3 className="ad-board-card__title">{b.title}</h3>
-                    <code className="ad-code">/leaderboards/{b.slug}/</code>
+                    <h3 className="kadm-board-card__title">{b.title}</h3>
+                    <code className="kadm-code">/leaderboards/{b.slug}/</code>
                   </div>
-                  <div className="ad-board-card__pool">
-                    <span className="ad-mini-label">Prize Pool</span>
+                  <div className="kadm-board-card__pool">
+                    <span className="kadm-mini-label">Prize Pool</span>
                     <strong>{moneyShort(b.prize_pool_cents)}</strong>
                   </div>
                 </div>
 
-                <div className="ad-board-card__stats">
+                <div className="kadm-board-card__stats">
                   <div>
-                    <span className="ad-mini-label">Total Wagered</span>
+                    <span className="kadm-mini-label">Total Wagered</span>
                     <strong>{money(b.total_wagered_cents)}</strong>
                   </div>
                   <div>
-                    <span className="ad-mini-label">Contenders</span>
+                    <span className="kadm-mini-label">Contenders</span>
                     <strong>{Number(b.player_count) || 0} players</strong>
                   </div>
                   <div>
-                    <span className="ad-mini-label">Window</span>
+                    <span className="kadm-mini-label">Window</span>
                     <strong>
                       {fmtShortDate(b.starts_at)} → {fmtShortDate(b.ends_at)}
                     </strong>
                   </div>
                 </div>
 
-                <div className="ad-board-card__foot">
+                <div className="kadm-board-card__foot">
                   <button
                     type="button"
-                    className="ad-btn ad-btn--primary ad-btn--sm"
+                    className="kadm-btn kadm-btn--primary kadm-btn--sm"
                     onClick={() => onSelectBoardSlug(b.slug)}
                   >
                     <IconTrophy size={14} />
                     <span>Race Studio</span>
                   </button>
 
-                  <div className="ad-row-actions">
+                  <div className="kadm-row-actions">
                     <button
                       type="button"
-                      className="ad-btn ad-btn--secondary ad-btn--xs"
+                      className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                       disabled={busyAction === `hide:${b.slug}`}
                       title={b.hidden ? "Make public" : "Hide from public"}
                       onClick={() => void handleToggleBoardHidden(b)}
@@ -2563,7 +2563,7 @@ export function LeaderboardsTab({
 
                     <button
                       type="button"
-                      className="ad-btn ad-btn--secondary ad-btn--xs"
+                      className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                       disabled={busyAction === `dup:${b.slug}`}
                       title="Duplicate leaderboard & spot prizes as draft"
                       onClick={() => void handleDuplicateBoard(b)}
@@ -2574,7 +2574,7 @@ export function LeaderboardsTab({
 
                     <button
                       type="button"
-                      className="ad-btn ad-btn--ghost ad-btn--xs"
+                      className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                       disabled={busyAction === `arch:${b.slug}`}
                       title={b.archived ? "Restore from archive" : "Archive board"}
                       onClick={() => void handleArchiveToggle(b)}
@@ -2586,7 +2586,7 @@ export function LeaderboardsTab({
                     {!b.archived && (
                       <button
                         type="button"
-                        className="ad-btn ad-btn--ghost ad-btn--xs"
+                        className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                         title="Open live leaderboard page"
                         onClick={() => onOpenPublicPath(boardHref(b.slug))}
                       >
@@ -2598,7 +2598,7 @@ export function LeaderboardsTab({
                       <>
                         <button
                           type="button"
-                          className="ad-btn ad-btn--danger ad-btn--xs"
+                          className="kadm-btn kadm-btn--danger kadm-btn--xs"
                           disabled={busyAction === `del:${b.slug}`}
                           onClick={() => void handleDeleteBoard(b)}
                         >
@@ -2606,7 +2606,7 @@ export function LeaderboardsTab({
                         </button>
                         <button
                           type="button"
-                          className="ad-btn ad-btn--ghost ad-btn--xs"
+                          className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                           onClick={() => setConfirmDeleteSlug(null)}
                         >
                           Cancel
@@ -2615,7 +2615,7 @@ export function LeaderboardsTab({
                     ) : (
                       <button
                         type="button"
-                        className="ad-btn ad-btn--ghost ad-btn--xs"
+                        className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                         title="Delete leaderboard"
                         onClick={() => setConfirmDeleteSlug(b.slug)}
                       >

@@ -70,9 +70,9 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
   };
 
   return (
-    <div className="ad-stack">
-      <div className="ad-toolbar">
-        <div className="ad-seg" role="tablist" aria-label="Audit domain filter">
+    <div className="kadm-stack">
+      <div className="kadm-toolbar">
+        <div className="kadm-seg" role="tablist" aria-label="Audit domain filter">
           {(
             [
               ["all", "All"],
@@ -88,7 +88,7 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
               type="button"
               role="tab"
               aria-selected={domain === key}
-              className={`ad-seg__btn${domain === key ? " is-active" : ""}`}
+              className={`kadm-seg__btn${domain === key ? " is-active" : ""}`}
               onClick={() => setDomain(key)}
             >
               {label}
@@ -96,12 +96,12 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
           ))}
         </div>
 
-        <div className="ad-toolbar__actions">
-          <div className="ad-search">
+        <div className="kadm-toolbar__actions">
+          <div className="kadm-search">
             <IconSearch size={15} />
             <input
               type="search"
-              className="ad-search__input"
+              className="kadm-search__input"
               placeholder="Search actor, action, target…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -109,7 +109,7 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
           </div>
           <button
             type="button"
-            className="ad-btn ad-btn--secondary ad-btn--sm"
+            className="kadm-btn kadm-btn--secondary kadm-btn--sm"
             disabled={!entries.length}
             onClick={exportCsv}
           >
@@ -118,7 +118,7 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
           </button>
           <button
             type="button"
-            className="ad-btn ad-btn--ghost ad-btn--sm"
+            className="kadm-btn kadm-btn--ghost kadm-btn--sm"
             onClick={() => void load()}
           >
             <IconRefresh size={14} />
@@ -127,9 +127,9 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
         </div>
       </div>
 
-      <div className="ad-card ad-table-card">
-        <div className="ad-table-wrap">
-          <table className="ad-table">
+      <div className="kadm-card kadm-table-card">
+        <div className="kadm-table-wrap">
+          <table className="kadm-table">
             <thead>
               <tr>
                 <th>When</th>
@@ -142,13 +142,13 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
             <tbody>
               {loading && entries.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="ad-table__empty">
+                  <td colSpan={5} className="kadm-table__empty">
                     Loading audit log…
                   </td>
                 </tr>
               ) : entries.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="ad-table__empty">
+                  <td colSpan={5} className="kadm-table__empty">
                     No matching audit entries found.
                   </td>
                 </tr>
@@ -164,40 +164,40 @@ export function AuditLogTab({ notify }: AuditLogTabProps) {
                       onClick={() => setExpandedRow(isOpen ? null : rowKey)}
                       style={{ cursor: entry.meta_json ? "pointer" : undefined }}
                     >
-                      <td className="ad-nowrap">
+                      <td className="kadm-nowrap">
                         <div>
                           <strong>{relTime(entry.at, now)}</strong>
                         </div>
-                        <span className="ad-subtext">{fmtDateTime(entry.at)}</span>
+                        <span className="kadm-subtext">{fmtDateTime(entry.at)}</span>
                       </td>
                       <td>
-                        <span className="ad-badge ad-badge--muted">
+                        <span className="kadm-badge kadm-badge--muted">
                           {entry.actor_email || "admin"}
                         </span>
                       </td>
                       <td>
-                        <code className="ad-code">{entry.action || "—"}</code>
+                        <code className="kadm-code">{entry.action || "—"}</code>
                       </td>
                       <td>
                         <strong>{entry.target || "—"}</strong>
                       </td>
                       <td>
                         {meta && Object.keys(meta).length > 0 ? (
-                          <div className="ad-meta-pills">
+                          <div className="kadm-meta-pills">
                             {Object.entries(meta).map(([k, v]) => (
-                              <span key={k} className="ad-meta-pill">
-                                <span className="ad-meta-pill__k">{k}:</span>{" "}
+                              <span key={k} className="kadm-meta-pill">
+                                <span className="kadm-meta-pill__k">{k}:</span>{" "}
                                 <span>{typeof v === "object" ? JSON.stringify(v) : String(v)}</span>
                               </span>
                             ))}
                           </div>
                         ) : entry.meta_json && entry.meta_json !== "{}" ? (
-                          <code className="ad-code">{entry.meta_json}</code>
+                          <code className="kadm-code">{entry.meta_json}</code>
                         ) : (
-                          <span className="ad-muted">—</span>
+                          <span className="kadm-muted">—</span>
                         )}
                         {isOpen && entry.meta_json && (
-                          <pre className="ad-json-pre">{entry.meta_json}</pre>
+                          <pre className="kadm-json-pre">{entry.meta_json}</pre>
                         )}
                       </td>
                     </tr>

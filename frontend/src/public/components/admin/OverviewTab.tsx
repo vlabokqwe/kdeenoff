@@ -51,7 +51,7 @@ export function OverviewTab({
     const isNetworkOrAccessRedirect =
       /failed to fetch|networkerror|load failed/i.test(error);
     return (
-      <div className="ad-empty ad-empty--error">
+      <div className="kadm-empty kadm-empty--error">
         <p>Could not load overview metrics: {error}</p>
         {isNetworkOrAccessRedirect && (
           <p style={{ marginTop: 8, opacity: 0.85 }}>
@@ -73,13 +73,13 @@ export function OverviewTab({
 
   if (loading && !data) {
     return (
-      <div className="ad-overview">
-        <div className="ad-kpi-grid">
+      <div className="kadm-overview">
+        <div className="kadm-kpi-grid">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="ad-card ad-kpi ad-kpi--skel">
-              <span className="ad-skel ad-skel--sm" />
-              <span className="ad-skel ad-skel--lg" />
-              <span className="ad-skel ad-skel--md" />
+            <div key={i} className="kadm-card kadm-kpi kadm-kpi--skel">
+              <span className="kadm-skel kadm-skel--sm" />
+              <span className="kadm-skel kadm-skel--lg" />
+              <span className="kadm-skel kadm-skel--md" />
             </div>
           ))}
         </div>
@@ -131,11 +131,11 @@ export function OverviewTab({
   };
 
   return (
-    <div className="ad-overview">
+    <div className="kadm-overview">
       {/* Demo / Test Data Callout */}
       {demoTotal > 0 && (
         <div
-          className="ad-card"
+          className="kadm-card"
           style={{
             display: "flex",
             flexWrap: "wrap",
@@ -146,7 +146,7 @@ export function OverviewTab({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-            <span className="ad-badge ad-badge--warn">DEMO</span>
+            <span className="kadm-badge kadm-badge--warn">DEMO</span>
             <span>
               Demo test data active: <strong>{demoBoardCount}</strong>{" "}
               {demoBoardCount === 1 ? "demo leaderboard" : "demo leaderboards"},{" "}
@@ -158,7 +158,7 @@ export function OverviewTab({
             {!confirmPurge ? (
               <button
                 type="button"
-                className="ad-btn ad-btn--danger ad-btn--sm"
+                className="kadm-btn kadm-btn--danger kadm-btn--sm"
                 onClick={() => setConfirmPurge(true)}
               >
                 <IconTrash size={14} />
@@ -168,7 +168,7 @@ export function OverviewTab({
               <>
                 <button
                   type="button"
-                  className="ad-btn ad-btn--danger ad-btn--sm"
+                  className="kadm-btn kadm-btn--danger kadm-btn--sm"
                   disabled={purgingDemo}
                   onClick={() => void handlePurgeDemo()}
                 >
@@ -176,7 +176,7 @@ export function OverviewTab({
                 </button>
                 <button
                   type="button"
-                  className="ad-btn ad-btn--ghost ad-btn--sm"
+                  className="kadm-btn kadm-btn--ghost kadm-btn--sm"
                   disabled={purgingDemo}
                   onClick={() => setConfirmPurge(false)}
                 >
@@ -189,28 +189,28 @@ export function OverviewTab({
       )}
 
       {/* Quick Action Strip */}
-      <div className="ad-quick-bar">
-        <div className="ad-quick-bar__intro">
-          <span className="ad-live-pill">
-            <span className="ad-live-pill__dot" />
+      <div className="kadm-quick-bar">
+        <div className="kadm-quick-bar__intro">
+          <span className="kadm-live-pill">
+            <span className="kadm-live-pill__dot" />
             Live Command Center
           </span>
-          <span className="ad-muted">
+          <span className="kadm-muted">
             Signed in as <strong>{data.actor.email}</strong>
           </span>
         </div>
-        <div className="ad-quick-bar__actions">
-          <button type="button" className="ad-btn ad-btn--primary ad-btn--sm" onClick={onQuickCreateBoard}>
+        <div className="kadm-quick-bar__actions">
+          <button type="button" className="kadm-btn kadm-btn--primary kadm-btn--sm" onClick={onQuickCreateBoard}>
             <IconPlus size={15} />
             <span>New Leaderboard</span>
           </button>
-          <button type="button" className="ad-btn ad-btn--secondary ad-btn--sm" onClick={onQuickCreateRaffle}>
+          <button type="button" className="kadm-btn kadm-btn--secondary kadm-btn--sm" onClick={onQuickCreateRaffle}>
             <IconPlus size={15} />
             <span>New Raffle</span>
           </button>
           <button
             type="button"
-            className="ad-btn ad-btn--ghost ad-btn--sm"
+            className="kadm-btn kadm-btn--ghost kadm-btn--sm"
             onClick={() => onNavigateTab("settings")}
           >
             <IconSliders size={15} />
@@ -220,90 +220,90 @@ export function OverviewTab({
       </div>
 
       {/* 6 Interactive KPI Cards */}
-      <div className="ad-kpi-grid">
+      <div className="kadm-kpi-grid">
         <button
           type="button"
-          className="ad-card ad-kpi ad-kpi--interactive"
+          className="kadm-card kadm-kpi kadm-kpi--interactive"
           onClick={() => onNavigateTab("leaderboards", null)}
         >
-          <div className="ad-kpi__top">
-            <span className="ad-kpi__label">Active Races</span>
-            <span className="ad-kpi__icon ad-kpi__icon--indigo">
+          <div className="kadm-kpi__top">
+            <span className="kadm-kpi__label">Active Races</span>
+            <span className="kadm-kpi__icon kadm-kpi__icon--indigo">
               <IconTrophy size={16} />
             </span>
           </div>
-          <div className="ad-kpi__value">{kpis.activeBoards}</div>
-          <div className="ad-kpi__sub">
+          <div className="kadm-kpi__value">{kpis.activeBoards}</div>
+          <div className="kadm-kpi__sub">
             {kpis.totalBoards} total · {kpis.endedBoards} ended · {kpis.archivedBoards} archived
           </div>
         </button>
 
         <button
           type="button"
-          className="ad-card ad-kpi ad-kpi--interactive"
+          className="kadm-card kadm-kpi kadm-kpi--interactive"
           onClick={() => onNavigateTab("leaderboards", null)}
         >
-          <div className="ad-kpi__top">
-            <span className="ad-kpi__label">Active Prize Pool</span>
-            <span className="ad-kpi__icon ad-kpi__icon--amber">
+          <div className="kadm-kpi__top">
+            <span className="kadm-kpi__label">Active Prize Pool</span>
+            <span className="kadm-kpi__icon kadm-kpi__icon--amber">
               <IconTrophy size={16} />
             </span>
           </div>
-          <div className="ad-kpi__value">{moneyShort(kpis.activePrizePoolCents)}</div>
-          <div className="ad-kpi__sub">
+          <div className="kadm-kpi__value">{moneyShort(kpis.activePrizePoolCents)}</div>
+          <div className="kadm-kpi__sub">
             Across {kpis.activeBoards} active {kpis.activeBoards === 1 ? "race" : "races"}
           </div>
         </button>
 
         <button
           type="button"
-          className="ad-card ad-kpi ad-kpi--interactive"
+          className="kadm-card kadm-kpi kadm-kpi--interactive"
           onClick={() => onNavigateTab("leaderboards", null)}
         >
-          <div className="ad-kpi__top">
-            <span className="ad-kpi__label">Active Wager Volume</span>
-            <span className="ad-kpi__icon ad-kpi__icon--sky">
+          <div className="kadm-kpi__top">
+            <span className="kadm-kpi__label">Active Wager Volume</span>
+            <span className="kadm-kpi__icon kadm-kpi__icon--sky">
               <IconBolt size={16} />
             </span>
           </div>
-          <div className="ad-kpi__value">{moneyShort(kpis.totalWageredActiveCents)}</div>
-          <div className="ad-kpi__sub">All-time tracked: {moneyShort(kpis.totalWageredAllCents)}</div>
+          <div className="kadm-kpi__value">{moneyShort(kpis.totalWageredActiveCents)}</div>
+          <div className="kadm-kpi__sub">All-time tracked: {moneyShort(kpis.totalWageredAllCents)}</div>
         </button>
 
         <button
           type="button"
-          className="ad-card ad-kpi ad-kpi--interactive"
+          className="kadm-card kadm-kpi kadm-kpi--interactive"
           onClick={() =>
             onNavigateTab("leaderboards", boardBreakdown[0]?.slug ?? null)
           }
         >
-          <div className="ad-kpi__top">
-            <span className="ad-kpi__label">Race Players</span>
-            <span className="ad-kpi__icon ad-kpi__icon--blue">
+          <div className="kadm-kpi__top">
+            <span className="kadm-kpi__label">Race Players</span>
+            <span className="kadm-kpi__icon kadm-kpi__icon--blue">
               <IconUsers size={16} />
             </span>
           </div>
-          <div className="ad-kpi__value">{kpis.totalPlayers}</div>
-          <div className="ad-kpi__sub">
+          <div className="kadm-kpi__value">{kpis.totalPlayers}</div>
+          <div className="kadm-kpi__sub">
             {kpis.activePlayers} in live races · {kpis.growthEnabledPlayers} auto-growth
           </div>
         </button>
 
         <button
           type="button"
-          className="ad-card ad-kpi ad-kpi--interactive"
+          className="kadm-card kadm-kpi kadm-kpi--interactive"
           onClick={() => onNavigateTab("raffles")}
         >
-          <div className="ad-kpi__top">
-            <span className="ad-kpi__label">Raffles &amp; Entries</span>
-            <span className="ad-kpi__icon ad-kpi__icon--coral">
+          <div className="kadm-kpi__top">
+            <span className="kadm-kpi__label">Raffles &amp; Entries</span>
+            <span className="kadm-kpi__icon kadm-kpi__icon--coral">
               <IconTicket size={16} />
             </span>
           </div>
-          <div className="ad-kpi__value">
-            {kpis.liveRaffles} <span className="ad-kpi__unit">live</span>
+          <div className="kadm-kpi__value">
+            {kpis.liveRaffles} <span className="kadm-kpi__unit">live</span>
           </div>
-          <div className="ad-kpi__sub">
+          <div className="kadm-kpi__sub">
             {kpis.totalRaffleEntries} entries
             {kpis.awaitingWinnerRaffles > 0
               ? ` · ${kpis.awaitingWinnerRaffles} awaiting winner`
@@ -313,35 +313,35 @@ export function OverviewTab({
 
         <button
           type="button"
-          className="ad-card ad-kpi ad-kpi--interactive"
+          className="kadm-card kadm-kpi kadm-kpi--interactive"
           onClick={() => onNavigateTab("users")}
         >
-          <div className="ad-kpi__top">
-            <span className="ad-kpi__label">Community Accounts</span>
-            <span className="ad-kpi__icon ad-kpi__icon--aqua">
+          <div className="kadm-kpi__top">
+            <span className="kadm-kpi__label">Community Accounts</span>
+            <span className="kadm-kpi__icon kadm-kpi__icon--aqua">
               <IconUsers size={16} />
             </span>
           </div>
-          <div className="ad-kpi__value">{kpis.totalUsers}</div>
-          <div className="ad-kpi__sub">
+          <div className="kadm-kpi__value">{kpis.totalUsers}</div>
+          <div className="kadm-kpi__sub">
             {kpis.linkedKickUsers} Kick · {kpis.verifiedEmails} Email · {kpis.activeSessions} sessions
           </div>
         </button>
       </div>
 
       {/* Charts Row: 14-day Activity + Race Wager Breakdown */}
-      <div className="ad-split-grid">
-        <section className="ad-card ad-panel">
-          <div className="ad-panel__head">
+      <div className="kadm-split-grid">
+        <section className="kadm-card kadm-panel">
+          <div className="kadm-panel__head">
             <div>
-              <h2 className="ad-panel__title">14-Day Activity Pulse</h2>
-              <p className="ad-panel__sub">
+              <h2 className="kadm-panel__title">14-Day Activity Pulse</h2>
+              <p className="kadm-panel__sub">
                 {hoveredPoint
                   ? `${hoveredPoint.label}: ${hoveredPoint.entries} entries · ${hoveredPoint.users} new users · ${hoveredPoint.audits} admin ops`
                   : `${totalInWindow} events recorded in the last 14 days`}
               </p>
             </div>
-            <div className="ad-seg" role="tablist" aria-label="Activity metric">
+            <div className="kadm-seg" role="tablist" aria-label="Activity metric">
               {(
                 [
                   ["all", "All"],
@@ -355,7 +355,7 @@ export function OverviewTab({
                   type="button"
                   role="tab"
                   aria-selected={metric === key}
-                  className={`ad-seg__btn${metric === key ? " is-active" : ""}`}
+                  className={`kadm-seg__btn${metric === key ? " is-active" : ""}`}
                   onClick={() => setMetric(key)}
                 >
                   {label}
@@ -364,10 +364,10 @@ export function OverviewTab({
             </div>
           </div>
 
-          <div className="ad-chart" onMouseLeave={() => setHoverIdx(null)}>
+          <div className="kadm-chart" onMouseLeave={() => setHoverIdx(null)}>
             <svg
               viewBox="0 0 560 176"
-              className="ad-chart__svg"
+              className="kadm-chart__svg"
               role="img"
               aria-label="14-day activity chart"
             >
@@ -380,7 +380,7 @@ export function OverviewTab({
                     x2={552}
                     y1={y}
                     y2={y}
-                    className="ad-chart__grid"
+                    className="kadm-chart__grid"
                   />
                 );
               })}
@@ -395,7 +395,7 @@ export function OverviewTab({
                 return (
                   <g
                     key={pt.date}
-                    className={`ad-chart__col${active ? " is-hovered" : ""}`}
+                    className={`kadm-chart__col${active ? " is-hovered" : ""}`}
                     onMouseEnter={() => setHoverIdx(idx)}
                   >
                     <rect
@@ -411,14 +411,14 @@ export function OverviewTab({
                       width={barW}
                       height={barH}
                       rx={5}
-                      className={`ad-chart__bar${val === 0 ? " is-zero" : ""}`}
+                      className={`kadm-chart__bar${val === 0 ? " is-zero" : ""}`}
                     />
                     {val > 0 && (
                       <text
                         x={x + barW / 2}
                         y={Math.max(14, y - 5)}
                         textAnchor="middle"
-                        className="ad-chart__val"
+                        className="kadm-chart__val"
                       >
                         {val}
                       </text>
@@ -428,7 +428,7 @@ export function OverviewTab({
                         x={x + barW / 2}
                         y={166}
                         textAnchor="middle"
-                        className="ad-chart__axis"
+                        className="kadm-chart__axis"
                       >
                         {pt.label}
                       </text>
@@ -440,15 +440,15 @@ export function OverviewTab({
           </div>
         </section>
 
-        <section className="ad-card ad-panel">
-          <div className="ad-panel__head">
+        <section className="kadm-card kadm-panel">
+          <div className="kadm-panel__head">
             <div>
-              <h2 className="ad-panel__title">Race Performance</h2>
-              <p className="ad-panel__sub">Wager volume, prize pools &amp; live timers</p>
+              <h2 className="kadm-panel__title">Race Performance</h2>
+              <p className="kadm-panel__sub">Wager volume, prize pools &amp; live timers</p>
             </div>
             <button
               type="button"
-              className="ad-btn ad-btn--ghost ad-btn--sm"
+              className="kadm-btn kadm-btn--ghost kadm-btn--sm"
               onClick={() => onNavigateTab("leaderboards", null)}
             >
               All races →
@@ -456,14 +456,14 @@ export function OverviewTab({
           </div>
 
           {boardBreakdown.length === 0 ? (
-            <div className="ad-empty">
+            <div className="kadm-empty">
               <p>No leaderboards yet.</p>
-              <button type="button" className="ad-btn ad-btn--primary ad-btn--sm" onClick={onQuickCreateBoard}>
+              <button type="button" className="kadm-btn kadm-btn--primary kadm-btn--sm" onClick={onQuickCreateBoard}>
                 Create first leaderboard
               </button>
             </div>
           ) : (
-            <div className="ad-race-bars">
+            <div className="kadm-race-bars">
               {boardBreakdown.slice(0, 5).map((b) => {
                 const wager = Number(b.total_wagered_cents) || 0;
                 const pct = Math.max(4, Math.round((wager / maxBoardWager) * 100));
@@ -485,19 +485,19 @@ export function OverviewTab({
                       : "live";
 
                 return (
-                  <div key={b.slug} className="ad-race-bar">
-                    <div className="ad-race-bar__top">
-                      <div className="ad-race-bar__title-wrap">
-                        <strong className="ad-race-bar__title">{b.title}</strong>
-                        <span className={`ad-badge ad-badge--${statusTone}`}>{statusLabel}</span>
+                  <div key={b.slug} className="kadm-race-bar">
+                    <div className="kadm-race-bar__top">
+                      <div className="kadm-race-bar__title-wrap">
+                        <strong className="kadm-race-bar__title">{b.title}</strong>
+                        <span className={`kadm-badge kadm-badge--${statusTone}`}>{statusLabel}</span>
                         {Boolean(b.is_demo) && (
-                          <span className="ad-badge ad-badge--warn">DEMO</span>
+                          <span className="kadm-badge kadm-badge--warn">DEMO</span>
                         )}
                       </div>
-                      <div className="ad-race-bar__actions">
+                      <div className="kadm-race-bar__actions">
                         <button
                           type="button"
-                          className="ad-btn ad-btn--secondary ad-btn--xs"
+                          className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                           onClick={() => onNavigateTab("leaderboards", b.slug)}
                         >
                           Manage
@@ -505,7 +505,7 @@ export function OverviewTab({
                         {!b.archived && !b.hidden && (
                           <button
                             type="button"
-                            className="ad-btn ad-btn--ghost ad-btn--xs"
+                            className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                             title="Open public leaderboard"
                             onClick={() => onOpenPublicPath(`/leaderboards/${b.slug}/`)}
                           >
@@ -514,10 +514,10 @@ export function OverviewTab({
                         )}
                       </div>
                     </div>
-                    <div className="ad-race-bar__track">
-                      <span className="ad-race-bar__fill" style={{ width: `${pct}%` }} />
+                    <div className="kadm-race-bar__track">
+                      <span className="kadm-race-bar__fill" style={{ width: `${pct}%` }} />
                     </div>
-                    <div className="ad-race-bar__meta">
+                    <div className="kadm-race-bar__meta">
                       <span>
                         Wagered: <strong>{money(wager)}</strong>
                       </span>
@@ -525,7 +525,7 @@ export function OverviewTab({
                         Pool: <strong>{moneyShort(b.prize_pool_cents)}</strong>
                       </span>
                       <span>{Number(b.player_count) || 0} players</span>
-                      <span className="ad-code">{(b.partner || "stake").toUpperCase()}</span>
+                      <span className="kadm-code">{(b.partner || "stake").toUpperCase()}</span>
                     </div>
                   </div>
                 );
@@ -536,69 +536,69 @@ export function OverviewTab({
       </div>
 
       {/* Bottom Row: Top Wagerers + Live Audit Feed */}
-      <div className="ad-split-grid">
-        <section className="ad-card ad-panel">
-          <div className="ad-panel__head">
+      <div className="kadm-split-grid">
+        <section className="kadm-card kadm-panel">
+          <div className="kadm-panel__head">
             <div>
-              <h2 className="ad-panel__title">Top Active Contenders</h2>
-              <p className="ad-panel__sub">Highest wagers across non-archived races</p>
+              <h2 className="kadm-panel__title">Top Active Contenders</h2>
+              <p className="kadm-panel__sub">Highest wagers across non-archived races</p>
             </div>
           </div>
 
           {topPlayers.length === 0 ? (
-            <div className="ad-empty">
+            <div className="kadm-empty">
               <p>No players recorded on active boards yet.</p>
             </div>
           ) : (
-            <div className="ad-contenders">
+            <div className="kadm-contenders">
               {topPlayers.map((p) => (
                 <button
                   key={`${p.board_slug}-${p.id}`}
                   type="button"
-                  className="ad-contender"
+                  className="kadm-contender"
                   onClick={() => onNavigateTab("leaderboards", p.board_slug)}
                 >
-                  <span className="ad-contender__rank">#{p.rank || "—"}</span>
+                  <span className="kadm-contender__rank">#{p.rank || "—"}</span>
                   {p.avatar_url ? (
                     <img
                       src={p.avatar_url}
                       alt=""
                       width={30}
                       height={30}
-                      className="ad-contender__avatar"
+                      className="kadm-contender__avatar"
                     />
                   ) : (
-                    <span className="ad-contender__avatar ad-contender__avatar--placeholder">
+                    <span className="kadm-contender__avatar kadm-contender__avatar--placeholder">
                       {(p.username[0] || "P").toUpperCase()}
                     </span>
                   )}
-                  <span className="ad-contender__info">
-                    <strong className="ad-contender__name">{p.username}</strong>
-                    <span className="ad-contender__board">{p.board_title}</span>
+                  <span className="kadm-contender__info">
+                    <strong className="kadm-contender__name">{p.username}</strong>
+                    <span className="kadm-contender__board">{p.board_title}</span>
                   </span>
                   {p.wag_growth_enabled && (
-                    <span className="ad-badge ad-badge--info" title="Auto-growth enabled">
+                    <span className="kadm-badge kadm-badge--info" title="Auto-growth enabled">
                       Growth
                     </span>
                   )}
-                  <span className="ad-contender__wager">{money(p.wagered_cents)}</span>
+                  <span className="kadm-contender__wager">{money(p.wagered_cents)}</span>
                 </button>
               ))}
             </div>
           )}
         </section>
 
-        <section className="ad-card ad-panel">
-          <div className="ad-panel__head">
+        <section className="kadm-card kadm-panel">
+          <div className="kadm-panel__head">
             <div>
-              <h2 className="ad-panel__title">Recent Admin Operations</h2>
-              <p className="ad-panel__sub">
+              <h2 className="kadm-panel__title">Recent Admin Operations</h2>
+              <p className="kadm-panel__sub">
                 {kpis.auditLast24h} actions in the last 24h ({kpis.auditTotal} total)
               </p>
             </div>
             <button
               type="button"
-              className="ad-btn ad-btn--ghost ad-btn--sm"
+              className="kadm-btn kadm-btn--ghost kadm-btn--sm"
               onClick={() => onNavigateTab("audit")}
             >
               Full log →
@@ -606,22 +606,22 @@ export function OverviewTab({
           </div>
 
           {recentAudit.length === 0 ? (
-            <div className="ad-empty">
+            <div className="kadm-empty">
               <p>No admin operations logged yet.</p>
             </div>
           ) : (
-            <ul className="ad-feed">
+            <ul className="kadm-feed">
               {recentAudit.slice(0, 8).map((item, idx) => (
-                <li key={item.id ?? idx} className="ad-feed__item">
-                  <span className="ad-feed__dot">
+                <li key={item.id ?? idx} className="kadm-feed__item">
+                  <span className="kadm-feed__dot">
                     <IconActivity size={13} />
                   </span>
-                  <div className="ad-feed__body">
-                    <div className="ad-feed__line">
-                      <code className="ad-code">{item.action || "action"}</code>
-                      {item.target && <span className="ad-feed__target">{item.target}</span>}
+                  <div className="kadm-feed__body">
+                    <div className="kadm-feed__line">
+                      <code className="kadm-code">{item.action || "action"}</code>
+                      {item.target && <span className="kadm-feed__target">{item.target}</span>}
                     </div>
-                    <div className="ad-feed__meta">
+                    <div className="kadm-feed__meta">
                       <span>{item.actor_email || "admin"}</span>
                       <span>·</span>
                       <span>{relTime(item.at, now)}</span>

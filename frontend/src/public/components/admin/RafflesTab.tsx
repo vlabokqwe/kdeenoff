@@ -500,10 +500,10 @@ export function RafflesTab({
   }, [entries, entrySearch]);
 
   return (
-    <div className="ad-stack">
+    <div className="kadm-stack">
       {/* Toolbar */}
-      <div className="ad-toolbar">
-        <div className="ad-seg" role="tablist" aria-label="Raffles filter">
+      <div className="kadm-toolbar">
+        <div className="kadm-seg" role="tablist" aria-label="Raffles filter">
           {(
             [
               ["all", `All (${counts.all})`],
@@ -518,7 +518,7 @@ export function RafflesTab({
               type="button"
               role="tab"
               aria-selected={filter === key}
-              className={`ad-seg__btn${filter === key ? " is-active" : ""}`}
+              className={`kadm-seg__btn${filter === key ? " is-active" : ""}`}
               onClick={() => setFilter(key)}
             >
               {label}
@@ -526,12 +526,12 @@ export function RafflesTab({
           ))}
         </div>
 
-        <div className="ad-toolbar__actions">
-          <div className="ad-search">
+        <div className="kadm-toolbar__actions">
+          <div className="kadm-search">
             <IconSearch size={15} />
             <input
               type="search"
-              className="ad-search__input"
+              className="kadm-search__input"
               placeholder="Search raffles, prizes, winners…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -539,7 +539,7 @@ export function RafflesTab({
           </div>
           <button
             type="button"
-            className="ad-btn ad-btn--ghost ad-btn--sm"
+            className="kadm-btn kadm-btn--ghost kadm-btn--sm"
             onClick={() => onOpenPublicPath("/raffles/")}
           >
             <span>Public Page</span>
@@ -547,14 +547,14 @@ export function RafflesTab({
           </button>
           <button
             type="button"
-            className="ad-btn ad-btn--ghost ad-btn--sm"
+            className="kadm-btn kadm-btn--ghost kadm-btn--sm"
             onClick={() => void loadRaffles()}
           >
             <IconRefresh size={14} />
           </button>
           <button
             type="button"
-            className="ad-btn ad-btn--primary ad-btn--sm"
+            className="kadm-btn kadm-btn--primary kadm-btn--sm"
             onClick={() => (editorMode === "create" ? setEditorMode(null) : openCreator())}
           >
             <IconPlus size={15} />
@@ -565,31 +565,31 @@ export function RafflesTab({
 
       {/* Create / Edit Form */}
       {editorMode && (
-        <form className="ad-card ad-panel" onSubmit={(e) => void handleSaveRaffle(e)}>
-          <div className="ad-panel__head">
+        <form className="kadm-card kadm-panel" onSubmit={(e) => void handleSaveRaffle(e)}>
+          <div className="kadm-panel__head">
             <div>
-              <h3 className="ad-panel__title">
+              <h3 className="kadm-panel__title">
                 {editorMode === "edit" ? `Edit Raffle #${editingId}` : "Create Community Raffle"}
               </h3>
-              <p className="ad-panel__sub">
+              <p className="kadm-panel__sub">
                 Kick-authenticated viewers can enter live raffles with 1 click on `/raffles/`.
               </p>
             </div>
             <button
               type="button"
-              className="ad-btn ad-btn--ghost ad-btn--xs"
+              className="kadm-btn kadm-btn--ghost kadm-btn--xs"
               onClick={() => setEditorMode(null)}
             >
               <IconClose size={15} />
             </button>
           </div>
 
-          <div className="ad-form-grid">
-            <label className="ad-field">
-              <span className="ad-field__label">Raffle Title *</span>
+          <div className="kadm-form-grid">
+            <label className="kadm-field">
+              <span className="kadm-field__label">Raffle Title *</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="Weekly Stream $500 Giveaway"
                 required
                 value={fTitle}
@@ -597,30 +597,30 @@ export function RafflesTab({
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Prize Headline</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Prize Headline</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="$500 Cash / VIP Tip"
                 value={fPrize}
                 onChange={(e) => setFPrize(e.target.value)}
               />
             </label>
 
-            <div className="ad-field">
-              <span className="ad-field__label">Completion Mode</span>
-              <div className="ad-seg" role="radiogroup" aria-label="Raffle completion mode">
+            <div className="kadm-field">
+              <span className="kadm-field__label">Completion Mode</span>
+              <div className="kadm-seg" role="radiogroup" aria-label="Raffle completion mode">
                 <button
                   type="button"
-                  className={`ad-seg__btn${fEndMode === "timer" ? " is-active" : ""}`}
+                  className={`kadm-seg__btn${fEndMode === "timer" ? " is-active" : ""}`}
                   onClick={() => setFEndMode("timer")}
                 >
                   Countdown Timer
                 </button>
                 <button
                   type="button"
-                  className={`ad-seg__btn${fEndMode === "manual" ? " is-active" : ""}`}
+                  className={`kadm-seg__btn${fEndMode === "manual" ? " is-active" : ""}`}
                   onClick={() => setFEndMode("manual")}
                 >
                   Manual (Streamer Button)
@@ -628,21 +628,21 @@ export function RafflesTab({
               </div>
             </div>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Starts At</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Starts At</span>
               <input
                 type="datetime-local"
-                className="ad-input"
+                className="kadm-input"
                 value={fStartsAt}
                 onChange={(e) => setFStartsAt(e.target.value)}
               />
             </label>
 
             {fEndMode === "timer" ? (
-              <label className="ad-field">
-                <span className="ad-field__label">
+              <label className="kadm-field">
+                <span className="kadm-field__label">
                   <span>Ends At</span>
-                  <span className="ad-inline-pills">
+                  <span className="kadm-inline-pills">
                     {[
                       [24, "+24h"],
                       [72, "+3d"],
@@ -651,7 +651,7 @@ export function RafflesTab({
                       <button
                         key={hrs}
                         type="button"
-                        className="ad-bump"
+                        className="kadm-bump"
                         onClick={() => applyEndOffsetHours(Number(hrs))}
                       >
                         {lbl}
@@ -661,37 +661,37 @@ export function RafflesTab({
                 </span>
                 <input
                   type="datetime-local"
-                  className="ad-input"
+                  className="kadm-input"
                   value={fEndsAt}
                   onChange={(e) => setFEndsAt(e.target.value)}
                 />
               </label>
             ) : (
-              <div className="ad-field">
-                <span className="ad-field__label">Manual Stream Completion</span>
-                <p className="ad-muted" style={{ margin: "6px 0 0", lineHeight: 1.45 }}>
+              <div className="kadm-field">
+                <span className="kadm-field__label">Manual Stream Completion</span>
+                <p className="kadm-muted" style={{ margin: "6px 0 0", lineHeight: 1.45 }}>
                   Stays live with no countdown until you press <strong>End Raffle</strong> on{" "}
                   <code>/raffles/:id/</code> or in this table.
                 </p>
               </div>
             )}
 
-            <label className="ad-field">
-              <span className="ad-field__label">Brief Rules / Note (Optional, separate with |)</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Brief Rules / Note (Optional, separate with |)</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="Follow on Kick | 1 entry per viewer"
                 value={fNote}
                 onChange={(e) => setFNote(e.target.value)}
               />
             </label>
 
-            <label className="ad-field">
-              <span className="ad-field__label">Winner Handle (Optional Override)</span>
+            <label className="kadm-field">
+              <span className="kadm-field__label">Winner Handle (Optional Override)</span>
               <input
                 type="text"
-                className="ad-input"
+                className="kadm-input"
                 placeholder="Leave blank until drawn"
                 value={fWinner}
                 onChange={(e) => setFWinner(e.target.value)}
@@ -699,9 +699,9 @@ export function RafflesTab({
             </label>
           </div>
 
-          <div className="ad-form-foot" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div className="ad-row-actions" style={{ flexWrap: "wrap", gap: 16 }}>
-              <label className="ad-switch-label">
+          <div className="kadm-form-foot" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div className="kadm-row-actions" style={{ flexWrap: "wrap", gap: 16 }}>
+              <label className="kadm-switch-label">
                 <input
                   type="checkbox"
                   checked={fHidden}
@@ -709,7 +709,7 @@ export function RafflesTab({
                 />
                 <span>Hide raffle from public `/raffles/` page</span>
               </label>
-              <label className="ad-switch-label">
+              <label className="kadm-switch-label">
                 <input
                   type="checkbox"
                   checked={fIsDemo}
@@ -718,17 +718,17 @@ export function RafflesTab({
                 <span>Mark as demo / test raffle</span>
               </label>
             </div>
-            <div className="ad-row-actions">
+            <div className="kadm-row-actions">
               <button
                 type="button"
-                className="ad-btn ad-btn--ghost ad-btn--sm"
+                className="kadm-btn kadm-btn--ghost kadm-btn--sm"
                 onClick={() => setEditorMode(null)}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="ad-btn ad-btn--primary ad-btn--sm"
+                className="kadm-btn kadm-btn--primary kadm-btn--sm"
                 disabled={savingForm}
               >
                 <IconCheck size={14} />
@@ -747,26 +747,26 @@ export function RafflesTab({
 
       {/* Entrants & Winner Draw Studio */}
       {inspectId != null && (
-        <section className="ad-card ad-panel ad-draw-studio">
-          <div className="ad-panel__head">
+        <section className="kadm-card kadm-panel kadm-draw-studio">
+          <div className="kadm-panel__head">
             <div>
-              <div className="ad-board-card__badges">
-                <span className="ad-badge ad-badge--info">Entrants &amp; Winner Studio</span>
+              <div className="kadm-board-card__badges">
+                <span className="kadm-badge kadm-badge--info">Entrants &amp; Winner Studio</span>
                 {Boolean(inspectRaffle?.is_demo) && (
-                  <span className="ad-badge ad-badge--warn">DEMO</span>
+                  <span className="kadm-badge kadm-badge--warn">DEMO</span>
                 )}
                 {inspectRaffle?.prize && (
-                  <span className="ad-badge ad-badge--live">{inspectRaffle.prize}</span>
+                  <span className="kadm-badge kadm-badge--live">{inspectRaffle.prize}</span>
                 )}
               </div>
-              <h3 className="ad-panel__title" style={{ marginTop: 6 }}>
+              <h3 className="kadm-panel__title" style={{ marginTop: 6 }}>
                 {inspectRaffle ? inspectRaffle.title : `Raffle #${inspectId}`}
               </h3>
             </div>
-            <div className="ad-row-actions">
+            <div className="kadm-row-actions">
               <button
                 type="button"
-                className="ad-btn ad-btn--secondary ad-btn--xs"
+                className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                 disabled={!entries.length}
                 onClick={exportEntrantsCsv}
               >
@@ -775,7 +775,7 @@ export function RafflesTab({
               </button>
               <button
                 type="button"
-                className="ad-btn ad-btn--ghost ad-btn--xs"
+                className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                 onClick={() => setInspectId(null)}
               >
                 <IconClose size={15} />
@@ -784,42 +784,42 @@ export function RafflesTab({
           </div>
 
           {/* Cryptographic Winner Machine */}
-          <div className="ad-reel-box">
-            <div className="ad-reel-box__display">
-              <span className="ad-mini-label">Cryptographic Random Draw (`crypto.getRandomValues`)</span>
+          <div className="kadm-reel-box">
+            <div className="kadm-reel-box__display">
+              <span className="kadm-mini-label">Cryptographic Random Draw (`crypto.getRandomValues`)</span>
               {drawing && reelName ? (
-                <div className="ad-reel-rolling" aria-live="polite">
-                  <span className="ad-reel-rolling__tag">Rolling {entries.length} entrants…</span>
-                  <strong className="ad-reel-rolling__name">{reelName}</strong>
+                <div className="kadm-reel-rolling" aria-live="polite">
+                  <span className="kadm-reel-rolling__tag">Rolling {entries.length} entrants…</span>
+                  <strong className="kadm-reel-rolling__name">{reelName}</strong>
                 </div>
               ) : drawnResult ? (
-                <div className="ad-reel-winner">
+                <div className="kadm-reel-winner">
                   {safeAvatar(drawnResult.avatarUrl) && (
                     <img
                       src={safeAvatar(drawnResult.avatarUrl)}
                       alt=""
                       width={38}
                       height={38}
-                      className="ad-reel-winner__avatar"
+                      className="kadm-reel-winner__avatar"
                     />
                   )}
                   <div>
-                    <span className="ad-badge ad-badge--live">Selected Winner</span>
-                    <strong className="ad-reel-winner__name">{drawnResult.winner}</strong>
+                    <span className="kadm-badge kadm-badge--live">Selected Winner</span>
+                    <strong className="kadm-reel-winner__name">{drawnResult.winner}</strong>
                   </div>
                 </div>
               ) : inspectRaffle?.winner ? (
-                <div className="ad-reel-winner">
-                  <span className="ad-kpi__icon ad-kpi__icon--amber">
+                <div className="kadm-reel-winner">
+                  <span className="kadm-kpi__icon kadm-kpi__icon--amber">
                     <IconTrophy size={18} />
                   </span>
                   <div>
-                    <span className="ad-subtext">Recorded Winner</span>
-                    <strong className="ad-reel-winner__name">{inspectRaffle.winner}</strong>
+                    <span className="kadm-subtext">Recorded Winner</span>
+                    <strong className="kadm-reel-winner__name">{inspectRaffle.winner}</strong>
                   </div>
                 </div>
               ) : (
-                <p className="ad-muted" style={{ margin: "6px 0 0" }}>
+                <p className="kadm-muted" style={{ margin: "6px 0 0" }}>
                   {entries.length > 0
                     ? `${entries.length} eligible ${entries.length === 1 ? "entrant" : "entrants"} ready for draw.`
                     : "No entrants have joined this raffle yet."}
@@ -827,10 +827,10 @@ export function RafflesTab({
               )}
             </div>
 
-            <div className="ad-reel-box__actions">
+            <div className="kadm-reel-box__actions">
               <button
                 type="button"
-                className="ad-btn ad-btn--primary ad-btn--sm"
+                className="kadm-btn kadm-btn--primary kadm-btn--sm"
                 disabled={drawing || entries.length === 0}
                 onClick={() => void handleDrawWinner(Boolean(inspectRaffle?.winner))}
               >
@@ -846,7 +846,7 @@ export function RafflesTab({
               {inspectRaffle?.winner && !drawing && (
                 <button
                   type="button"
-                  className="ad-btn ad-btn--ghost ad-btn--sm"
+                  className="kadm-btn kadm-btn--ghost kadm-btn--sm"
                   disabled={busyKey === "winner"}
                   onClick={() => void handleSetManualWinner(null)}
                 >
@@ -857,24 +857,24 @@ export function RafflesTab({
           </div>
 
           {/* Entrants Filter & Table */}
-          <div className="ad-toolbar" style={{ marginTop: 12 }}>
-            <div className="ad-search">
+          <div className="kadm-toolbar" style={{ marginTop: 12 }}>
+            <div className="kadm-search">
               <IconSearch size={15} />
               <input
                 type="search"
-                className="ad-search__input"
+                className="kadm-search__input"
                 placeholder="Search entrants by Kick name, ID, or email…"
                 value={entrySearch}
                 onChange={(e) => setEntrySearch(e.target.value)}
               />
             </div>
-            <span className="ad-muted">
+            <span className="kadm-muted">
               Showing {visibleEntries.length} of {entries.length} entrants
             </span>
           </div>
 
-          <div className="ad-table-wrap" style={{ maxHeight: 320 }}>
-            <table className="ad-table ad-table--compact">
+          <div className="kadm-table-wrap" style={{ maxHeight: 320 }}>
+            <table className="kadm-table kadm-table--compact">
               <thead>
                 <tr>
                   <th>Kick Entrant</th>
@@ -886,13 +886,13 @@ export function RafflesTab({
               <tbody>
                 {loadingEntries ? (
                   <tr>
-                    <td colSpan={4} className="ad-table__empty">
+                    <td colSpan={4} className="kadm-table__empty">
                       Loading entrants…
                     </td>
                   </tr>
                 ) : visibleEntries.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="ad-table__empty">
+                    <td colSpan={4} className="kadm-table__empty">
                       {entries.length === 0 ? "No entries yet." : "No matching entrants."}
                     </td>
                   </tr>
@@ -906,24 +906,24 @@ export function RafflesTab({
                     return (
                       <tr key={entry.id} className={isWinner ? "is-selected" : undefined}>
                         <td>
-                          <div className="ad-user-cell">
+                          <div className="kadm-user-cell">
                             {avatar ? (
                               <img
                                 src={avatar}
                                 alt=""
                                 width={26}
                                 height={26}
-                                className="ad-user-cell__avatar"
+                                className="kadm-user-cell__avatar"
                               />
                             ) : (
-                              <span className="ad-user-cell__avatar ad-user-cell__avatar--ph">
+                              <span className="kadm-user-cell__avatar kadm-user-cell__avatar--ph">
                                 {(handle[0] || "K").toUpperCase()}
                               </span>
                             )}
                             <div>
                               <strong>{handle}</strong>{" "}
-                              {isWinner && <span className="ad-badge ad-badge--live">Winner</span>}
-                              <div className="ad-subtext">Kick ID: {entry.kick_user_id}</div>
+                              {isWinner && <span className="kadm-badge kadm-badge--live">Winner</span>}
+                              <div className="kadm-subtext">Kick ID: {entry.kick_user_id}</div>
                             </div>
                           </div>
                         </td>
@@ -932,23 +932,23 @@ export function RafflesTab({
                             <div>
                               <span>{entry.email}</span>{" "}
                               {entry.email_verified_at && (
-                                <span className="ad-badge ad-badge--info">Verified</span>
+                                <span className="kadm-badge kadm-badge--info">Verified</span>
                               )}
                             </div>
                           ) : (
-                            <span className="ad-muted">—</span>
+                            <span className="kadm-muted">—</span>
                           )}
                         </td>
-                        <td className="ad-nowrap">
+                        <td className="kadm-nowrap">
                           <div>{relTime(entry.created_at, now)}</div>
-                          <span className="ad-subtext">{fmtDateTime(entry.created_at)}</span>
+                          <span className="kadm-subtext">{fmtDateTime(entry.created_at)}</span>
                         </td>
-                        <td className="ad-nowrap" style={{ textAlign: "right" }}>
-                          <div className="ad-row-actions">
+                        <td className="kadm-nowrap" style={{ textAlign: "right" }}>
+                          <div className="kadm-row-actions">
                             {!isWinner && (
                               <button
                                 type="button"
-                                className="ad-btn ad-btn--secondary ad-btn--xs"
+                                className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                                 disabled={busyKey === "winner"}
                                 title="Set as winner"
                                 onClick={() => void handleSetManualWinner(handle)}
@@ -961,7 +961,7 @@ export function RafflesTab({
                               <>
                                 <button
                                   type="button"
-                                  className="ad-btn ad-btn--danger ad-btn--xs"
+                                  className="kadm-btn kadm-btn--danger kadm-btn--xs"
                                   disabled={busyKey === `rm-entry:${entry.id}`}
                                   onClick={() => void handleRemoveEntry(entry)}
                                 >
@@ -969,7 +969,7 @@ export function RafflesTab({
                                 </button>
                                 <button
                                   type="button"
-                                  className="ad-btn ad-btn--ghost ad-btn--xs"
+                                  className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                                   onClick={() => setConfirmRemoveEntryId(null)}
                                 >
                                   Cancel
@@ -978,7 +978,7 @@ export function RafflesTab({
                             ) : (
                               <button
                                 type="button"
-                                className="ad-btn ad-btn--ghost ad-btn--xs"
+                                className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                                 title="Remove entrant"
                                 onClick={() => setConfirmRemoveEntryId(entry.id)}
                               >
@@ -998,9 +998,9 @@ export function RafflesTab({
       )}
 
       {/* Raffles Table */}
-      <div className="ad-card ad-table-card">
-        <div className="ad-table-wrap">
-          <table className="ad-table">
+      <div className="kadm-card kadm-table-card">
+        <div className="kadm-table-wrap">
+          <table className="kadm-table">
             <thead>
               <tr>
                 <th>Raffle &amp; Prize</th>
@@ -1013,13 +1013,13 @@ export function RafflesTab({
             <tbody>
               {loading && raffles.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="ad-table__empty">
+                  <td colSpan={5} className="kadm-table__empty">
                     Loading raffles…
                   </td>
                 </tr>
               ) : filteredRaffles.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="ad-table__empty">
+                  <td colSpan={5} className="kadm-table__empty">
                     No raffles match the current filter.
                   </td>
                 </tr>
@@ -1068,23 +1068,23 @@ export function RafflesTab({
                       className={inspectId === r.id ? "is-selected" : undefined}
                     >
                       <td>
-                        <div className="ad-raffle-title">
+                        <div className="kadm-raffle-title">
                           <strong>{r.title}</strong>
                           {Boolean(r.is_demo) && (
-                            <span className="ad-badge ad-badge--warn">DEMO</span>
+                            <span className="kadm-badge kadm-badge--warn">DEMO</span>
                           )}
-                          {r.prize && <span className="ad-badge ad-badge--info">{r.prize}</span>}
+                          {r.prize && <span className="kadm-badge kadm-badge--info">{r.prize}</span>}
                         </div>
-                        {r.note && <div className="ad-subtext">{r.note}</div>}
+                        {r.note && <div className="kadm-subtext">{r.note}</div>}
                       </td>
-                      <td className="ad-nowrap">
-                        <span className={`ad-badge ad-badge--${statusTone}`}>{statusText}</span>
-                        <div className="ad-subtext">{scheduleText}</div>
+                      <td className="kadm-nowrap">
+                        <span className={`kadm-badge kadm-badge--${statusTone}`}>{statusText}</span>
+                        <div className="kadm-subtext">{scheduleText}</div>
                       </td>
-                      <td className="ad-nowrap">
+                      <td className="kadm-nowrap">
                         <button
                           type="button"
-                          className="ad-btn ad-btn--secondary ad-btn--xs"
+                          className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                           onClick={() => setInspectId(inspectId === r.id ? null : r.id)}
                         >
                           <IconUsers size={13} />
@@ -1093,22 +1093,22 @@ export function RafflesTab({
                           </span>
                         </button>
                       </td>
-                      <td className="ad-nowrap">
+                      <td className="kadm-nowrap">
                         {r.winner ? (
-                          <span className="ad-badge ad-badge--live">
+                          <span className="kadm-badge kadm-badge--live">
                             <IconTrophy size={12} />
                             <span>{r.winner}</span>
                           </span>
                         ) : (
-                          <span className="ad-muted">—</span>
+                          <span className="kadm-muted">—</span>
                         )}
                       </td>
-                      <td className="ad-nowrap" style={{ textAlign: "right" }}>
-                        <div className="ad-row-actions">
+                      <td className="kadm-nowrap" style={{ textAlign: "right" }}>
+                        <div className="kadm-row-actions">
                           {entryCount > 0 && (
                             <button
                               type="button"
-                              className="ad-btn ad-btn--primary ad-btn--xs"
+                              className="kadm-btn kadm-btn--primary kadm-btn--xs"
                               disabled={busyKey === `draw:${r.id}` || busyKey === `end:${r.id}`}
                               title={
                                 r.winner
@@ -1131,7 +1131,7 @@ export function RafflesTab({
                           {!done && s <= now && (
                             <button
                               type="button"
-                              className="ad-btn ad-btn--secondary ad-btn--xs"
+                              className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                               disabled={busyKey === `end:${r.id}` || busyKey === `draw:${r.id}`}
                               title="End raffle without spinning the roulette"
                               onClick={() => void handleEndRaffle(r)}
@@ -1143,7 +1143,7 @@ export function RafflesTab({
 
                           <button
                             type="button"
-                            className="ad-btn ad-btn--secondary ad-btn--xs"
+                            className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                             onClick={() => setInspectId(inspectId === r.id ? null : r.id)}
                           >
                             <IconTicket size={13} />
@@ -1152,7 +1152,7 @@ export function RafflesTab({
 
                           <button
                             type="button"
-                            className="ad-btn ad-btn--ghost ad-btn--xs"
+                            className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                             onClick={() => onOpenPublicPath(`/raffles/${r.id}/`)}
                             title="Open public raffle page"
                           >
@@ -1162,7 +1162,7 @@ export function RafflesTab({
 
                           <button
                             type="button"
-                            className="ad-btn ad-btn--secondary ad-btn--xs"
+                            className="kadm-btn kadm-btn--secondary kadm-btn--xs"
                             onClick={() => openEditor(r)}
                             title="Edit raffle"
                           >
@@ -1172,7 +1172,7 @@ export function RafflesTab({
 
                           <button
                             type="button"
-                            className="ad-btn ad-btn--ghost ad-btn--xs"
+                            className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                             disabled={busyKey === `hide:${r.id}`}
                             title={r.hidden ? "Make public" : "Hide raffle"}
                             onClick={() => void handleToggleHidden(r)}
@@ -1184,7 +1184,7 @@ export function RafflesTab({
                             <>
                               <button
                                 type="button"
-                                className="ad-btn ad-btn--danger ad-btn--xs"
+                                className="kadm-btn kadm-btn--danger kadm-btn--xs"
                                 disabled={busyKey === `del:${r.id}`}
                                 onClick={() => void handleDeleteRaffle(r)}
                               >
@@ -1192,7 +1192,7 @@ export function RafflesTab({
                               </button>
                               <button
                                 type="button"
-                                className="ad-btn ad-btn--ghost ad-btn--xs"
+                                className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                                 onClick={() => setConfirmDeleteId(null)}
                               >
                                 Cancel
@@ -1201,7 +1201,7 @@ export function RafflesTab({
                           ) : (
                             <button
                               type="button"
-                              className="ad-btn ad-btn--ghost ad-btn--xs"
+                              className="kadm-btn kadm-btn--ghost kadm-btn--xs"
                               title="Delete raffle"
                               onClick={() => setConfirmDeleteId(r.id)}
                             >

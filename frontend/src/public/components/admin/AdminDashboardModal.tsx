@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Component, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { adminApi, errorCode } from "../../lib/api";
@@ -69,6 +69,53 @@ function applySiteTheme(next: "dark" | "light"): void {
     meta.setAttribute("content", next === "dark" ? "#0c1218" : "#f7f7f7");
   }
   window.dispatchEvent(new Event("resize"));
+}
+
+class AdminTabErrorBoundary extends Component<
+  { resetKey: string; onRetry: () => void; children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidUpdate(prevProps: { resetKey: string }) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.error) {
+      this.setState({ error: null });
+    }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[AdminDashboardModal]", error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="kadm-panel" style={{ padding: 24, display: "grid", gap: 12 }}>
+          <strong>Failed to render this section</strong>
+          <p className="kadm-muted" style={{ margin: 0 }}>
+            {this.state.error.message || "Unexpected rendering error."}
+          </p>
+          <div>
+            <button
+              type="button"
+              className="kadm-btn kadm-btn--secondary kadm-btn--sm"
+              onClick={() => {
+                this.setState({ error: null });
+                this.props.onRetry();
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export default function AdminDashboardModal() {
@@ -212,7 +259,8 @@ export default function AdminDashboardModal() {
 
   return createPortal(
     <div
-      className="ad-overlay"
+      className="kadm-overlay"
+      style={{ position: "fixed", inset: 0, zIndex: 940, display: "grid", placeItems: "center" }}
       role="dialog"
       aria-modal="true"
       aria-label="KDeenOff Admin Dashboard"
@@ -221,21 +269,21 @@ export default function AdminDashboardModal() {
         if (e.target === e.currentTarget) closeAdmin();
       }}
     >
-      <div className="ad-shell">
+      <div className="kadm-shell">
         {/* Sidebar Navigation */}
-        <aside className="ad-sidebar">
-          <div className="ad-sidebar__brand">
+        <aside className="kadm-sidebar">
+          <div className="kadm-sidebar__brand">
             <img src="/img/brand/mark-muzzle.png" alt="" width={32} height={22} />
-            <div className="ad-sidebar__brand-copy">
+            <div className="kadm-sidebar__brand-copy">
               <strong>KDEENOFF</strong>
-              <span className="ad-sidebar__tag">Admin Panel</span>
+              <span className="kadm-sidebar__tag">Admin Panel</span>
             </div>
           </div>
 
-          <nav className="ad-nav" aria-label="Admin sections">
+          <nav className="kadm-nav" aria-label="Admin sections">
             <button
               type="button"
-              className={`ad-nav__item${adminTab === "overview" ? " is-active" : ""}`}
+              className={`kadm-nav__item${adminTab === "overview" ? " is-active" : ""}`}
               onClick={() => handleNavigateTab("overview")}
             >
               <IconOverview size={17} />
@@ -244,26 +292,26 @@ export default function AdminDashboardModal() {
 
             <button
               type="button"
-              className={`ad-nav__item${adminTab === "leaderboards" ? " is-active" : ""}`}
+              className={`kadm-nav__item${adminTab === "leaderboards" ? " is-active" : ""}`}
               onClick={() => handleNavigateTab("leaderboards")}
             >
               <IconTrophy size={17} />
               <span>Leaderboards</span>
               {kpis != null && (
-                <span className="ad-nav__count">{kpis.activeBoards}</span>
+                <span className="kadm-nav__count">{kpis.activeBoards}</span>
               )}
             </button>
 
             <button
               type="button"
-              className={`ad-nav__item${adminTab === "raffles" ? " is-active" : ""}`}
+              className={`kadm-nav__item${adminTab === "raffles" ? " is-active" : ""}`}
               onClick={() => handleNavigateTab("raffles")}
             >
               <IconTicket size={17} />
               <span>Raffles</span>
               {kpis != null && (
                 <span
-                  className={`ad-nav__count${kpis.awaitingWinnerRaffles > 0 ? " is-warn" : ""}`}
+                  className={`kadm-nav__count${kpis.awaitingWinnerRaffles > 0 ? " is-warn" : ""}`}
                   title={
                     kpis.awaitingWinnerRaffles > 0
                       ? `${kpis.awaitingWinnerRaffles} awaiting winner draw`
@@ -277,19 +325,19 @@ export default function AdminDashboardModal() {
 
             <button
               type="button"
-              className={`ad-nav__item${adminTab === "users" ? " is-active" : ""}`}
+              className={`kadm-nav__item${adminTab === "users" ? " is-active" : ""}`}
               onClick={() => handleNavigateTab("users")}
             >
               <IconUsers size={17} />
               <span>Users</span>
               {kpis != null && (
-                <span className="ad-nav__count">{kpis.totalUsers}</span>
+                <span className="kadm-nav__count">{kpis.totalUsers}</span>
               )}
             </button>
 
             <button
               type="button"
-              className={`ad-nav__item${adminTab === "settings" ? " is-active" : ""}`}
+              className={`kadm-nav__item${adminTab === "settings" ? " is-active" : ""}`}
               onClick={() => handleNavigateTab("settings")}
             >
               <IconSliders size={17} />
@@ -298,40 +346,40 @@ export default function AdminDashboardModal() {
 
             <button
               type="button"
-              className={`ad-nav__item${adminTab === "audit" ? " is-active" : ""}`}
+              className={`kadm-nav__item${adminTab === "audit" ? " is-active" : ""}`}
               onClick={() => handleNavigateTab("audit")}
             >
               <IconActivity size={17} />
               <span>Audit Log</span>
               {kpis != null && kpis.auditLast24h > 0 && (
-                <span className="ad-nav__count">{kpis.auditLast24h}</span>
+                <span className="kadm-nav__count">{kpis.auditLast24h}</span>
               )}
             </button>
           </nav>
 
           {currentPageSlug && (
-            <div className="ad-sidebar__context">
-              <span className="ad-mini-label">Current Page Shortcut</span>
+            <div className="kadm-sidebar__context">
+              <span className="kadm-mini-label">Current Page Shortcut</span>
               <button
                 type="button"
-                className="ad-btn ad-btn--secondary ad-btn--sm"
+                className="kadm-btn kadm-btn--secondary kadm-btn--sm"
                 style={{ width: "100%", justifyContent: "flex-start" }}
                 onClick={() => handleNavigateTab("leaderboards", currentPageSlug)}
               >
                 <IconTrophy size={14} />
-                <span className="ad-truncate">Edit {currentPageSlug}</span>
+                <span className="kadm-truncate">Edit {currentPageSlug}</span>
               </button>
             </div>
           )}
 
-          <div className="ad-sidebar__foot">
-            <div className="ad-sidebar__actor">
+          <div className="kadm-sidebar__foot">
+            <div className="kadm-sidebar__actor">
               <IconShield size={15} />
-              <span className="ad-truncate">{overview?.actor.email || "Admin"}</span>
+              <span className="kadm-truncate">{overview?.actor.email || "Admin"}</span>
             </div>
             <button
               type="button"
-              className="ad-btn ad-btn--ghost ad-btn--sm"
+              className="kadm-btn kadm-btn--ghost kadm-btn--sm"
               style={{ width: "100%" }}
               onClick={closeAdmin}
             >
@@ -341,27 +389,27 @@ export default function AdminDashboardModal() {
         </aside>
 
         {/* Main Workspace */}
-        <div className="ad-main">
-          <header className="ad-topbar">
-            <div className="ad-topbar__titles">
-              <h1 className="ad-topbar__title">{meta.title}</h1>
-              <p className="ad-topbar__sub">{meta.subtitle}</p>
+        <div className="kadm-main">
+          <header className="kadm-topbar">
+            <div className="kadm-topbar__titles">
+              <h1 className="kadm-topbar__title">{meta.title}</h1>
+              <p className="kadm-topbar__sub">{meta.subtitle}</p>
             </div>
 
-            <div className="ad-topbar__controls">
+            <div className="kadm-topbar__controls">
               <button
                 type="button"
-                className={`ad-btn ad-btn--ghost ad-btn--sm${liveSync ? " is-active" : ""}`}
+                className={`kadm-btn kadm-btn--ghost kadm-btn--sm${liveSync ? " is-active" : ""}`}
                 onClick={() => setLiveSync((v) => !v)}
                 title="Toggle 15-second live metrics refresh"
               >
-                <span className={`ad-live-dot${liveSync ? " is-on" : ""}`} />
+                <span className={`kadm-live-dot${liveSync ? " is-on" : ""}`} />
                 <span>{liveSync ? "Live 15s" : "Paused"}</span>
               </button>
 
               <button
                 type="button"
-                className="ad-btn ad-btn--secondary ad-btn--sm"
+                className="kadm-btn kadm-btn--secondary kadm-btn--sm"
                 onClick={handleManualRefresh}
                 title="Refresh dashboard data"
               >
@@ -371,7 +419,7 @@ export default function AdminDashboardModal() {
 
               <button
                 type="button"
-                className="ad-btn ad-btn--ghost ad-btn--sm"
+                className="kadm-btn kadm-btn--ghost kadm-btn--sm"
                 onClick={toggleTheme}
                 aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                 title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
@@ -381,7 +429,7 @@ export default function AdminDashboardModal() {
 
               <button
                 type="button"
-                className="ad-btn ad-btn--secondary ad-btn--sm"
+                className="kadm-btn kadm-btn--secondary kadm-btn--sm"
                 data-admin-close=""
                 onClick={closeAdmin}
                 aria-label="Close Admin Dashboard"
@@ -392,62 +440,67 @@ export default function AdminDashboardModal() {
             </div>
           </header>
 
-          <div className="ad-content" key={refreshNonce}>
-            {adminTab === "overview" && (
-              <OverviewTab
-                data={overview}
-                loading={overviewLoading}
-                error={overviewError}
-                onNavigateTab={handleNavigateTab}
-                onQuickCreateBoard={handleQuickCreateBoard}
-                onQuickCreateRaffle={handleQuickCreateRaffle}
-                onOpenPublicPath={handleOpenPublicPath}
-                notify={notify}
-                onChanged={handleDataChanged}
-              />
-            )}
+          <div className="kadm-content" key={refreshNonce}>
+            <AdminTabErrorBoundary
+              resetKey={`${adminTab}:${refreshNonce}`}
+              onRetry={handleManualRefresh}
+            >
+              {adminTab === "overview" && (
+                <OverviewTab
+                  data={overview}
+                  loading={overviewLoading}
+                  error={overviewError}
+                  onNavigateTab={handleNavigateTab}
+                  onQuickCreateBoard={handleQuickCreateBoard}
+                  onQuickCreateRaffle={handleQuickCreateRaffle}
+                  onOpenPublicPath={handleOpenPublicPath}
+                  notify={notify}
+                  onChanged={handleDataChanged}
+                />
+              )}
 
-            {adminTab === "leaderboards" && (
-              <LeaderboardsTab
-                boardSlug={adminBoardSlug}
-                createTrigger={createBoardTrigger}
-                onSelectBoardSlug={setAdminBoardSlug}
-                notify={notify}
-                onChanged={handleDataChanged}
-                onOpenPublicPath={handleOpenPublicPath}
-              />
-            )}
+              {adminTab === "leaderboards" && (
+                <LeaderboardsTab
+                  boardSlug={adminBoardSlug}
+                  createTrigger={createBoardTrigger}
+                  onSelectBoardSlug={setAdminBoardSlug}
+                  notify={notify}
+                  onChanged={handleDataChanged}
+                  onOpenPublicPath={handleOpenPublicPath}
+                />
+              )}
 
-            {adminTab === "raffles" && (
-              <RafflesTab
-                createTrigger={createRaffleTrigger}
-                notify={notify}
-                onChanged={handleDataChanged}
-                onOpenPublicPath={handleOpenPublicPath}
-              />
-            )}
+              {adminTab === "raffles" && (
+                <RafflesTab
+                  createTrigger={createRaffleTrigger}
+                  notify={notify}
+                  onChanged={handleDataChanged}
+                  onOpenPublicPath={handleOpenPublicPath}
+                />
+              )}
 
-            {adminTab === "users" && (
-              <UsersTab notify={notify} onChanged={handleDataChanged} />
-            )}
+              {adminTab === "users" && (
+                <UsersTab notify={notify} onChanged={handleDataChanged} />
+              )}
 
-            {adminTab === "settings" && (
-              <SiteSettingsTab notify={notify} onChanged={handleDataChanged} />
-            )}
+              {adminTab === "settings" && (
+                <SiteSettingsTab notify={notify} onChanged={handleDataChanged} />
+              )}
 
-            {adminTab === "audit" && <AuditLogTab notify={notify} />}
+              {adminTab === "audit" && <AuditLogTab notify={notify} />}
+            </AdminTabErrorBoundary>
           </div>
         </div>
 
         {/* Floating Toasts */}
         {toasts.length > 0 && (
-          <div className="ad-toast-stack" role="status" aria-live="polite">
+          <div className="kadm-toast-stack" role="status" aria-live="polite">
             {toasts.map((t) => (
-              <div key={t.id} className={`ad-toast ad-toast--${t.kind}`}>
+              <div key={t.id} className={`kadm-toast kadm-toast--${t.kind}`}>
                 <span>{t.text}</span>
                 <button
                   type="button"
-                  className="ad-toast__close"
+                  className="kadm-toast__close"
                   aria-label="Dismiss notification"
                   onClick={() => dismissToast(t.id)}
                 >
