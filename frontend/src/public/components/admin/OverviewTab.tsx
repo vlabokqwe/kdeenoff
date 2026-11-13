@@ -48,9 +48,25 @@ export function OverviewTab({
   const [purgingDemo, setPurgingDemo] = useState(false);
 
   if (error && !data) {
+    const isNetworkOrAccessRedirect =
+      /failed to fetch|networkerror|load failed/i.test(error);
     return (
       <div className="ad-empty ad-empty--error">
         <p>Could not load overview metrics: {error}</p>
+        {isNetworkOrAccessRedirect && (
+          <p style={{ marginTop: 8, opacity: 0.85 }}>
+            Cloudflare Zero Trust Access may be intercepting <code>/api/admin/*</code> on this domain.{" "}
+            <a
+              href="/admin/"
+              target="_blank"
+              rel="noreferrer"
+              style={{ textDecoration: "underline", fontWeight: 700 }}
+            >
+              Sign in via Cloudflare Access
+            </a>{" "}
+            or remove the legacy Access application for <code>/admin</code> in Cloudflare Zero Trust.
+          </p>
+        )}
       </div>
     );
   }

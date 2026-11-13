@@ -1,6 +1,4 @@
 import {
-  lazy,
-  Suspense,
   useCallback,
   useEffect,
   useRef,
@@ -22,8 +20,7 @@ import { Footer } from "./Footer";
 import { LoadingScreen } from "./LoadingScreen";
 import { AuthDialog } from "./AuthDialog";
 import { RaffleModals } from "./RaffleModals";
-
-const AdminDashboardModal = lazy(() => import("./admin/AdminDashboardModal"));
+import AdminDashboardModal from "./admin/AdminDashboardModal";
 
 /* ───────────── Home scale ground ───────────── */
 
@@ -1385,11 +1382,7 @@ export function Layout() {
 
       {isLocalDevHost() && <LocalAdmin />}
 
-      {adminOpen && canOpenAdmin && (
-        <Suspense fallback={null}>
-          <AdminDashboardModal />
-        </Suspense>
-      )}
+      {adminOpen && canOpenAdmin && <AdminDashboardModal />}
 
       <AuthDialog />
 
