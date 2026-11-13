@@ -13,14 +13,14 @@ export class CronService {
   ) {}
 
   @Cron("*/15 * * * *")
-  handleScheduled(): void {
+  async handleScheduled(): Promise<void> {
     try {
-      this.raffles.finalizeExpiredTimerRaffles();
+      await this.raffles.finalizeExpiredTimerRaffles();
     } catch (err) {
       this.logger.error(`scheduled raffle finalization failed: ${(err as Error)?.message || err}`);
     }
     try {
-      this.wagerGrowth.runScheduledWagerGrowth();
+      await this.wagerGrowth.runScheduledWagerGrowth();
     } catch (err) {
       this.logger.error(`scheduled wager growth failed: ${(err as Error)?.message || err}`);
     }

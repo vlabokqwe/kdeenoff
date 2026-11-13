@@ -22,7 +22,7 @@ import {
 import { asBool, asInt, asTrimmed } from "../common/validation";
 import { AccessService } from "../access/access.service";
 import { AppConfig } from "../config/app-config";
-import { DatabaseService } from "../database/database.service";
+import { DatabaseService, type BoundStatement } from "../database/database.service";
 import { buildLeaderboardAvatarUrl } from "../leaderboards/lb-avatar";
 import { normalizeUserRole, SessionService, type UserRole } from "../session/session.service";
 
@@ -106,21 +106,21 @@ export class DevAccountService {
   ) { }
 
   /** Live preview raffles this panel created. Edits in admin or expiry drop a row out of the set. */
-  private devRaffles(now = Date.now()): DevRaffleRow[] {
-    return this.db
-      .all<DevRaffleRow>(
-        `SELECT id, title FROM raffles
-         WHERE prize = ? AND note = ? AND winner IS NULL AND hidden = 0
-           AND starts_at <= ? AND ends_at > ?
-           AND (title = ? OR title LIKE ?)
-         ORDER BY id ASC`,
-        DEV_RAFFLE_PRIZE,
-        DEV_RAFFLE_NOTE,
-        now,
-        now,
-        DEV_RAFFLE_TITLE,
-        `${DEV_RAFFLE_TITLE} %`,
-      )
+  private async devRaffles(now = Date.now()): Promise<DevRaffleRow[]> {
+    const rows = await this.db.all<DevRaffleRow>(
+      `SELECT id, title FROM raffles
+       WHERE prize = ? AND note = ? AND winner IS NULL AND hidden = 0
+         AND starts_at <= ? AND ends_at > ?
+         AND (title = ? OR title LIKE ?)
+       ORDER BY id ASC`,
+      DEV_RAFFLE_PRIZE,
+      DEV_RAFFLE_NOTE,
+      now,
+      now,
+      DEV_RAFFLE_TITLE,
+      `${DEV_RAFFLE_TITLE} %`,
+    );
+    return rows
       .map((row) => ({ id: Number(row.id), title: String(row.title || "") }))
       .filter((row) => this.isDevRaffleTitle(row.title));
   }
@@ -143,12 +143,12 @@ export class DevAccountService {
    * + inserts one live raffle (title, $500 prize, note, a 7-day window).
    * − deletes the newest of those, and its entries.
    */
-  private stepRaffle(step: 1 | -1): number {
-    const rows = this.devRaffles();
+  private async stepRaffle(step: 1 | -1): Promise<number> {
+    const rows = await this.devRaffles();
     if (step === -1) {
       const last = rows[rows.length - 1];
       if (!last) return 0;
-      this.db.batch([
+      await this.db.batch([
         this.db.stmt(`DELETE FROM raffle_winners WHERE raffle_id = ?`, last.id),
         this.db.stmt(`DELETE FROM raffle_entries WHERE raffle_id = ?`, last.id),
         this.db.stmt(`DELETE FROM raffles WHERE id = ?`, last.id),
@@ -157,7 +157,7 @@ export class DevAccountService {
     }
 
     const now = Date.now();
-    this.db.run(
+    await this.db.run(
       `INSERT INTO raffles (
         title, prize, note, winner, starts_at, ends_at, hidden, is_demo, created_at, updated_at
       ) VALUES (?, ?, ?, NULL, ?, ?, 0, 1, ?, ?)`,
@@ -172,8 +172,8 @@ export class DevAccountService {
     return rows.length + 1;
   }
 
-  private currentDemoRole(): UserRole {
-    const row = this.db.first<{ role: string }>(
+  private async currentDemoRole(): Promise<UserRole> {
+    const row = await this.db.first<{ role: string }>(
       `SELECT role FROM site_people WHERE email = ? OR kick_user_id = ? ORDER BY updated_at DESC LIMIT 1`,
       DEMO_EMAIL,
       DEMO_KICK_ID,
@@ -181,36 +181,36 @@ export class DevAccountService {
     return row ? normalizeUserRole(row.role) : "admin";
   }
 
-  private resolveTargetRaffleId(explicitId: number | null): number | null {
+  private async resolveTargetRaffleId(explicitId: number | null): Promise<number | null> {
     if (explicitId && explicitId > 0) {
-      const hit = this.db.first<{ id: number }>(`SELECT id FROM raffles WHERE id = ?`, explicitId);
+      const hit = await this.db.first<{ id: number }>(`SELECT id FROM raffles WHERE id = ?`, explicitId);
       if (hit) return Number(hit.id);
     }
-    const open = this.db.first<{ id: number }>(
+    const open = await this.db.first<{ id: number }>(
       `SELECT id FROM raffles WHERE ended_at IS NULL ORDER BY id DESC LIMIT 1`,
     );
     if (open) return Number(open.id);
-    const anyRow = this.db.first<{ id: number }>(`SELECT id FROM raffles ORDER BY id DESC LIMIT 1`);
+    const anyRow = await this.db.first<{ id: number }>(`SELECT id FROM raffles ORDER BY id DESC LIMIT 1`);
     return anyRow ? Number(anyRow.id) : null;
   }
 
-  private countDemoEntrants(targetRaffleId: number | null = null): number {
-    const rid = this.resolveTargetRaffleId(targetRaffleId);
+  private async countDemoEntrants(targetRaffleId: number | null = null): Promise<number> {
+    const rid = await this.resolveTargetRaffleId(targetRaffleId);
     if (!rid) return 0;
-    const row = this.db.first<{ c: number }>(
+    const row = await this.db.first<{ c: number }>(
       `SELECT COUNT(*) AS c FROM raffle_entries WHERE raffle_id = ? AND kick_user_id LIKE 'demo-bot-%'`,
       rid,
     );
     return Number(row?.c) || 0;
   }
 
-  private stepDemoEntrants(step: number, explicitRaffleId: number | null = null): number {
-    const rid = this.resolveTargetRaffleId(explicitRaffleId);
+  private async stepDemoEntrants(step: number, explicitRaffleId: number | null = null): Promise<number> {
+    const rid = await this.resolveTargetRaffleId(explicitRaffleId);
     if (!rid) return 0;
 
     if (step < 0) {
       const removeCount = Math.min(25, Math.abs(step));
-      this.db.run(
+      await this.db.run(
         `DELETE FROM raffle_entries
          WHERE id IN (
            SELECT id FROM raffle_entries
@@ -221,7 +221,7 @@ export class DevAccountService {
         rid,
         removeCount,
       );
-      this.db.run(
+      await this.db.run(
         `DELETE FROM kick_accounts
          WHERE kick_user_id LIKE 'demo-bot-%'
            AND NOT EXISTS (SELECT 1 FROM raffle_entries re WHERE re.kick_user_id = kick_accounts.kick_user_id)`,
@@ -230,36 +230,31 @@ export class DevAccountService {
     }
 
     const addCount = Math.min(25, step);
-    const existing = new Set(
-      this.db
-        .all<{ kick_user_id: string }>(
-          `SELECT kick_user_id FROM raffle_entries WHERE raffle_id = ? AND kick_user_id LIKE 'demo-bot-%'`,
-          rid,
-        )
-        .map((r) => String(r.kick_user_id)),
+    const existingRows = await this.db.all<{ kick_user_id: string }>(
+      `SELECT kick_user_id FROM raffle_entries WHERE raffle_id = ? AND kick_user_id LIKE 'demo-bot-%'`,
+      rid,
     );
+    const existing = new Set(existingRows.map((r) => String(r.kick_user_id)));
 
     const now = Date.now();
-    const bannedBots = new Set(
-      this.db
-        .all<{ kick_user_id: string }>(
-          `SELECT kick_user_id FROM raffle_bans
-           WHERE kick_user_id LIKE 'demo-bot-%'
-             AND (is_permanent = 1 OR (banned_until IS NOT NULL AND banned_until > ?))`,
-          now,
-        )
-        .map((r) => String(r.kick_user_id)),
+    const bannedRows = await this.db.all<{ kick_user_id: string }>(
+      `SELECT kick_user_id FROM raffle_bans
+       WHERE kick_user_id LIKE 'demo-bot-%'
+         AND (is_permanent = 1 OR (banned_until IS NOT NULL AND banned_until > ?))`,
+      now,
     );
-    const tx = this.db.db.transaction(() => {
-      let added = 0;
-      let n = 1;
-      while (added < addCount && n <= 500) {
-        const botId = `demo-bot-${n}`;
-        if (!existing.has(botId) && !bannedBots.has(botId)) {
-          const botName =
-            n <= DEMO_BOT_NAMES.length ? DEMO_BOT_NAMES[n - 1] : `viewer_${n}`;
-          const botPartner = `${botName}_500`;
-          this.db.run(
+    const bannedBots = new Set(bannedRows.map((r) => String(r.kick_user_id)));
+
+    const stmts: BoundStatement[] = [];
+    let added = 0;
+    let n = 1;
+    while (added < addCount && n <= 500) {
+      const botId = `demo-bot-${n}`;
+      if (!existing.has(botId) && !bannedBots.has(botId)) {
+        const botName = n <= DEMO_BOT_NAMES.length ? DEMO_BOT_NAMES[n - 1] : `viewer_${n}`;
+        const botPartner = `${botName}_500`;
+        stmts.push(
+          this.db.stmt(
             `INSERT INTO kick_accounts (kick_user_id, name, avatar_url, partner_username, linked_at, updated_at)
              VALUES (?, ?, '', ?, ?, ?)
              ON CONFLICT(kick_user_id) DO UPDATE SET
@@ -271,31 +266,31 @@ export class DevAccountService {
             botPartner,
             now,
             now,
-          );
-          this.db.run(
+          ),
+          this.db.stmt(
             `INSERT OR IGNORE INTO raffle_entries (raffle_id, kick_user_id, created_at)
              VALUES (?, ?, ?)`,
             rid,
             botId,
             now + added,
-          );
-          existing.add(botId);
-          added += 1;
-        }
-        n += 1;
+          ),
+        );
+        existing.add(botId);
+        added += 1;
       }
-    });
-    tx();
+      n += 1;
+    }
+    if (stmts.length) await this.db.batch(stmts);
     return this.countDemoEntrants(rid);
   }
 
-  private ensureDemoPerson(
+  private async ensureDemoPerson(
     account: boolean,
     kick: boolean,
     requestedRole?: UserRole | null,
-  ): string {
+  ): Promise<string> {
     const now = Date.now();
-    this.db.run(
+    await this.db.run(
       `INSERT INTO kick_accounts (kick_user_id, name, avatar_url, partner_username, linked_at, updated_at)
        VALUES (?, ?, '', ?, ?, ?)
        ON CONFLICT(kick_user_id) DO UPDATE SET
@@ -309,17 +304,17 @@ export class DevAccountService {
       now,
     );
 
-    const byEmail = this.db.first<{ id: string; role: string; partner_username: string | null }>(
+    const byEmail = await this.db.first<{ id: string; role: string; partner_username: string | null }>(
       `SELECT id, role, partner_username FROM site_people WHERE email = ?`,
       DEMO_EMAIL,
     );
-    const byKick = this.db.first<{ id: string; role: string; partner_username: string | null }>(
+    const byKick = await this.db.first<{ id: string; role: string; partner_username: string | null }>(
       `SELECT id, role, partner_username FROM site_people WHERE kick_user_id = ?`,
       DEMO_KICK_ID,
     );
 
     if (byKick && byEmail && byKick.id !== byEmail.id) {
-      this.db.run(
+      await this.db.run(
         `UPDATE site_people SET kick_user_id = NULL, updated_at = ? WHERE id = ?`,
         now,
         byKick.id,
@@ -341,7 +336,7 @@ export class DevAccountService {
     const verifiedAt = account ? now : null;
     const kickId = kick ? DEMO_KICK_ID : null;
     if (byEmail || byKick) {
-      this.db.run(
+      await this.db.run(
         `UPDATE site_people
          SET email = ?, email_verified_at = ?, partner_username = ?, kick_user_id = ?, role = ?, updated_at = ?
          WHERE id = ?`,
@@ -356,7 +351,7 @@ export class DevAccountService {
       return personId;
     }
 
-    this.db.run(
+    await this.db.run(
       `INSERT INTO site_people (id, email, email_verified_at, partner_username, kick_user_id, role, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       personId,
@@ -375,12 +370,12 @@ export class DevAccountService {
     if (!isLocalDevRequest(req, this.config.isProduction)) return notFound();
     const method = req.method.toUpperCase();
     if (method === "GET" || method === "HEAD") {
-      const { person } = this.session.loadPerson(req);
-      const role = person ? person.role : this.currentDemoRole();
+      const { person } = await this.session.loadPerson(req);
+      const role = person ? person.role : await this.currentDemoRole();
       return jsonResponse({
-        raffles: this.devRaffles().length,
+        raffles: (await this.devRaffles()).length,
         role,
-        demoEntrants: this.countDemoEntrants(),
+        demoEntrants: await this.countDemoEntrants(),
       });
     }
     if (method !== "POST") return methodNotAllowed(req.method);
@@ -414,10 +409,10 @@ export class DevAccountService {
     const kick = asBool(body && body.kick);
     if (account == null || kick == null) {
       if (demoEntrantsStep != null) {
-        const demoEntrants = this.stepDemoEntrants(demoEntrantsStep, explicitRaffleId);
+        const demoEntrants = await this.stepDemoEntrants(demoEntrantsStep, explicitRaffleId);
         return jsonResponse({
           ok: true,
-          raffles: this.devRaffles().length,
+          raffles: (await this.devRaffles()).length,
           demoEntrants,
         });
       }
@@ -430,16 +425,18 @@ export class DevAccountService {
     }
 
     const raffleCount =
-      raffleStep === 1 || raffleStep === -1 ? this.stepRaffle(raffleStep) : this.devRaffles().length;
+      raffleStep === 1 || raffleStep === -1
+        ? await this.stepRaffle(raffleStep)
+        : (await this.devRaffles()).length;
     const demoEntrants =
       demoEntrantsStep != null
-        ? this.stepDemoEntrants(demoEntrantsStep, explicitRaffleId)
-        : this.countDemoEntrants(explicitRaffleId);
+        ? await this.stepDemoEntrants(demoEntrantsStep, explicitRaffleId)
+        : await this.countDemoEntrants(explicitRaffleId);
 
     if (!account && !kick) {
       const now = Date.now();
       if (requestedRole) {
-        this.db.run(
+        await this.db.run(
           `UPDATE site_people
            SET email = NULL, email_verified_at = NULL, kick_user_id = NULL, role = ?, updated_at = ?
            WHERE email = ? OR kick_user_id = ?`,
@@ -449,7 +446,7 @@ export class DevAccountService {
           DEMO_KICK_ID,
         );
       } else {
-        this.db.run(
+        await this.db.run(
           `UPDATE site_people
            SET email = NULL, email_verified_at = NULL, kick_user_id = NULL, updated_at = ?
            WHERE email = ? OR kick_user_id = ?`,
@@ -458,7 +455,7 @@ export class DevAccountService {
           DEMO_KICK_ID,
         );
       }
-      const dropped = this.session.dropSession(req);
+      const dropped = await this.session.dropSession(req);
       return withCookies(
         jsonResponse(
           previewAccount(
@@ -473,9 +470,9 @@ export class DevAccountService {
       );
     }
 
-    const personId = this.ensureDemoPerson(account, kick, requestedRole);
-    const adopted = this.session.adoptPerson(req, personId);
-    const personRow = this.db.first<{ role: string; partner_username: string | null }>(
+    const personId = await this.ensureDemoPerson(account, kick, requestedRole);
+    const adopted = await this.session.adoptPerson(req, personId);
+    const personRow = await this.db.first<{ role: string; partner_username: string | null }>(
       `SELECT p.role,
               COALESCE(NULLIF(TRIM(p.partner_username), ''), NULLIF(TRIM(a.partner_username), ''), '') AS partner_username
        FROM site_people p

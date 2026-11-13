@@ -9,11 +9,13 @@
     "frontend"
   ],
   "scripts": {
-    "build": "npm run build -w frontend && npm run build -w backend",
+    "build": "npm run build -w frontend && npm run build -w backend && node scripts/assemble-cf-dist.mjs",
+    "build:cf": "npm run build -w frontend && node scripts/assemble-cf-dist.mjs",
+    "deploy": "npm run build:cf && wrangler deploy",
     "serve": "node scripts/dev.mjs",
     "dev:hmr": "node scripts/dev.mjs --hmr",
     "start": "npm run start:prod -w backend",
     "migrate": "npm run migrate -w backend",
-    "typecheck": "npm run typecheck -w frontend && npm run typecheck -w backend"
+    "typecheck": "npm run typecheck -w frontend && npm run typecheck -w backend && npx tsc -p worker/tsconfig.json --noEmit"
   }
 }

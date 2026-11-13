@@ -27,9 +27,9 @@ export function isRankAutoHiddenByPosition(rank: unknown, aboveRank: unknown): b
   return r != null && r >= 1 && Number.isFinite(cap) && cap > 0 && r > cap;
 }
 
-export function loadSpotPrizes(db: DatabaseService, boardId: number): Row[] {
+export async function loadSpotPrizes(db: DatabaseService, boardId: number): Promise<Row[]> {
   try {
-    return db.all(
+    return await db.all(
       `SELECT rank, prize_cents, hidden FROM lb_spot_prizes WHERE board_id = ? ORDER BY rank ASC`,
       boardId,
     );
@@ -51,8 +51,8 @@ export function spotMap(list: Row[]): Map<number, SpotEntry> {
   return m;
 }
 
-export function spotRanksForBoard(db: DatabaseService, boardId: number): number[] {
-  const list = loadSpotPrizes(db, boardId);
+export async function spotRanksForBoard(db: DatabaseService, boardId: number): Promise<number[]> {
+  const list = await loadSpotPrizes(db, boardId);
   return list.map((s) => Number(s.rank)).filter((r) => Number.isFinite(r) && r >= 1);
 }
 
@@ -139,14 +139,14 @@ export function buildPublicBoardPlayers(
   return rows;
 }
 
-export function upsertSpotPrize(
+export async function upsertSpotPrize(
   db: DatabaseService,
   boardId: number,
   rank: number,
   prizeCents: unknown,
-): void {
+): Promise<void> {
   const p = Math.max(0, Math.floor(Number(prizeCents) || 0));
-  db.run(
+  await db.run(
     `INSERT INTO lb_spot_prizes (board_id, rank, prize_cents, hidden)
      VALUES (?, ?, ?, 0)
      ON CONFLICT(board_id, rank) DO UPDATE SET prize_cents = excluded.prize_cents`,
@@ -156,14 +156,14 @@ export function upsertSpotPrize(
   );
 }
 
-export function upsertSpotHidden(
+export async function upsertSpotHidden(
   db: DatabaseService,
   boardId: number,
   rank: number,
   hidden: unknown,
-): void {
+): Promise<void> {
   const h = hidden ? 1 : 0;
-  db.run(
+  await db.run(
     `INSERT INTO lb_spot_prizes (board_id, rank, prize_cents, hidden)
      VALUES (?, ?, 0, ?)
      ON CONFLICT(board_id, rank) DO UPDATE SET hidden = excluded.hidden`,

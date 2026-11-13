@@ -23,7 +23,7 @@ export class AccountController {
   }
 
   @All("logout")
-  logout(@Req() req: Request, @Res() res: Response): void {
-    send(res, this.account.handleAccountLogout(req));
+  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
+    send(res, await this.account.handleAccountLogout(req));
   }
 }

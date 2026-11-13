@@ -22,7 +22,7 @@ import {
   unauthorized,
 } from "../common/http/response";
 import { ROUTE_ID_RE, asBool, asInt, asTrimmed } from "../common/validation";
-import { DatabaseService, type Row } from "../database/database.service";
+import { DatabaseService, type BoundStatement, type Row } from "../database/database.service";
 import { buildLeaderboardAvatarUrl, buildNeutralAvatarUrl } from "../leaderboards/lb-avatar";
 import { SessionService } from "../session/session.service";
 
@@ -318,15 +318,15 @@ export class RafflesService {
     private readonly audit: AuditService,
   ) { }
 
-  private appendRaffleWinner(
+  private appendRaffleWinnerStmt(
     raffleId: number,
     winnerName: string,
     kickUserId: string | null | undefined,
     createdAt: number,
-  ): void {
+  ): BoundStatement | null {
     const clean = String(winnerName || "").trim();
-    if (!clean) return;
-    this.db.run(
+    if (!clean) return null;
+    return this.db.stmt(
       `INSERT INTO raffle_winners (raffle_id, kick_user_id, winner_name, created_at)
        VALUES (?, ?, ?, ?)`,
       raffleId,
@@ -336,17 +336,27 @@ export class RafflesService {
     );
   }
 
-  private clearRaffleWinners(raffleId: number): void {
-    this.db.run(`DELETE FROM raffle_winners WHERE raffle_id = ?`, raffleId);
+  private async appendRaffleWinner(
+    raffleId: number,
+    winnerName: string,
+    kickUserId: string | null | undefined,
+    createdAt: number,
+  ): Promise<void> {
+    const stmt = this.appendRaffleWinnerStmt(raffleId, winnerName, kickUserId, createdAt);
+    if (stmt) await this.db.run(stmt.sql, ...stmt.params);
   }
 
-  getActiveRaffleBan(
+  private clearRaffleWinnersStmt(raffleId: number): BoundStatement {
+    return this.db.stmt(`DELETE FROM raffle_winners WHERE raffle_id = ?`, raffleId);
+  }
+
+  async getActiveRaffleBan(
     kickUserId: string | null | undefined,
     now = Date.now(),
-  ): { isPermanent: boolean; bannedUntil: number | null } | null {
+  ): Promise<{ isPermanent: boolean; bannedUntil: number | null } | null> {
     const cleanId = String(kickUserId || "").trim();
     if (!cleanId) return null;
-    const row = this.db.first<{
+    const row = await this.db.first<{
       is_permanent: number;
       banned_until: number | null;
     }>(
@@ -369,8 +379,8 @@ export class RafflesService {
    * For standard `winner` mode, draws a cryptographic winner from active `raffle_entries`.
    * For `elimination` mode with 2+ active players, locks entries so the streamer can run elimination spins.
    */
-  finalizeExpiredTimerRaffles(now = Date.now()): void {
-    const expired = this.db.all<{ id: number }>(
+  async finalizeExpiredTimerRaffles(now = Date.now()): Promise<void> {
+    const expired = await this.db.all<{ id: number }>(
       `SELECT id FROM raffles
        WHERE end_mode != 'manual'
          AND ended_at IS NULL
@@ -380,9 +390,10 @@ export class RafflesService {
     );
     if (!expired.length) return;
 
-    const finalizeTx = this.db.db.transaction((ids: number[]) => {
-      for (const id of ids) {
-        const current = this.db.first(
+    try {
+      for (const item of expired) {
+        const id = Number(item.id);
+        const current = await this.db.first(
           `SELECT id, title, winner, ends_at, end_mode, ended_at, spin_mode, entries_locked
            FROM raffles WHERE id = ?`,
           id,
@@ -400,7 +411,7 @@ export class RafflesService {
         const endedAt = Number(current.ends_at) || now;
         const existingWinner = current.winner ? String(current.winner).trim() : "";
 
-        const activeEntries = this.db.all<{
+        const activeEntries = await this.db.all<{
           id: number;
           kick_user_id: string;
           kick_name: string | null;
@@ -415,7 +426,7 @@ export class RafflesService {
 
         if (spinMode === "elimination" && !existingWinner && activeEntries.length > 1) {
           if (!Number(current.entries_locked)) {
-            this.db.run(
+            await this.db.run(
               `UPDATE raffles SET entries_locked = 1, updated_at = ? WHERE id = ? AND ended_at IS NULL`,
               now,
               id,
@@ -437,7 +448,7 @@ export class RafflesService {
         }
 
         const newlyDrawn = !existingWinner && Boolean(winnerName);
-        const upd = this.db.run(
+        const upd = await this.db.run(
           `UPDATE raffles
            SET winner = ?,
                ended_at = ?,
@@ -456,29 +467,25 @@ export class RafflesService {
         );
 
         if (upd.changes > 0 && newlyDrawn && winnerName) {
-          this.appendRaffleWinner(id, winnerName, pickedKickUserId, endedAt);
+          await this.appendRaffleWinner(id, winnerName, pickedKickUserId, endedAt);
         }
 
-        this.audit.audit({ sub: 0, email: "timer" }, "raffle.auto_finish", String(id), {
+        await this.audit.audit({ sub: 0, email: "timer" }, "raffle.auto_finish", String(id), {
           title: current.title,
           winner: winnerName,
           kick_user_id: pickedKickUserId,
           entry_count: entryCount,
         });
       }
-    });
-
-    try {
-      finalizeTx(expired.map((r) => Number(r.id)));
     } catch (err) {
       this.logger.error(`auto-finalize timer raffles failed: ${(err as Error)?.message || err}`);
     }
   }
 
-  private joinedRaffleIds(kickUserId: string | null | undefined): number[] {
+  private async joinedRaffleIds(kickUserId: string | null | undefined): Promise<number[]> {
     if (!kickUserId) return [];
     const now = Date.now();
-    const rows = this.db.all(
+    const rows = await this.db.all(
       `SELECT e.raffle_id FROM raffle_entries e
        JOIN raffles r ON r.id = e.raffle_id
        WHERE e.kick_user_id = ? AND r.hidden = 0 AND r.ended_at IS NULL
@@ -490,9 +497,12 @@ export class RafflesService {
     return rows.map((row) => Number(row.raffle_id));
   }
 
-  private joinRaffle(id: number, kickUserId: string): "joined" | "already" | "locked" | "closed" {
+  private async joinRaffle(
+    id: number,
+    kickUserId: string,
+  ): Promise<"joined" | "already" | "locked" | "closed"> {
     const now = Date.now();
-    const entry = this.db.run(
+    const entry = await this.db.run(
       `INSERT OR IGNORE INTO raffle_entries (raffle_id, kick_user_id, created_at)
        SELECT id, ?, ? FROM raffles
        WHERE id = ?
@@ -510,7 +520,7 @@ export class RafflesService {
 
     if (entry.changes > 0) return "joined";
 
-    const existing = this.db.first(
+    const existing = await this.db.first(
       `SELECT 1 AS x FROM raffle_entries e
        JOIN raffles r ON r.id = e.raffle_id
        WHERE e.raffle_id = ? AND e.kick_user_id = ?
@@ -521,7 +531,7 @@ export class RafflesService {
     );
     if (existing) return "already";
 
-    const lockedOpen = this.db.first(
+    const lockedOpen = await this.db.first(
       `SELECT 1 AS x FROM raffles
        WHERE id = ? AND hidden = 0 AND ended_at IS NULL AND entries_locked = 1 AND starts_at <= ?`,
       id,
@@ -532,10 +542,10 @@ export class RafflesService {
     return "closed";
   }
 
-  handlePublicRaffles(): HttpResult {
+  async handlePublicRaffles(): Promise<HttpResult> {
     const now = Date.now();
-    this.finalizeExpiredTimerRaffles(now);
-    const rows = this.db.all(
+    await this.finalizeExpiredTimerRaffles(now);
+    const rows = await this.db.all(
       `SELECT r.id, r.title, r.prize, r.note, r.winner, r.starts_at, r.ends_at, r.end_mode, r.ended_at,
               r.spin_mode, r.spin_speed, r.spin_duration_ms, r.exclude_prev_winner, r.entries_locked,
               (SELECT COUNT(*) FROM raffle_entries e WHERE e.raffle_id = r.id) AS entries,
@@ -585,9 +595,9 @@ export class RafflesService {
     if (!id) return notFound("Raffle not found");
 
     const now = Date.now();
-    this.finalizeExpiredTimerRaffles(now);
+    await this.finalizeExpiredTimerRaffles(now);
 
-    const row = this.db.first(
+    const row = await this.db.first(
       `SELECT id, title, prize, note, winner, starts_at, ends_at, end_mode, ended_at,
               spin_mode, spin_speed, spin_duration_ms, exclude_prev_winner, entries_locked,
               last_eliminated, last_spin_at, last_spin_kind,
@@ -623,7 +633,7 @@ export class RafflesService {
       (endMode === "manual" || endsAt > now || spinMode === "elimination");
 
     const winnerLower = String(row.winner || "").trim().toLowerCase();
-    const winnerRows = this.db.all<{
+    const winnerRows = await this.db.all<{
       id: number;
       kick_user_id: string | null;
       winner_name: string;
@@ -658,7 +668,7 @@ export class RafflesService {
       if (wk) winnerKickIdsSet.add(wk);
     }
 
-    const entryRows = this.db.all<{
+    const entryRows = await this.db.all<{
       id: number;
       kick_user_id: string;
       created_at: number;
@@ -768,18 +778,18 @@ export class RafflesService {
       };
     });
 
-    const lookupModerationByName = (
+    const lookupModerationByName = async (
       lookupName: string,
-    ): {
+    ): Promise<{
       kick_user_id: string;
       kick_name: string;
       partner_username: string | null;
       is_banned: boolean;
       banned_until: number | null;
-    } | null => {
+    } | null> => {
       const clean = String(lookupName || "").trim();
       if (!clean) return null;
-      const hit = this.db.first<{
+      const hit = await this.db.first<{
         kick_user_id: string;
         kick_name: string | null;
         partner_username: string | null;
@@ -822,76 +832,80 @@ export class RafflesService {
 
     const winners =
       winnerRows.length > 0
-        ? winnerRows.map((w, idx) => {
-          const rawKickUserId = String(w.kick_user_id || "").trim();
-          const rawKickName = String(w.kick_name || "").trim();
-          const rawStoredName = String(w.winner_name || "").trim();
-          const kickIdLower = rawKickUserId.toLowerCase();
-          const matched =
-            (kickIdLower ? participantsByKickId.get(kickIdLower) : undefined) ||
-            (rawKickName ? participantsByName.get(rawKickName.toLowerCase()) : undefined) ||
-            (rawStoredName ? participantsByName.get(rawStoredName.toLowerCase()) : undefined);
-          const finalName =
-            matched?.name || rawKickName || rawStoredName || `Winner #${idx + 1}`;
-          const finalAvatar =
-            matched?.avatar_url ||
-            ((w.person_id || kickIdLower.startsWith("demo-bot-")) && rawKickName
-              ? buildLeaderboardAvatarUrl(rawKickName)
-              : buildNeutralAvatarUrl());
+        ? await Promise.all(
+          winnerRows.map(async (w, idx) => {
+            const rawKickUserId = String(w.kick_user_id || "").trim();
+            const rawKickName = String(w.kick_name || "").trim();
+            const rawStoredName = String(w.winner_name || "").trim();
+            const kickIdLower = rawKickUserId.toLowerCase();
+            const matched =
+              (kickIdLower ? participantsByKickId.get(kickIdLower) : undefined) ||
+              (rawKickName ? participantsByName.get(rawKickName.toLowerCase()) : undefined) ||
+              (rawStoredName ? participantsByName.get(rawStoredName.toLowerCase()) : undefined);
+            const finalName =
+              matched?.name || rawKickName || rawStoredName || `Winner #${idx + 1}`;
+            const finalAvatar =
+              matched?.avatar_url ||
+              ((w.person_id || kickIdLower.startsWith("demo-bot-")) && rawKickName
+                ? buildLeaderboardAvatarUrl(rawKickName)
+                : buildNeutralAvatarUrl());
 
-          let modFields: {
-            kick_user_id: string;
-            kick_name: string;
-            partner_username: string | null;
-            is_banned: boolean;
-            banned_until: number | null;
-          } | null = null;
+            let modFields: {
+              kick_user_id: string;
+              kick_name: string;
+              partner_username: string | null;
+              is_banned: boolean;
+              banned_until: number | null;
+            } | null = null;
 
-          if (canManage) {
-            if (matched) {
-              modFields = {
-                kick_user_id: matched.kick_user_id,
-                kick_name: matched.kick_name,
-                partner_username: matched.partner_username,
-                is_banned: matched.is_banned,
-                banned_until: matched.banned_until,
-              };
-            } else if (rawKickUserId) {
-              const perm = Boolean(Number(w.ban_permanent));
-              const until = w.ban_until != null ? Number(w.ban_until) : 0;
-              modFields = {
-                kick_user_id: rawKickUserId,
-                kick_name: rawKickName || finalName,
-                partner_username: w.partner_username
-                  ? String(w.partner_username).trim() || null
-                  : null,
-                is_banned: perm,
-                banned_until: !perm && until > now ? until : null,
-              };
-            } else {
-              modFields = lookupModerationByName(rawKickName || rawStoredName || finalName) || {
-                kick_user_id: "",
-                kick_name: rawKickName || rawStoredName || finalName,
-                partner_username: null,
-                is_banned: false,
-                banned_until: null,
-              };
+            if (canManage) {
+              if (matched) {
+                modFields = {
+                  kick_user_id: matched.kick_user_id,
+                  kick_name: matched.kick_name,
+                  partner_username: matched.partner_username,
+                  is_banned: matched.is_banned,
+                  banned_until: matched.banned_until,
+                };
+              } else if (rawKickUserId) {
+                const perm = Boolean(Number(w.ban_permanent));
+                const until = w.ban_until != null ? Number(w.ban_until) : 0;
+                modFields = {
+                  kick_user_id: rawKickUserId,
+                  kick_name: rawKickName || finalName,
+                  partner_username: w.partner_username
+                    ? String(w.partner_username).trim() || null
+                    : null,
+                  is_banned: perm,
+                  banned_until: !perm && until > now ? until : null,
+                };
+              } else {
+                modFields = (await lookupModerationByName(
+                  rawKickName || rawStoredName || finalName,
+                )) || {
+                  kick_user_id: "",
+                  kick_name: rawKickName || rawStoredName || finalName,
+                  partner_username: null,
+                  is_banned: false,
+                  banned_until: null,
+                };
+              }
             }
-          }
 
-          return {
-            id: Number(w.id),
-            order: idx + 1,
-            name: finalName,
-            avatar_url: finalAvatar,
-            ticket_no: matched?.ticket_no ?? 0,
-            won_at: Number(w.created_at) || 0,
-            ...(modFields || {}),
-          };
-        })
+            return {
+              id: Number(w.id),
+              order: idx + 1,
+              name: finalName,
+              avatar_url: finalAvatar,
+              ticket_no: matched?.ticket_no ?? 0,
+              won_at: Number(w.created_at) || 0,
+              ...(modFields || {}),
+            };
+          }),
+        )
         : resolvedWinner
           ? [
-            (() => {
+            await (async () => {
               const modFields = canManage
                 ? matchedCurrentWinner
                   ? {
@@ -901,7 +915,7 @@ export class RafflesService {
                     is_banned: matchedCurrentWinner.is_banned,
                     banned_until: matchedCurrentWinner.banned_until,
                   }
-                  : lookupModerationByName(resolvedWinner) || {
+                  : (await lookupModerationByName(resolvedWinner)) || {
                     kick_user_id: "",
                     kick_name: resolvedWinner,
                     partner_username: null,
@@ -922,17 +936,17 @@ export class RafflesService {
           ]
           : [];
 
-    const person = this.session.kickPerson(req);
+    const person = await this.session.kickPerson(req);
     let viewerJoined = false;
     let viewerBan: { isPermanent: boolean; bannedUntil: number | null } | null = null;
     if (person?.kickUserId) {
-      const hit = this.db.first(
+      const hit = await this.db.first(
         `SELECT 1 AS x FROM raffle_entries WHERE raffle_id = ? AND kick_user_id = ?`,
         id,
         person.kickUserId,
       );
       viewerJoined = Boolean(hit);
-      viewerBan = this.getActiveRaffleBan(person.kickUserId, now);
+      viewerBan = await this.getActiveRaffleBan(person.kickUserId, now);
     }
 
     const rawSpinKind = String(row.last_spin_kind || "").trim().toLowerCase();
@@ -983,20 +997,20 @@ export class RafflesService {
   }
 
   /** GET /api/raffles/mine -> raffles this Kick account already entered. */
-  handleMyRaffles(req: Request): HttpResult {
+  async handleMyRaffles(req: Request): Promise<HttpResult> {
     const m = req.method.toUpperCase();
     if (m !== "GET" && m !== "HEAD") return methodNotAllowed(req.method);
 
-    const person = this.session.kickPerson(req);
+    const person = await this.session.kickPerson(req);
     if (!person) return jsonResponse({ linked: false, joined: [] });
     return jsonResponse({
       linked: true,
-      joined: this.joinedRaffleIds(person.kickUserId),
+      joined: await this.joinedRaffleIds(person.kickUserId),
     });
   }
 
   /** POST /api/raffles/<id>/join -> enter the raffle. */
-  handleRaffleJoin(req: Request, idSeg: string): HttpResult {
+  async handleRaffleJoin(req: Request, idSeg: string): Promise<HttpResult> {
     if (!ROUTE_ID_RE.test(idSeg)) return notFound();
     if (req.method.toUpperCase() !== "POST") return methodNotAllowed(req.method);
     const csrf = verifyCsrf(req);
@@ -1006,7 +1020,7 @@ export class RafflesService {
     const id = raffleId(idSeg);
     if (!id) return notFound("Raffle not found");
 
-    const { person } = this.session.loadPerson(req);
+    const { person } = await this.session.loadPerson(req);
     if (!person || !person.emailVerified || !person.email) {
       return jsonResponse({ error: "register" }, 403);
     }
@@ -1017,7 +1031,7 @@ export class RafflesService {
       return unauthorized("kick");
     }
 
-    const activeBan = this.getActiveRaffleBan(person.kickUserId, Date.now());
+    const activeBan = await this.getActiveRaffleBan(person.kickUserId, Date.now());
     if (activeBan) {
       if (activeBan.isPermanent) {
         return jsonResponse({ error: "banned" }, 403);
@@ -1030,7 +1044,7 @@ export class RafflesService {
 
     let result: "joined" | "already" | "locked" | "closed";
     try {
-      result = this.joinRaffle(id, person.kickUserId);
+      result = await this.joinRaffle(id, person.kickUserId);
     } catch (err) {
       this.logger.error(`raffle join failed: ${(err as Error)?.message || err}`);
       return serverError("store");
@@ -1069,7 +1083,7 @@ export class RafflesService {
     return this.handleAdminRaffles(req, segs, m, actor);
   }
 
-  private loadEntriesForDraw(id: number): EntryRowWithAccount[] {
+  private async loadEntriesForDraw(id: number): Promise<EntryRowWithAccount[]> {
     return this.db.all<EntryRowWithAccount>(
       `SELECT e.id, e.kick_user_id, ka.name AS kick_name, sp.id AS person_id,
               e.eliminated_at, e.eliminated_order
@@ -1098,8 +1112,8 @@ export class RafflesService {
   ): Promise<HttpResult> {
     if (segs.length === 0 && method === "GET") {
       const now = Date.now();
-      this.finalizeExpiredTimerRaffles(now);
-      const raffles = this.db.all(
+      await this.finalizeExpiredTimerRaffles(now);
+      const raffles = await this.db.all(
         `SELECT r.*,
                 (SELECT COUNT(*) FROM raffle_entries e WHERE e.raffle_id = r.id) AS entry_count,
                 (SELECT COUNT(*) FROM raffle_entries e WHERE e.raffle_id = r.id AND e.eliminated_at IS NULL) AS active_entry_count,
@@ -1120,7 +1134,7 @@ export class RafflesService {
 
       const now = Date.now();
       try {
-        const res = this.db.run(
+        const res = await this.db.run(
           `INSERT INTO raffles (
             title, prize, note, winner, starts_at, ends_at, end_mode, ended_at,
             spin_mode, spin_speed, spin_duration_ms, exclude_prev_winner, entries_locked,
@@ -1147,9 +1161,9 @@ export class RafflesService {
 
         const id = res.lastRowId;
         if (fields.winner) {
-          this.appendRaffleWinner(Number(id), fields.winner, null, now);
+          await this.appendRaffleWinner(Number(id), fields.winner, null, now);
         }
-        this.audit.audit(actor, "raffle.create", String(id), {
+        await this.audit.audit(actor, "raffle.create", String(id), {
           title: fields.title,
           end_mode: fields.endMode,
           spin_mode: fields.spinMode,
@@ -1167,7 +1181,7 @@ export class RafflesService {
     const id = raffleId(segs[0]);
     if (!id) return notFound();
 
-    const current = this.db.first(`SELECT * FROM raffles WHERE id = ?`, id);
+    const current = await this.db.first(`SELECT * FROM raffles WHERE id = ?`, id);
     if (!current) return notFound("Raffle not found");
 
     if (segs.length === 2 && segs[1] === "moderate-player" && method === "POST") {
@@ -1175,7 +1189,7 @@ export class RafflesService {
     }
 
     if (segs.length === 1 && method === "GET") {
-      const counts = this.db.first<{
+      const counts = await this.db.first<{
         total: number;
         active: number;
         eliminated: number;
@@ -1198,7 +1212,7 @@ export class RafflesService {
 
     if (segs.length === 2 && segs[1] === "entries" && method === "GET") {
       const now = Date.now();
-      const rawEntries = this.db.all<{
+      const rawEntries = await this.db.all<{
         id: number;
         raffle_id: number;
         kick_user_id: string;
@@ -1256,7 +1270,7 @@ export class RafflesService {
     if (segs.length === 3 && segs[1] === "entries" && method === "DELETE") {
       const entryId = raffleId(segs[2]);
       if (!entryId) return notFound("Entry not found");
-      const existing = this.db.first(
+      const existing = await this.db.first(
         `SELECT e.id, e.kick_user_id, ka.name AS kick_name
          FROM raffle_entries e
          LEFT JOIN kick_accounts ka ON ka.kick_user_id = e.kick_user_id
@@ -1266,9 +1280,11 @@ export class RafflesService {
       );
       if (!existing) return notFound("Entry not found");
 
-      this.db.run(`DELETE FROM raffle_entries WHERE raffle_id = ? AND id = ?`, id, entryId);
-      this.db.run(`UPDATE raffles SET updated_at = ? WHERE id = ?`, Date.now(), id);
-      this.audit.audit(actor, "raffle.entry_remove", `${id}:${entryId}`, {
+      await this.db.batch([
+        this.db.stmt(`DELETE FROM raffle_entries WHERE raffle_id = ? AND id = ?`, id, entryId),
+        this.db.stmt(`UPDATE raffles SET updated_at = ? WHERE id = ?`, Date.now(), id),
+      ]);
+      await this.audit.audit(actor, "raffle.entry_remove", `${id}:${entryId}`, {
         kick_user_id: existing.kick_user_id,
         kick_name: existing.kick_name || null,
       });
@@ -1283,7 +1299,7 @@ export class RafflesService {
     ) {
       const entryId = raffleId(segs[2]);
       if (!entryId) return notFound("Entry not found");
-      const existing = this.db.first<{
+      const existing = await this.db.first<{
         id: number;
         kick_user_id: string;
         kick_name: string | null;
@@ -1302,40 +1318,39 @@ export class RafflesService {
       const willEliminate = existing.eliminated_at == null;
       const entryName = String(existing.kick_name || existing.kick_user_id).trim();
 
-      const tx = this.db.db.transaction(() => {
-        if (willEliminate) {
-          const maxRow = this.db.first<{ m: number | null }>(
-            `SELECT MAX(eliminated_order) AS m FROM raffle_entries WHERE raffle_id = ?`,
-            id,
-          );
-          const nextOrder = (Number(maxRow?.m) || 0) + 1;
-          this.db.run(
+      if (willEliminate) {
+        const maxRow = await this.db.first<{ m: number | null }>(
+          `SELECT MAX(eliminated_order) AS m FROM raffle_entries WHERE raffle_id = ?`,
+          id,
+        );
+        const nextOrder = (Number(maxRow?.m) || 0) + 1;
+        const clearWinner =
+          current.winner &&
+          String(current.winner).trim().toLowerCase() === entryName.toLowerCase();
+        await this.db.batch([
+          this.db.stmt(
             `UPDATE raffle_entries SET eliminated_at = ?, eliminated_order = ? WHERE raffle_id = ? AND id = ?`,
             now,
             nextOrder,
             id,
             entryId,
-          );
-          if (
-            current.winner &&
-            String(current.winner).trim().toLowerCase() === entryName.toLowerCase()
-          ) {
-            this.db.run(`UPDATE raffles SET winner = NULL, updated_at = ? WHERE id = ?`, now, id);
-          } else {
-            this.db.run(`UPDATE raffles SET updated_at = ? WHERE id = ?`, now, id);
-          }
-        } else {
-          this.db.run(
+          ),
+          clearWinner
+            ? this.db.stmt(`UPDATE raffles SET winner = NULL, updated_at = ? WHERE id = ?`, now, id)
+            : this.db.stmt(`UPDATE raffles SET updated_at = ? WHERE id = ?`, now, id),
+        ]);
+      } else {
+        await this.db.batch([
+          this.db.stmt(
             `UPDATE raffle_entries SET eliminated_at = NULL, eliminated_order = NULL WHERE raffle_id = ? AND id = ?`,
             id,
             entryId,
-          );
-          this.db.run(`UPDATE raffles SET updated_at = ? WHERE id = ?`, now, id);
-        }
-      });
-      tx();
+          ),
+          this.db.stmt(`UPDATE raffles SET updated_at = ? WHERE id = ?`, now, id),
+        ]);
+      }
 
-      this.audit.audit(actor, "raffle.entry_toggle_eliminate", `${id}:${entryId}`, {
+      await this.audit.audit(actor, "raffle.entry_toggle_eliminate", `${id}:${entryId}`, {
         eliminated: willEliminate,
         kick_name: entryName,
       });
@@ -1343,7 +1358,7 @@ export class RafflesService {
     }
 
     if (segs.length === 2 && segs[1] === "revive-last" && method === "POST") {
-      const lastOut = this.db.first<{
+      const lastOut = await this.db.first<{
         id: number;
         kick_user_id: string;
         kick_name: string | null;
@@ -1372,20 +1387,23 @@ export class RafflesService {
             ? 1
             : 0;
 
-      const tx = this.db.db.transaction(() => {
-        if (current.winner) {
-          this.db.run(
+      const reviveStmts: BoundStatement[] = [];
+      if (current.winner) {
+        reviveStmts.push(
+          this.db.stmt(
             `DELETE FROM raffle_winners
              WHERE id = (SELECT id FROM raffle_winners WHERE raffle_id = ? ORDER BY id DESC LIMIT 1)`,
             id,
-          );
-        }
-        this.db.run(
+          ),
+        );
+      }
+      reviveStmts.push(
+        this.db.stmt(
           `UPDATE raffle_entries SET eliminated_at = NULL, eliminated_order = NULL WHERE raffle_id = ? AND id = ?`,
           id,
           lastOut.id,
-        );
-        this.db.run(
+        ),
+        this.db.stmt(
           `UPDATE raffles
            SET winner = NULL,
                ended_at = NULL,
@@ -1399,11 +1417,11 @@ export class RafflesService {
           nextLocked,
           now,
           id,
-        );
-      });
-      tx();
+        ),
+      );
+      await this.db.batch(reviveStmts);
 
-      this.audit.audit(actor, "raffle.revive_last", String(id), {
+      await this.audit.audit(actor, "raffle.revive_last", String(id), {
         revived: revivedName,
       });
       return jsonResponse({ ok: true, id, revived: revivedName });
@@ -1411,9 +1429,9 @@ export class RafflesService {
 
     if (segs.length === 2 && segs[1] === "reset-winners" && method === "POST") {
       const now = Date.now();
-      const tx = this.db.db.transaction(() => {
-        this.clearRaffleWinners(id);
-        this.db.run(
+      await this.db.batch([
+        this.clearRaffleWinnersStmt(id),
+        this.db.stmt(
           `UPDATE raffles
            SET winner = NULL,
                last_eliminated = NULL,
@@ -1423,11 +1441,10 @@ export class RafflesService {
            WHERE id = ?`,
           now,
           id,
-        );
-      });
-      tx();
+        ),
+      ]);
 
-      this.audit.audit(actor, "raffle.reset_winners", String(id), {
+      await this.audit.audit(actor, "raffle.reset_winners", String(id), {
         title: current.title,
       });
       return jsonResponse({ ok: true, id });
@@ -1451,12 +1468,12 @@ export class RafflesService {
         : Number(current.ends_at) || now;
       const nextLocked = reopen ? 0 : Number(current.entries_locked) ? 1 : 0;
 
-      const tx = this.db.db.transaction(() => {
-        this.db.run(
+      await this.db.batch([
+        this.db.stmt(
           `UPDATE raffle_entries SET eliminated_at = NULL, eliminated_order = NULL WHERE raffle_id = ?`,
           id,
-        );
-        this.db.run(
+        ),
+        this.db.stmt(
           `UPDATE raffles
            SET winner = NULL,
                ended_at = ?,
@@ -1472,11 +1489,10 @@ export class RafflesService {
           nextLocked,
           now,
           id,
-        );
-      });
-      tx();
+        ),
+      ]);
 
-      this.audit.audit(actor, "raffle.reset_eliminations", String(id), { reopen });
+      await this.audit.audit(actor, "raffle.reset_eliminations", String(id), { reopen });
       return jsonResponse({ ok: true, id });
     }
 
@@ -1495,11 +1511,12 @@ export class RafflesService {
       const nextWinner = clearWinner ? null : current.winner ? String(current.winner) : null;
       const nextLocked = unlockEntries ? 0 : Number(current.entries_locked) ? 1 : 0;
 
-      const tx = this.db.db.transaction(() => {
-        if (clearWinner) {
-          this.clearRaffleWinners(id);
-        }
-        this.db.run(
+      const reopenStmts: BoundStatement[] = [];
+      if (clearWinner) {
+        reopenStmts.push(this.clearRaffleWinnersStmt(id));
+      }
+      reopenStmts.push(
+        this.db.stmt(
           `UPDATE raffles
            SET winner = ?,
                ended_at = NULL,
@@ -1516,11 +1533,11 @@ export class RafflesService {
           clearWinner ? 1 : 0,
           now,
           id,
-        );
-      });
-      tx();
+        ),
+      );
+      await this.db.batch(reopenStmts);
 
-      this.audit.audit(actor, "raffle.reopen", String(id), {
+      await this.audit.audit(actor, "raffle.reopen", String(id), {
         clear_winner: clearWinner,
         unlock_entries: unlockEntries,
       });
@@ -1549,17 +1566,19 @@ export class RafflesService {
 
       const now = Date.now();
       const prevWinner = String(current.winner || "").trim();
-      const tx = this.db.db.transaction(() => {
-        if (fields.clearSpinMeta && !fields.winner) {
-          this.clearRaffleWinners(id);
-        } else if (
-          body.winner !== undefined &&
-          fields.winner &&
-          fields.winner.toLowerCase() !== prevWinner.toLowerCase()
-        ) {
-          this.appendRaffleWinner(id, fields.winner, null, now);
-        }
-        this.db.run(
+      const patchStmts: BoundStatement[] = [];
+      if (fields.clearSpinMeta && !fields.winner) {
+        patchStmts.push(this.clearRaffleWinnersStmt(id));
+      } else if (
+        body.winner !== undefined &&
+        fields.winner &&
+        fields.winner.toLowerCase() !== prevWinner.toLowerCase()
+      ) {
+        const wStmt = this.appendRaffleWinnerStmt(id, fields.winner, null, now);
+        if (wStmt) patchStmts.push(wStmt);
+      }
+      patchStmts.push(
+        this.db.stmt(
           `UPDATE raffles SET
             title = ?, prize = ?, note = ?, winner = ?, starts_at = ?, ends_at = ?,
             end_mode = ?, ended_at = ?, spin_mode = ?, spin_speed = ?, spin_duration_ms = ?,
@@ -1587,11 +1606,11 @@ export class RafflesService {
           fields.clearSpinMeta ? 1 : 0,
           now,
           id,
-        );
-      });
-      tx();
+        ),
+      );
+      await this.db.batch(patchStmts);
 
-      this.audit.audit(actor, "raffle.update", String(id), {
+      await this.audit.audit(actor, "raffle.update", String(id), {
         title: fields.title,
         end_mode: fields.endMode,
         spin_mode: fields.spinMode,
@@ -1602,30 +1621,30 @@ export class RafflesService {
     }
 
     if (method === "DELETE") {
-      this.db.batch([
+      await this.db.batch([
         this.db.stmt(`DELETE FROM raffle_winners WHERE raffle_id = ?`, id),
         this.db.stmt(`DELETE FROM raffle_entries WHERE raffle_id = ?`, id),
         this.db.stmt(`DELETE FROM raffles WHERE id = ?`, id),
       ]);
-      this.audit.audit(actor, "raffle.delete", String(id), { title: current.title });
+      await this.audit.audit(actor, "raffle.delete", String(id), { title: current.title });
       return jsonResponse({ ok: true });
     }
 
     return notFound();
   }
 
-  private handleEndRaffle(id: number, current: Row, actor: Actor): HttpResult {
+  private async handleEndRaffle(id: number, current: Row, actor: Actor): Promise<HttpResult> {
     const now = Date.now();
     const nextEndedAt = current.ended_at != null ? Number(current.ended_at) : now;
     const nextEndsAt = Math.min(Number(current.ends_at) || now, now);
     const keepWinner = current.winner ? String(current.winner) : null;
-    const countRow = this.db.first<{ c: number }>(
+    const countRow = await this.db.first<{ c: number }>(
       `SELECT COUNT(*) AS c FROM raffle_entries WHERE raffle_id = ?`,
       id,
     );
     const entryCount = Number(countRow?.c) || 0;
 
-    this.db.run(
+    await this.db.run(
       `UPDATE raffles
        SET ended_at = ?,
            ends_at = ?,
@@ -1638,7 +1657,7 @@ export class RafflesService {
       id,
     );
 
-    this.audit.audit(actor, "raffle.end", String(id), {
+    await this.audit.audit(actor, "raffle.end", String(id), {
       title: current.title,
       winner: keepWinner,
       entry_count: entryCount,
@@ -1697,7 +1716,7 @@ export class RafflesService {
     const keepEndsAt = Number(current.ends_at) || (keepEndedAt ?? MANUAL_OPEN_ENDS_AT);
     const keepLocked = keepEndedAt != null || Number(current.entries_locked) ? 1 : 0;
 
-    let allEntries = this.loadEntriesForDraw(id);
+    let allEntries = await this.loadEntriesForDraw(id);
 
     if (requestedMode === "elimination") {
       if (!allEntries.length) {
@@ -1708,11 +1727,11 @@ export class RafflesService {
       let activeEntries = allEntries.filter((e) => e.eliminated_at == null);
 
       if (activeEntries.length <= 1 && allEntries.length > 1 && autoReset) {
-        this.db.run(
+        await this.db.run(
           `UPDATE raffle_entries SET eliminated_at = NULL, eliminated_order = NULL WHERE raffle_id = ?`,
           id,
         );
-        allEntries = this.loadEntriesForDraw(id);
+        allEntries = await this.loadEntriesForDraw(id);
         activeEntries = allEntries;
       }
 
@@ -1720,8 +1739,8 @@ export class RafflesService {
         const only = activeEntries[0];
         const idx = allEntries.findIndex((x) => x.id === only.id);
         const winnerName = this.displayNameForEntry(only, idx + 1);
-        const txSingle = this.db.db.transaction(() => {
-          this.db.run(
+        const singleStmts: BoundStatement[] = [
+          this.db.stmt(
             `UPDATE raffles
              SET winner = ?, ended_at = ?, ends_at = ?, entries_locked = ?,
                  spin_mode = 'elimination', spin_speed = ?, spin_duration_ms = ?,
@@ -1736,11 +1755,12 @@ export class RafflesService {
             now,
             now,
             id,
-          );
-          this.appendRaffleWinner(id, winnerName, only.kick_user_id, now);
-        });
-        txSingle();
-        this.audit.audit(actor, "raffle.spin_elimination", String(id), {
+          ),
+        ];
+        const singleWStmt = this.appendRaffleWinnerStmt(id, winnerName, only.kick_user_id, now);
+        if (singleWStmt) singleStmts.push(singleWStmt);
+        await this.db.batch(singleStmts);
+        await this.audit.audit(actor, "raffle.spin_elimination", String(id), {
           winner: winnerName,
           remaining_count: 1,
         });
@@ -1782,23 +1802,26 @@ export class RafflesService {
         crownedWinner = this.displayNameForEntry(surv, idx + 1);
       }
 
-      const tx = this.db.db.transaction(() => {
-        const maxRow = this.db.first<{ m: number | null }>(
-          `SELECT MAX(eliminated_order) AS m FROM raffle_entries WHERE raffle_id = ?`,
-          id,
-        );
-        let orderCursor = Number(maxRow?.m) || 0;
-        for (const outEntry of pickedOut) {
-          orderCursor += 1;
-          this.db.run(
+      const maxRow = await this.db.first<{ m: number | null }>(
+        `SELECT MAX(eliminated_order) AS m FROM raffle_entries WHERE raffle_id = ?`,
+        id,
+      );
+      let orderCursor = Number(maxRow?.m) || 0;
+      const elimStmts: BoundStatement[] = [];
+      for (const outEntry of pickedOut) {
+        orderCursor += 1;
+        elimStmts.push(
+          this.db.stmt(
             `UPDATE raffle_entries SET eliminated_at = ?, eliminated_order = ? WHERE raffle_id = ? AND id = ?`,
             now,
             orderCursor,
             id,
             outEntry.id,
-          );
-        }
-        this.db.run(
+          ),
+        );
+      }
+      elimStmts.push(
+        this.db.stmt(
           `UPDATE raffles
            SET winner = ?,
                ended_at = ?,
@@ -1822,14 +1845,15 @@ export class RafflesService {
           now,
           now,
           id,
-        );
-        if (crownedWinner && survivors[0]) {
-          this.appendRaffleWinner(id, crownedWinner, survivors[0].kick_user_id, now);
-        }
-      });
-      tx();
+        ),
+      );
+      if (crownedWinner && survivors[0]) {
+        const wStmt = this.appendRaffleWinnerStmt(id, crownedWinner, survivors[0].kick_user_id, now);
+        if (wStmt) elimStmts.push(wStmt);
+      }
+      await this.db.batch(elimStmts);
 
-      this.audit.audit(actor, "raffle.spin_elimination", String(id), {
+      await this.audit.audit(actor, "raffle.spin_elimination", String(id), {
         title: current.title,
         eliminated: eliminatedNames,
         remaining_count: survivors.length,
@@ -1870,7 +1894,7 @@ export class RafflesService {
 
     const curWinnerLower = String(current.winner || "").trim().toLowerCase();
     if (shouldExcludeCurrent && basePool.length > 1) {
-      const priorRows = this.db.all<{ kick_user_id: string | null; winner_name: string }>(
+      const priorRows = await this.db.all<{ kick_user_id: string | null; winner_name: string }>(
         `SELECT kick_user_id, winner_name FROM raffle_winners WHERE raffle_id = ?`,
         id,
       );
@@ -1912,15 +1936,18 @@ export class RafflesService {
     const pickedGlobalIdx = allEntries.findIndex((e) => e.id === picked.id);
     const winnerName = this.displayNameForEntry(picked, pickedGlobalIdx + 1);
 
-    const tx = this.db.db.transaction(() => {
-      if (picked.eliminated_at != null) {
-        this.db.run(
+    const drawStmts: BoundStatement[] = [];
+    if (picked.eliminated_at != null) {
+      drawStmts.push(
+        this.db.stmt(
           `UPDATE raffle_entries SET eliminated_at = NULL, eliminated_order = NULL WHERE raffle_id = ? AND id = ?`,
           id,
           picked.id,
-        );
-      }
-      this.db.run(
+        ),
+      );
+    }
+    drawStmts.push(
+      this.db.stmt(
         `UPDATE raffles
          SET winner = ?,
              ended_at = ?,
@@ -1942,14 +1969,15 @@ export class RafflesService {
         now,
         now,
         id,
-      );
-      this.appendRaffleWinner(id, winnerName, picked.kick_user_id, now);
-    });
-    tx();
+      ),
+    );
+    const drawWStmt = this.appendRaffleWinnerStmt(id, winnerName, picked.kick_user_id, now);
+    if (drawWStmt) drawStmts.push(drawWStmt);
+    await this.db.batch(drawStmts);
 
     const auditAction = requestedMode === "reroll" ? "raffle.reroll" : "raffle.draw_winner";
 
-    this.audit.audit(actor, auditAction, String(id), {
+    await this.audit.audit(actor, auditAction, String(id), {
       title: current.title,
       winner: winnerName,
       previous_winner: current.winner || null,
@@ -2000,14 +2028,14 @@ export class RafflesService {
     const rawKickName = clip(body.kick_name, WINNER_MAX);
 
     if (!kickUserId && rawKickName) {
-      const byAccount = this.db.first<{ kick_user_id: string }>(
+      const byAccount = await this.db.first<{ kick_user_id: string }>(
         `SELECT kick_user_id FROM kick_accounts WHERE LOWER(name) = LOWER(?) LIMIT 1`,
         rawKickName,
       );
       if (byAccount?.kick_user_id) {
         kickUserId = String(byAccount.kick_user_id).trim();
       } else if (contextRaffleId != null) {
-        const byWinner = this.db.first<{ kick_user_id: string }>(
+        const byWinner = await this.db.first<{ kick_user_id: string }>(
           `SELECT kick_user_id FROM raffle_winners
            WHERE raffle_id = ? AND LOWER(winner_name) = LOWER(?) AND kick_user_id IS NOT NULL
            LIMIT 1`,
@@ -2024,7 +2052,7 @@ export class RafflesService {
       return badRequest("Player Kick account could not be resolved");
     }
 
-    const targetRow = this.db.first<{
+    const targetRow = await this.db.first<{
       kick_user_id: string;
       kick_name: string | null;
       partner_username: string | null;
@@ -2075,8 +2103,8 @@ export class RafflesService {
       : null;
 
     if (action === "unban") {
-      this.db.run(`DELETE FROM raffle_bans WHERE kick_user_id = ?`, kickUserId);
-      this.audit.audit(actor, "raffle.player_unban", kickUserId, {
+      await this.db.run(`DELETE FROM raffle_bans WHERE kick_user_id = ?`, kickUserId);
+      await this.audit.audit(actor, "raffle.player_unban", kickUserId, {
         kick_name: resolvedKickName,
         raffle_id: contextRaffleId,
       });
@@ -2105,8 +2133,16 @@ export class RafflesService {
     const isPermanent = action === "ban" ? 1 : 0;
     let removedEntries = 0;
 
-    const tx = this.db.db.transaction(() => {
-      this.db.run(
+    const openRaffles = await this.db.all<{ raffle_id: number }>(
+      `SELECT DISTINCT e.raffle_id
+       FROM raffle_entries e
+       JOIN raffles r ON r.id = e.raffle_id
+       WHERE e.kick_user_id = ? AND r.ended_at IS NULL`,
+      kickUserId,
+    );
+
+    const modStmts: BoundStatement[] = [
+      this.db.stmt(
         `INSERT INTO raffle_bans (
            kick_user_id, is_permanent, banned_until, reason, actor_email, created_at, updated_at
          ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -2123,32 +2159,31 @@ export class RafflesService {
         actorEmail,
         now,
         now,
-      );
+      ),
+    ];
 
-      const openRaffles = this.db.all<{ raffle_id: number }>(
-        `SELECT DISTINCT e.raffle_id
-         FROM raffle_entries e
-         JOIN raffles r ON r.id = e.raffle_id
-         WHERE e.kick_user_id = ? AND r.ended_at IS NULL`,
-        kickUserId,
-      );
-
-      if (openRaffles.length > 0) {
-        const del = this.db.run(
+    if (openRaffles.length > 0) {
+      modStmts.push(
+        this.db.stmt(
           `DELETE FROM raffle_entries
            WHERE kick_user_id = ?
              AND raffle_id IN (SELECT id FROM raffles WHERE ended_at IS NULL)`,
           kickUserId,
+        ),
+      );
+      for (const item of openRaffles) {
+        modStmts.push(
+          this.db.stmt(`UPDATE raffles SET updated_at = ? WHERE id = ?`, now, Number(item.raffle_id)),
         );
-        removedEntries = del.changes;
-        for (const item of openRaffles) {
-          this.db.run(`UPDATE raffles SET updated_at = ? WHERE id = ?`, now, Number(item.raffle_id));
-        }
       }
-    });
-    tx();
+    }
 
-    this.audit.audit(
+    const modResults = await this.db.batch(modStmts);
+    if (openRaffles.length > 0) {
+      removedEntries = modResults[1]?.changes ?? 0;
+    }
+
+    await this.audit.audit(
       actor,
       action === "ban" ? "raffle.player_ban" : "raffle.player_timeout",
       kickUserId,

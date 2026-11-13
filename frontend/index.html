@@ -14,7 +14,7 @@
       try {
         var stored = localStorage.getItem("kdeenoff-theme-v2");
         if (stored === "dark" || stored === "light") theme = stored;
-      } catch (e) {  }
+      } catch (e) {   }
       document.documentElement.setAttribute("data-theme", theme);
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute("content", theme === "dark" ? "#0c1218" : "#f7f7f7");
@@ -49,16 +49,16 @@
         if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
           document.body.classList.add("site-booting");
         }
-      } catch (e)   {}
+      } catch (e )   {}
 
       var open = true;
       try {
         var stored = localStorage.getItem("kdeenoff-chat");
         if (stored === "0" || stored === "1") open = stored === "1";
         else open = matchMedia("(min-width: 1041px)").matches;
-      } catch (e )  {}
+      } catch  (e )  {}
       document.body.classList.toggle("chat-open", open);
-    });
+    })();
   </script>
   <div id="root"></div>
   <script type="module" src="/src/public/main.tsx"></script>

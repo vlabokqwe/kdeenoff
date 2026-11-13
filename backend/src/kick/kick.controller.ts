@@ -23,12 +23,12 @@ export class KickController {
   }
 
   @All("logout")
-  logout(@Req() req: Request, @Res() res: Response): void {
-    send(res, this.kick.handleKickLogout(req));
+  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
+    send(res, await this.kick.handleKickLogout(req));
   }
 
   @All("avatars")
-  avatars(@Req() req: Request, @Res() res: Response): void {
-    send(res, this.kick.handleChatAvatars(req));
+  async avatars(@Req() req: Request, @Res() res: Response): Promise<void> {
+    send(res, await this.kick.handleChatAvatars(req));
   }
 }

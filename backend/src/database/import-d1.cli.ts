@@ -11,7 +11,7 @@
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
-import { AppConfig } from "../config/app-config";
+import { createNodeAppConfig } from "../config/node-config";
 import { applyMigrations } from "./migrator";
 import { openDatabase } from "./open";
 
@@ -39,7 +39,7 @@ function main(): void {
   }
   if (!dumpArg) usage();
 
-  const config = new AppConfig();
+  const config = createNodeAppConfig();
   const dumpPath = fromInvocationDir(dumpArg);
   const target = dbArg ? fromInvocationDir(dbArg) : config.databasePath;
   if (!existsSync(dumpPath) || !statSync(dumpPath).isFile()) {

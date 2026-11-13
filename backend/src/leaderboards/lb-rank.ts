@@ -3,8 +3,8 @@
  */
 import type { DatabaseService } from "../database/database.service";
 
-export function rankPlayersByWagered(db: DatabaseService, boardId: number): number {
-  const players = db.all<{ id: number }>(
+export async function rankPlayersByWagered(db: DatabaseService, boardId: number): Promise<number> {
+  const players = await db.all<{ id: number }>(
     `SELECT id FROM lb_players WHERE board_id = ?
      ORDER BY wagered_cents DESC, id ASC`,
     boardId,
@@ -12,6 +12,6 @@ export function rankPlayersByWagered(db: DatabaseService, boardId: number): numb
   const stmts = players.map((p, i) =>
     db.stmt(`UPDATE lb_players SET rank = ?, sort_order = ? WHERE id = ?`, i + 1, i + 1, p.id),
   );
-  if (stmts.length) db.batch(stmts);
+  if (stmts.length) await db.batch(stmts);
   return stmts.length;
 }

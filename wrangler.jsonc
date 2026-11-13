@@ -1,0 +1,50 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kdeenoff",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-04-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "alias": {
+    "@nestjs/common": "./worker/nestjs-shim.ts"
+  },
+  "rules": [
+    {
+      "type": "Text",
+      "globs": [
+        "**/*.sql"
+      ],
+      "fallthrough": false
+    }
+  ],
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "run_worker_first": true
+  },
+  "vars": {
+    "NODE_ENV": "production",
+    "SITE_LABEL": "kdeenoff",
+    "PROMO_CODE": "KDEENOFF",
+    "ADMIN_EMAILS": "mihatiha00@gmail.com"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kdeenoff_db",
+      "database_id": "1c98a6bc-95a4-4f63-9708-5dcb878ab089"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
+  }
+}
+

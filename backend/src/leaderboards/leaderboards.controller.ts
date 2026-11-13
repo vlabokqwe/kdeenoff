@@ -13,24 +13,24 @@ export class LeaderboardsController {
   ) {}
 
   @All()
-  list(@Req() req: Request, @Res() res: Response): void {
+  async list(@Req() req: Request, @Res() res: Response): Promise<void> {
     const m = req.method.toUpperCase();
     if (m !== "GET" && m !== "HEAD") {
       send(res, methodNotAllowed(req.method));
       return;
     }
-    const result = this.leaderboards.handleListBoards();
+    const result = await this.leaderboards.handleListBoards();
     send(res, m === "HEAD" ? { ...result, body: null } : result);
   }
 
   @All("history")
-  history(@Req() req: Request, @Res() res: Response): void {
+  async history(@Req() req: Request, @Res() res: Response): Promise<void> {
     const m = req.method.toUpperCase();
     if (m !== "GET" && m !== "HEAD") {
       send(res, methodNotAllowed(req.method));
       return;
     }
-    const result = this.leaderboards.handleListHistory();
+    const result = await this.leaderboards.handleListHistory();
     send(res, m === "HEAD" ? { ...result, body: null } : result);
   }
 
@@ -61,11 +61,11 @@ export class LeaderboardsController {
       send(res, methodNotAllowed(req.method));
       return;
     }
-    let result = this.leaderboards.handleGetBoard(slug);
+    let result = await this.leaderboards.handleGetBoard(slug);
     if (result.status === 404) {
       const gate = await this.access.requireAdmin(req);
       if (gate.ok) {
-        result = this.leaderboards.handleGetBoard(slug, { includeHidden: true });
+        result = await this.leaderboards.handleGetBoard(slug, { includeHidden: true });
       }
     }
     send(res, m === "HEAD" ? { ...result, body: null } : result);

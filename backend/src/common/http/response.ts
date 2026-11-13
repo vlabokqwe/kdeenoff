@@ -10,7 +10,7 @@ export interface HttpResult {
   status: number;
   /** Ordered header pairs; "set-cookie" may repeat. */
   headers: [string, string][];
-  body: string | Buffer | null;
+  body: string | Uint8Array | null;
 }
 
 function lowerEntries(obj: Record<string, string>): [string, string][] {
@@ -33,7 +33,7 @@ export function jsonResponse(body: unknown, status = 200, extra: Record<string, 
   };
 }
 
-export function htmlResponse(html: string | Buffer, status = 200, extra: Record<string, string> = {}): HttpResult {
+export function htmlResponse(html: string | Uint8Array, status = 200, extra: Record<string, string> = {}): HttpResult {
   return {
     status,
     headers: lowerEntries({
@@ -130,7 +130,12 @@ export function send(res: Response, result: HttpResult): void {
     res.end();
     return;
   }
-  const body = typeof result.body === "string" ? Buffer.from(result.body, "utf8") : result.body;
+  const body =
+    typeof result.body === "string"
+      ? Buffer.from(result.body, "utf8")
+      : Buffer.isBuffer(result.body)
+        ? result.body
+        : Buffer.from(result.body);
   res.setHeader("content-length", String(body.length));
   res.end(body);
 }

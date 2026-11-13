@@ -115,9 +115,11 @@ export class KickService {
     private readonly session: SessionService,
   ) { }
 
-  private loadActiveBan(kickUserId: string): { permanent: boolean; bannedUntil: number | null } | null {
+  private async loadActiveBan(
+    kickUserId: string,
+  ): Promise<{ permanent: boolean; bannedUntil: number | null } | null> {
     if (!kickUserId) return null;
-    const row = this.db.first<{ is_permanent: number; banned_until: number | null }>(
+    const row = await this.db.first<{ is_permanent: number; banned_until: number | null }>(
       `SELECT is_permanent, banned_until FROM raffle_bans WHERE kick_user_id = ?`,
       kickUserId,
     );
@@ -137,13 +139,13 @@ export class KickService {
     if (m !== "GET" && m !== "HEAD") return methodNotAllowed(req.method);
 
     const { cookieHeader: csrfCookie } = ensureCsrfToken(req);
-    const loaded = this.session.loadPerson(req);
+    const loaded = await this.session.loadPerson(req);
     if (!loaded.person) {
       const body = jsonResponse(accountPayload(null));
       return withCookies(body, [csrfCookie, loaded.token ? clearSessionCookie(req) : null]);
     }
     const roles = await this.access.resolveAccountRoles(req);
-    const raffleBan = this.loadActiveBan(loaded.person.kickUserId);
+    const raffleBan = await this.loadActiveBan(loaded.person.kickUserId);
     return withCookies(jsonResponse(accountPayload(loaded.person, roles, raffleBan)), [csrfCookie]);
   }
 
@@ -241,7 +243,7 @@ export class KickService {
 
     const now = Date.now();
     try {
-      this.db.run(
+      await this.db.run(
         `INSERT INTO kick_accounts (kick_user_id, name, avatar_url, linked_at, updated_at)
          VALUES (?, ?, ?, ?, ?)
          ON CONFLICT(kick_user_id) DO UPDATE SET
@@ -254,7 +256,7 @@ export class KickService {
         now,
         now,
       );
-      const bound = this.session.bindKick(req, profile);
+      const bound = await this.session.bindKick(req, profile);
       if (bound.error) return accountError(bound.error, [clearOauth]);
       const cookies: (string | null | undefined)[] = [clearOauth];
       if (bound.cookie) cookies.push(bound.cookie);
@@ -265,12 +267,12 @@ export class KickService {
     }
   }
 
-  handleKickLogout(req: Request): HttpResult {
+  async handleKickLogout(req: Request): Promise<HttpResult> {
     if (req.method.toUpperCase() !== "POST") return methodNotAllowed(req.method);
     const csrf = verifyCsrf(req);
     if (!csrf.ok) return forbidden(csrf.error);
 
-    const unlinked = this.session.unlinkKick(req);
+    const unlinked = await this.session.unlinkKick(req);
     return withCookies(jsonResponse({ ok: true }), unlinked.clear ? [clearSessionCookie(req)] : []);
   }
 
@@ -279,7 +281,7 @@ export class KickService {
    * Returns `{ avatars: Record<lowercaseUsername, siteAvatarUrl> }` for handles
    * that match accounts authorized on this site.
    */
-  handleChatAvatars(req: Request): HttpResult {
+  async handleChatAvatars(req: Request): Promise<HttpResult> {
     const m = req.method.toUpperCase();
     if (m !== "GET" && m !== "HEAD") return methodNotAllowed(req.method);
 
@@ -295,7 +297,7 @@ export class KickService {
       return m === "HEAD" ? { ...empty, body: null } : empty;
     }
 
-    const authorized = loadAuthorizedKickNames(this.db, candidates);
+    const authorized = await loadAuthorizedKickNames(this.db, candidates);
     const avatars: Record<string, string> = {};
     for (const uname of authorized) {
       avatars[uname] = buildLeaderboardAvatarUrl(uname);

@@ -63,11 +63,11 @@ function personFrom(row: Row | null): Person | null {
 export class SessionService {
   constructor(private readonly db: DatabaseService) { }
 
-  loadPerson(req: Request): LoadedSession {
+  async loadPerson(req: Request): Promise<LoadedSession> {
     const token = readSessionToken(req);
     if (!safeToken(token)) return { token: "", sessionId: "", person: null };
     const sessionId = sha256Hex(token);
-    const row = this.db.first(
+    const row = await this.db.first(
       `SELECT s.expires_at, s.id AS session_id,
               p.id AS person_id, p.email, p.email_verified_at, p.kick_user_id, p.role,
               COALESCE(NULLIF(TRIM(p.partner_username), ''), NULLIF(TRIM(a.partner_username), ''), '') AS partner_username,
@@ -80,28 +80,28 @@ export class SessionService {
     );
     if (!row) return { token, sessionId, person: null };
     if (Number(row.expires_at) < Date.now()) {
-      this.db.run(`DELETE FROM site_sessions WHERE id = ?`, sessionId);
+      await this.db.run(`DELETE FROM site_sessions WHERE id = ?`, sessionId);
       return { token, sessionId, person: null };
     }
     return { token, sessionId, person: personFrom(row) };
   }
 
   /** Linked Kick account for this session, or null. */
-  kickPerson(req: Request): Person | null {
-    const loaded = this.loadPerson(req);
+  async kickPerson(req: Request): Promise<Person | null> {
+    const loaded = await this.loadPerson(req);
     const person = loaded.person;
     if (!person || !person.kickUserId || !person.name) return null;
     return person;
   }
 
-  private openSession(
+  private async openSession(
     req: Request,
     personId: string,
-  ): { token: string; sessionId: string; cookie: string } {
+  ): Promise<{ token: string; sessionId: string; cookie: string }> {
     const now = Date.now();
     const token = randomB64url(32);
     const sessionId = sha256Hex(token);
-    this.db.run(
+    await this.db.run(
       `INSERT INTO site_sessions (id, person_id, created_at, expires_at) VALUES (?, ?, ?, ?)`,
       sessionId,
       personId,
@@ -111,13 +111,13 @@ export class SessionService {
     return { token, sessionId, cookie: sessionCookie(token, req) };
   }
 
-  createPerson(
+  async createPerson(
     req: Request,
     fields: { kickUserId?: string | null } = {},
-  ): { personId: string; token: string; sessionId: string; cookie: string } {
+  ): Promise<{ personId: string; token: string; sessionId: string; cookie: string }> {
     const now = Date.now();
     const personId = randomB64url(16);
-    this.db.run(
+    await this.db.run(
       `INSERT INTO site_people (id, email, email_verified_at, kick_user_id, created_at, updated_at)
        VALUES (?, NULL, NULL, ?, ?, ?)`,
       personId,
@@ -125,17 +125,17 @@ export class SessionService {
       now,
       now,
     );
-    const session = this.openSession(req, personId);
+    const session = await this.openSession(req, personId);
     return { personId, ...session };
   }
 
-  bindKick(
+  async bindKick(
     req: Request,
     profile: KickProfile,
-  ): { error?: string; cookie?: string | null } {
+  ): Promise<{ error?: string; cookie?: string | null }> {
     const now = Date.now();
-    const loaded = this.loadPerson(req);
-    const owner = this.db.first<{ id: string }>(
+    const loaded = await this.loadPerson(req);
+    const owner = await this.db.first<{ id: string }>(
       `SELECT id FROM site_people WHERE kick_user_id = ?`,
       profile.kickUserId,
     );
@@ -174,11 +174,11 @@ export class SessionService {
           this.db.stmt(`DELETE FROM email_codes WHERE person_id = ?`, current.id),
           this.db.stmt(`DELETE FROM site_people WHERE id = ?`, current.id),
         );
-        this.db.batch(stmts);
+        await this.db.batch(stmts);
         return { cookie: null };
       }
       if (!current) {
-        const session = this.openSession(req, owner.id);
+        const session = await this.openSession(req, owner.id);
         return { cookie: session.cookie };
       }
       return { cookie: null };
@@ -186,7 +186,7 @@ export class SessionService {
 
     if (current) {
       if (current.partnerUsername) {
-        this.db.batch([
+        await this.db.batch([
           this.db.stmt(
             `UPDATE site_people SET kick_user_id = ?, updated_at = ? WHERE id = ?`,
             profile.kickUserId,
@@ -201,7 +201,7 @@ export class SessionService {
           ),
         ]);
       } else {
-        this.db.run(
+        await this.db.run(
           `UPDATE site_people SET kick_user_id = ?, updated_at = ? WHERE id = ?`,
           profile.kickUserId,
           now,
@@ -211,48 +211,48 @@ export class SessionService {
       return { cookie: null };
     }
 
-    const created = this.createPerson(req, { kickUserId: profile.kickUserId });
+    const created = await this.createPerson(req, { kickUserId: profile.kickUserId });
     return { cookie: created.cookie };
   }
 
-  unlinkKick(req: Request): { clear: boolean } {
-    const loaded = this.loadPerson(req);
+  async unlinkKick(req: Request): Promise<{ clear: boolean }> {
+    const loaded = await this.loadPerson(req);
     if (!loaded.person) return { clear: Boolean(loaded.token) };
     const now = Date.now();
-    this.db.run(
+    await this.db.run(
       `UPDATE site_people SET kick_user_id = NULL, updated_at = ? WHERE id = ?`,
       now,
       loaded.person.id,
     );
     if (!loaded.person.emailVerified) {
-      this.db.run(`DELETE FROM site_sessions WHERE id = ?`, loaded.sessionId);
+      await this.db.run(`DELETE FROM site_sessions WHERE id = ?`, loaded.sessionId);
       return { clear: true };
     }
     return { clear: false };
   }
 
-  dropSession(req: Request): { clear: boolean; cookie: string } {
-    const loaded = this.loadPerson(req);
+  async dropSession(req: Request): Promise<{ clear: boolean; cookie: string }> {
+    const loaded = await this.loadPerson(req);
     if (loaded.sessionId && loaded.person) {
-      this.db.run(`DELETE FROM site_sessions WHERE id = ?`, loaded.sessionId);
+      await this.db.run(`DELETE FROM site_sessions WHERE id = ?`, loaded.sessionId);
     }
     return { clear: Boolean(loaded.token), cookie: clearSessionCookie(req) };
   }
 
-  adoptPerson(req: Request, personId: string): { cookie: string | null } {
-    const loaded = this.loadPerson(req);
+  async adoptPerson(req: Request, personId: string): Promise<{ cookie: string | null }> {
+    const loaded = await this.loadPerson(req);
     if (loaded.person && loaded.person.id === personId) return { cookie: null };
     if (loaded.sessionId) {
-      this.db.run(`DELETE FROM site_sessions WHERE id = ?`, loaded.sessionId);
+      await this.db.run(`DELETE FROM site_sessions WHERE id = ?`, loaded.sessionId);
     }
-    const session = this.openSession(req, personId);
+    const session = await this.openSession(req, personId);
     return { cookie: session.cookie };
   }
 
-  ensurePerson(req: Request): { person: Person; cookie: string | null } {
-    const loaded = this.loadPerson(req);
+  async ensurePerson(req: Request): Promise<{ person: Person; cookie: string | null }> {
+    const loaded = await this.loadPerson(req);
     if (loaded.person) return { person: loaded.person, cookie: null };
-    const created = this.createPerson(req);
+    const created = await this.createPerson(req);
     return {
       person: {
         id: created.personId,

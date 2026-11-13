@@ -12,20 +12,20 @@ export class RafflesController {
   ) { }
 
   @All()
-  list(@Req() req: Request, @Res() res: Response): void {
+  async list(@Req() req: Request, @Res() res: Response): Promise<void> {
     const m = req.method.toUpperCase();
     if (m !== "GET" && m !== "HEAD") {
       send(res, methodNotAllowed(req.method));
       return;
     }
-    const result = this.raffles.handlePublicRaffles();
+    const result = await this.raffles.handlePublicRaffles();
     send(res, m === "HEAD" ? { ...result, body: null } : result);
   }
 
   @All("mine")
-  mine(@Req() req: Request, @Res() res: Response): void {
+  async mine(@Req() req: Request, @Res() res: Response): Promise<void> {
     const m = req.method.toUpperCase();
-    const result = this.raffles.handleMyRaffles(req);
+    const result = await this.raffles.handleMyRaffles(req);
     send(res, m === "HEAD" ? { ...result, body: null } : result);
   }
 
@@ -50,8 +50,8 @@ export class RafflesController {
   }
 
   @All(":id/join")
-  join(@Param("id") id: string, @Req() req: Request, @Res() res: Response): void {
-    send(res, this.raffles.handleRaffleJoin(req, id));
+  async join(@Param("id") id: string, @Req() req: Request, @Res() res: Response): Promise<void> {
+    send(res, await this.raffles.handleRaffleJoin(req, id));
   }
 
   @All(":id")

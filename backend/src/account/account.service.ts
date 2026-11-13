@@ -70,8 +70,8 @@ export class AccountService {
     if (!isValidEmail(email)) return fail("email", 400);
     if (!this.resendReady()) return fail("config", 503);
 
-    const existing = this.session.loadPerson(req);
-    const taken = this.db.first<{ id: string }>(
+    const existing = await this.session.loadPerson(req);
+    const taken = await this.db.first<{ id: string }>(
       `SELECT id FROM site_people WHERE email = ? AND email_verified_at IS NOT NULL`,
       email,
     );
@@ -83,7 +83,7 @@ export class AccountService {
     try {
       ensured = existing.person
         ? { person: existing.person, cookie: null }
-        : this.session.ensurePerson(req);
+        : await this.session.ensurePerson(req);
     } catch (err) {
       this.logger.error(`email session failed: ${(err as Error)?.message || err}`);
       return fail("store", 500);
@@ -92,7 +92,7 @@ export class AccountService {
     const cookie = ensured.cookie;
 
     const now = Date.now();
-    const latest = this.db.first<{ created_at: number }>(
+    const latest = await this.db.first<{ created_at: number }>(
       `SELECT created_at FROM email_codes WHERE email = ? ORDER BY created_at DESC LIMIT 1`,
       email,
     );
@@ -100,7 +100,7 @@ export class AccountService {
       return fail("wait", 429, cookie);
     }
 
-    const hour = this.db.first<{ n: number }>(
+    const hour = await this.db.first<{ n: number }>(
       `SELECT COUNT(*) AS n FROM email_codes WHERE email = ? AND created_at > ?`,
       email,
       now - HOUR_MS,
@@ -110,8 +110,8 @@ export class AccountService {
     const code = sixDigit();
     const salt = randomB64url(16);
     const hash = codeHash(salt, code);
-    this.db.run(`DELETE FROM email_codes WHERE created_at < ?`, now - 24 * HOUR_MS);
-    this.db.run(
+    await this.db.run(`DELETE FROM email_codes WHERE created_at < ?`, now - 24 * HOUR_MS);
+    await this.db.run(
       `INSERT INTO email_codes (person_id, email, code_hash, salt, expires_at, attempts, created_at)
        VALUES (?, ?, ?, ?, ?, 0, ?)`,
       person.id,
@@ -140,7 +140,7 @@ export class AccountService {
       if (!sent.ok) {
         const detail = await sent.text();
         this.logger.error(`resend send failed: ${sent.status} ${detail.slice(0, 500)}`);
-        this.db.run(
+        await this.db.run(
           `DELETE FROM email_codes WHERE person_id = ? AND created_at = ?`,
           person.id,
           now,
@@ -149,7 +149,7 @@ export class AccountService {
       }
     } catch (err) {
       this.logger.error(`resend send error: ${(err as Error)?.message || err}`);
-      this.db.run(
+      await this.db.run(
         `DELETE FROM email_codes WHERE person_id = ? AND created_at = ?`,
         person.id,
         now,
@@ -169,10 +169,10 @@ export class AccountService {
     const code = String((body && body.code) || "").trim();
     if (!/^\d{6}$/.test(code)) return fail("bad", 400);
 
-    const loaded = this.session.loadPerson(req);
+    const loaded = await this.session.loadPerson(req);
     if (!loaded.person) return fail("expired", 400);
 
-    const row = this.db.first<{
+    const row = await this.db.first<{
       id: number;
       email: string;
       code_hash: string;
@@ -186,19 +186,19 @@ export class AccountService {
     );
     if (!row) return fail("expired", 400);
     if (Number(row.expires_at) < Date.now() || Number(row.attempts) >= MAX_ATTEMPTS) {
-      this.db.run(`DELETE FROM email_codes WHERE id = ?`, row.id);
+      await this.db.run(`DELETE FROM email_codes WHERE id = ?`, row.id);
       return fail("expired", 400);
     }
 
     const hash = codeHash(String(row.salt), code);
     if (!timingSafeEqualStr(hash, String(row.code_hash))) {
-      this.db.run(`UPDATE email_codes SET attempts = attempts + 1 WHERE id = ?`, row.id);
+      await this.db.run(`UPDATE email_codes SET attempts = attempts + 1 WHERE id = ?`, row.id);
       return fail("bad", 400);
     }
 
     const now = Date.now();
     try {
-      this.db.run(
+      await this.db.run(
         `UPDATE site_people SET email = ?, email_verified_at = ?, updated_at = ? WHERE id = ?`,
         row.email,
         now,
@@ -209,7 +209,7 @@ export class AccountService {
       this.logger.error(`email confirm failed: ${(err as Error)?.message || err}`);
       return fail("taken", 409);
     }
-    this.db.run(`DELETE FROM email_codes WHERE person_id = ?`, loaded.person.id);
+    await this.db.run(`DELETE FROM email_codes WHERE person_id = ?`, loaded.person.id);
     const roles = await this.access.resolveAccountRoles(req);
     const avatarUrl =
       loaded.person.kickUserId && loaded.person.name
@@ -243,12 +243,12 @@ export class AccountService {
       return fail("partner", 400);
     }
 
-    const existing = this.session.loadPerson(req);
+    const existing = await this.session.loadPerson(req);
     let ensured: { person: NonNullable<typeof existing.person>; cookie: string | null };
     try {
       ensured = existing.person
         ? { person: existing.person, cookie: null }
-        : this.session.ensurePerson(req);
+        : await this.session.ensurePerson(req);
     } catch (err) {
       this.logger.error(`partner session failed: ${(err as Error)?.message || err}`);
       return fail("store", 500);
@@ -275,7 +275,7 @@ export class AccountService {
           ),
         );
       }
-      this.db.batch(stmts);
+      await this.db.batch(stmts);
     } catch (err) {
       this.logger.error(`partner username save failed: ${(err as Error)?.message || err}`);
       return fail("store", 500, cookie);
@@ -290,11 +290,11 @@ export class AccountService {
     );
   }
 
-  handleAccountLogout(req: Request): HttpResult {
+  async handleAccountLogout(req: Request): Promise<HttpResult> {
     if (req.method.toUpperCase() !== "POST") return methodNotAllowed(req.method);
     const csrf = verifyCsrf(req);
     if (!csrf.ok) return forbidden(csrf.error);
-    const dropped = this.session.dropSession(req);
+    const dropped = await this.session.dropSession(req);
     return withCookies(jsonResponse({ ok: true }), dropped.clear ? [dropped.cookie] : []);
   }
 }

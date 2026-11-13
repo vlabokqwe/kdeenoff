@@ -53,10 +53,10 @@ function resolveAvatarUrl(player: Row, board: Row, isRegistered: boolean): strin
 export class LeaderboardsService {
   constructor(private readonly db: DatabaseService) {}
 
-  handleGetSiteSettings(): HttpResult {
+  async handleGetSiteSettings(): Promise<HttpResult> {
     try {
       const placeholders = PUBLIC_SITE_SETTING_KEYS.map(() => "?").join(", ");
-      const rows = this.db.all<{ key: string; value: string }>(
+      const rows = await this.db.all<{ key: string; value: string }>(
         `SELECT key, value FROM site_settings WHERE key IN (${placeholders})`,
         ...PUBLIC_SITE_SETTING_KEYS,
       );
@@ -93,10 +93,10 @@ export class LeaderboardsService {
     };
   }
 
-  handleListBoards(): HttpResult {
+  async handleListBoards(): Promise<HttpResult> {
     try {
       const now = Date.now();
-      const boards = this.db.all(
+      const boards = await this.db.all(
         `SELECT id, slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
                 partner_signup_url, partner, avatar_style,
                 badge, promo_code, sort_order, show_in_drawer, show_on_home, is_demo
@@ -115,10 +115,10 @@ export class LeaderboardsService {
     }
   }
 
-  handleGetBoard(slug: string, opts?: { includeHidden?: boolean }): HttpResult {
+  async handleGetBoard(slug: string, opts?: { includeHidden?: boolean }): Promise<HttpResult> {
     if (!isValidSlug(slug)) return notFound();
 
-    const boardRs = this.db.first(
+    const boardRs = await this.db.first(
       `SELECT id, slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
               hidden, archived, partner_signup_url, partner, avatar_style,
               auto_hidden_above_rank, badge, promo_code, sort_order,
@@ -129,17 +129,17 @@ export class LeaderboardsService {
 
     if (!boardRs) return notFound();
 
-    const spots = loadSpotPrizes(this.db, Number(boardRs.id));
+    const spots = await loadSpotPrizes(this.db, Number(boardRs.id));
     const spotsM = spotMap(spots);
 
-    const rawPlayers = this.db.all(
+    const rawPlayers = await this.db.all(
       `SELECT id, rank, sort_order, username, wagered_cents, prize_cents, avatar_url, avatar_sid
        FROM lb_players WHERE board_id = ?
        ORDER BY sort_order ASC, wagered_cents DESC, id ASC`,
       boardRs.id,
     );
 
-    const registeredNames = loadAuthorizedKickNames(
+    const registeredNames = await loadAuthorizedKickNames(
       this.db,
       rawPlayers.map((p) => String(p.username || "")),
     );
@@ -170,9 +170,9 @@ export class LeaderboardsService {
     });
   }
 
-  handleListHistory(): HttpResult {
+  async handleListHistory(): Promise<HttpResult> {
     try {
-      const boards = this.db.all(
+      const boards = await this.db.all(
         `SELECT id, slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
                 partner, partner_signup_url, avatar_style, badge, promo_code, is_demo
          FROM leaderboards

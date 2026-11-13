@@ -16,9 +16,9 @@ export class AuditService {
 
   constructor(private readonly db: DatabaseService) {}
 
-  audit(actor: Actor | null, action: string, target: string | null, meta?: unknown): void {
+  async audit(actor: Actor | null, action: string, target: string | null, meta?: unknown): Promise<void> {
     try {
-      this.db.run(
+      await this.db.run(
         `INSERT INTO audit_log (actor_user_id, actor_email, action, target, meta_json, at)
        VALUES (?, ?, ?, ?, ?, ?)`,
         actor ? actor.sub : null,

@@ -77,15 +77,15 @@ export class WagerGrowthService {
     private readonly audit: AuditService,
   ) {}
 
-  applyWagerGrowthForBoard(board: Row): {
+  async applyWagerGrowthForBoard(board: Row): Promise<{
     players: { id: number; username: string; wagered_cents: number }[];
     tickCount: number;
-  } {
+  }> {
     const boardInterval = clampWagerGrowthIntervalMs(board.auto_wager_growth_interval_ms);
     const boardPct = clampWagerGrowthPct(board.auto_wager_growth_pct);
     const now = Date.now();
 
-    const players = this.db.all(
+    const players = await this.db.all(
       `SELECT id, username, wagered_cents, wag_growth_enabled, wag_growth_pct,
               wag_growth_hours, wag_growth_last_at, wag_growth_schedule_json
        FROM lb_players WHERE board_id = ? AND wag_growth_enabled = 1`,
@@ -139,17 +139,17 @@ export class WagerGrowthService {
       );
     }
 
-    if (stmts.length) this.db.batch(stmts);
+    if (stmts.length) await this.db.batch(stmts);
     return { players: updated, tickCount };
   }
 
-  runScheduledWagerGrowth(): { boards: number; tick_count: number; board_errors: number } {
+  async runScheduledWagerGrowth(): Promise<{ boards: number; tick_count: number; board_errors: number }> {
     let boardsWithTicks = 0;
     let tickCount = 0;
     let boardErrors = 0;
 
     const now = Date.now();
-    const boards = this.db.all(
+    const boards = await this.db.all(
       `SELECT id, slug, auto_wager_growth_enabled, auto_wager_growth_pct, auto_wager_growth_interval_ms,
               auto_rank_by_wagered
        FROM leaderboards
@@ -164,17 +164,17 @@ export class WagerGrowthService {
 
     for (const board of boards) {
       try {
-        const { players, tickCount: ticks } = this.applyWagerGrowthForBoard(board);
+        const { players, tickCount: ticks } = await this.applyWagerGrowthForBoard(board);
         if (ticks <= 0) continue;
         boardsWithTicks++;
         tickCount += ticks;
 
         let ranked = 0;
         if (board.auto_rank_by_wagered) {
-          ranked = rankPlayersByWagered(this.db, Number(board.id));
+          ranked = await rankPlayersByWagered(this.db, Number(board.id));
         }
 
-        this.audit.audit(null, "lb.wager_growth", String(board.slug), {
+        await this.audit.audit(null, "lb.wager_growth", String(board.slug), {
           tick_count: ticks,
           players: players.length,
           ranked,

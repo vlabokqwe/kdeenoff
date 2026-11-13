@@ -74,19 +74,30 @@ INSERT OR IGNORE INTO leaderboards (
 );
 
 -- Seed Top 5 spot prizes for kdeenoff-weekly
+WITH s(rank, prize_cents) AS (
+  VALUES
+    (1, 100000),
+    (2, 60000),
+    (3, 40000),
+    (4, 30000),
+    (5, 20000)
+)
 INSERT OR IGNORE INTO lb_spot_prizes (board_id, rank, prize_cents, hidden)
 SELECT l.id, s.rank, s.prize_cents, 0
 FROM leaderboards l
-CROSS JOIN (
-  SELECT 1 AS rank, 100000 AS prize_cents
-  UNION ALL SELECT 2, 60000
-  UNION ALL SELECT 3, 40000
-  UNION ALL SELECT 4, 30000
-  UNION ALL SELECT 5, 20000
-) s
+CROSS JOIN s
 WHERE l.slug = 'kdeenoff-weekly';
 
 -- Seed 6 sample players for kdeenoff-weekly only when it has 0 players
+WITH p(rank, username, wagered_cents) AS (
+  VALUES
+    (1, 'ZeusStrike', 1840000),
+    (2, 'VampHunter', 1420000),
+    (3, 'RaccoonVIP', 1090000),
+    (4, 'OlympusKing', 830000),
+    (5, 'NeonDrifter', 610000),
+    (6, 'LuckyBolt', 420000)
+)
 INSERT INTO lb_players (
   board_id, rank, sort_order, username, wagered_cents, prize_cents,
   avatar_url, avatar_sid, wag_growth_enabled, wag_growth_pct, wag_growth_hours, wag_growth_last_at
@@ -105,14 +116,7 @@ SELECT
   6,
   unixepoch() * 1000
 FROM leaderboards l
-CROSS JOIN (
-  SELECT 1 AS rank, 'ZeusStrike' AS username, 1840000 AS wagered_cents
-  UNION ALL SELECT 2, 'VampHunter', 1420000
-  UNION ALL SELECT 3, 'RaccoonVIP', 1090000
-  UNION ALL SELECT 4, 'OlympusKing', 830000
-  UNION ALL SELECT 5, 'NeonDrifter', 610000
-  UNION ALL SELECT 6, 'LuckyBolt', 420000
-) p
+CROSS JOIN p
 WHERE l.slug = 'kdeenoff-weekly'
   AND (SELECT COUNT(*) FROM lb_players WHERE board_id = l.id) = 0;
 

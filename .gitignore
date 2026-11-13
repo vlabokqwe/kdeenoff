@@ -10,7 +10,7 @@ data/
 *.sqlite-shm
 *.sqlite-wal
 
-# Legacy Cloudflare tooling (no longer used)
+# Cloudflare local state
 .wrangler/
 .dev.vars
 

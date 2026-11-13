@@ -744,29 +744,38 @@ export function normalizeKickHandle(raw: unknown): string {
  * Returns normalized lowercase Kick handles that belong to accounts
  * authorized/registered on this site (`site_people` linked to `kick_accounts`).
  */
-export function loadAuthorizedKickNames(
+export async function loadAuthorizedKickNames(
   db: DatabaseService,
   candidates?: readonly string[],
-): Set<string> {
+): Promise<Set<string>> {
   if (candidates !== undefined) {
     const unique = Array.from(
       new Set(candidates.map(normalizeKickHandle).filter((n) => n.length > 0 && n.length <= 80)),
-    ).slice(0, 200);
+    ).slice(0, 500);
     if (unique.length === 0) return new Set();
-    const placeholders = unique.map(() => "?").join(", ");
-    const rows = db.all<{ uname: string }>(
-      `SELECT LOWER(TRIM(ka.name)) AS uname
-       FROM site_people sp
-       JOIN kick_accounts ka ON ka.kick_user_id = sp.kick_user_id
-       WHERE sp.kick_user_id IS NOT NULL
-         AND TRIM(ka.name) != ''
-         AND LOWER(TRIM(ka.name)) IN (${placeholders})`,
-      ...unique,
-    );
-    return new Set(rows.map((r) => String(r.uname || "").trim().toLowerCase()).filter(Boolean));
+    const out = new Set<string>();
+    const CHUNK = 80;
+    for (let i = 0; i < unique.length; i += CHUNK) {
+      const slice = unique.slice(i, i + CHUNK);
+      const placeholders = slice.map(() => "?").join(", ");
+      const rows = await db.all<{ uname: string }>(
+        `SELECT LOWER(TRIM(ka.name)) AS uname
+         FROM site_people sp
+         JOIN kick_accounts ka ON ka.kick_user_id = sp.kick_user_id
+         WHERE sp.kick_user_id IS NOT NULL
+           AND TRIM(ka.name) != ''
+           AND LOWER(TRIM(ka.name)) IN (${placeholders})`,
+        ...slice,
+      );
+      for (const r of rows) {
+        const u = String(r.uname || "").trim().toLowerCase();
+        if (u) out.add(u);
+      }
+    }
+    return out;
   }
 
-  const rows = db.all<{ uname: string }>(
+  const rows = await db.all<{ uname: string }>(
     `SELECT LOWER(TRIM(ka.name)) AS uname
      FROM site_people sp
      JOIN kick_accounts ka ON ka.kick_user_id = sp.kick_user_id

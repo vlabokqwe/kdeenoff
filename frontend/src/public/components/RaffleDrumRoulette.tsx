@@ -652,8 +652,8 @@ export function RaffleDrumRoulette({
 
   const drumVisualKind =
     isElimMode &&
-    (((phase === "spinning" || elimKnockout) && isEliminationSpin) ||
-      (awaitingDraw && !winnerEntry && activeSurvivors.length >= 2))
+      (((phase === "spinning" || elimKnockout) && isEliminationSpin) ||
+        (awaitingDraw && !winnerEntry && activeSurvivors.length >= 2))
       ? "elimination"
       : showIdleElimPool
         ? "idle-pool"
@@ -788,20 +788,19 @@ export function RaffleDrumRoulette({
                 return (
                   <div
                     key={`pool-${item.id}`}
-                    className={`raffle-drum__pool-card${isYou ? " is-you" : ""}${
-                      canInspectCard ? " is-clickable" : ""
-                    }${isEntering ? " is-entering" : ""}`}
+                    className={`raffle-drum__pool-card${isYou ? " is-you" : ""}${canInspectCard ? " is-clickable" : ""
+                      }${isEntering ? " is-entering" : ""}`}
                     role={canInspectCard ? "button" : undefined}
                     tabIndex={canInspectCard ? 0 : undefined}
                     onClick={canInspectCard ? () => onSelectPlayer?.(item) : undefined}
                     onKeyDown={
                       canInspectCard
                         ? (e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              onSelectPlayer?.(item);
-                            }
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onSelectPlayer?.(item);
                           }
+                        }
                         : undefined
                     }
                     data-drum-player={canInspectCard ? item.name : undefined}
@@ -902,20 +901,19 @@ export function RaffleDrumRoulette({
                         ? `pool-${item.id}`
                         : `reel-${idx}-${item.id}-${item.ticket_no}`
                     }
-                    className={`raffle-drum__card${isYou ? " is-you" : ""}${
-                      canInspectCard ? " is-clickable" : ""
-                    }${stateClass}`}
+                    className={`raffle-drum__card${isYou ? " is-you" : ""}${canInspectCard ? " is-clickable" : ""
+                      }${stateClass}`}
                     role={canInspectCard ? "button" : undefined}
                     tabIndex={canInspectCard ? 0 : undefined}
                     onClick={canInspectCard ? () => onSelectPlayer?.(item) : undefined}
                     onKeyDown={
                       canInspectCard
                         ? (e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              onSelectPlayer?.(item);
-                            }
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onSelectPlayer?.(item);
                           }
+                        }
                         : undefined
                     }
                     data-drum-player={canInspectCard ? item.name : undefined}

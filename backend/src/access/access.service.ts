@@ -14,7 +14,6 @@
  */
 import { Injectable, Logger } from "@nestjs/common";
 import type { Request } from "express";
-import type { webcrypto } from "node:crypto";
 import { AppConfig } from "../config/app-config";
 import type { Actor } from "../audit/audit.module";
 import { cookieHeader, readCookie } from "../common/cookies";
@@ -50,11 +49,12 @@ export function isAdminPath(pathname: string, prefix: string): boolean {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Json = any;
+type SubtleKey = Awaited<ReturnType<typeof crypto.subtle.importKey>>;
 
 @Injectable()
 export class AccessService {
   private readonly logger = new Logger("Access");
-  private jwksCache: { domain: string; at: number; keys: Map<string, webcrypto.CryptoKey> } = {
+  private jwksCache: { domain: string; at: number; keys: Map<string, SubtleKey> } = {
     domain: "",
     at: 0,
     keys: new Map(),
@@ -102,8 +102,8 @@ export class AccessService {
     return "session-user";
   }
 
-  private checkSessionAllowlist(req: Request): Actor | null {
-    const { person } = this.session.loadPerson(req);
+  private async checkSessionAllowlist(req: Request): Promise<Actor | null> {
+    const { person } = await this.session.loadPerson(req);
     if (!person) return null;
     const verifiedIdentity = Boolean(person.emailVerified || person.kickUserId);
     if (verifiedIdentity && person.role === "admin") {
@@ -123,11 +123,11 @@ export class AccessService {
     return null;
   }
 
-  private checkSessionStreamer(req: Request): Actor | null {
-    const adminActor = this.checkSessionAllowlist(req);
+  private async checkSessionStreamer(req: Request): Promise<Actor | null> {
+    const adminActor = await this.checkSessionAllowlist(req);
     if (adminActor) return adminActor;
 
-    const { person } = this.session.loadPerson(req);
+    const { person } = await this.session.loadPerson(req);
     if (!person) return null;
     const verifiedIdentity = Boolean(person.emailVerified || person.kickUserId);
     if (verifiedIdentity && person.role === "streamer") {
@@ -163,7 +163,7 @@ export class AccessService {
     return Boolean(this.teamDomain() && this.audience());
   }
 
-  private async signingKey(domain: string, kid: string): Promise<webcrypto.CryptoKey | null> {
+  private async signingKey(domain: string, kid: string): Promise<SubtleKey | null> {
     const cache = this.jwksCache;
     const fresh = cache.domain === domain && Date.now() - cache.at < JWKS_TTL_MS;
     if (!fresh || !cache.keys.has(kid)) {
@@ -172,7 +172,7 @@ export class AccessService {
       });
       if (!res.ok) throw new Error(`certs ${res.status}`);
       const body: Json = await res.json();
-      const keys = new Map<string, webcrypto.CryptoKey>();
+      const keys = new Map<string, SubtleKey>();
       for (const jwk of Array.isArray(body.keys) ? body.keys : []) {
         if (jwk.kty !== "RSA" || !jwk.kid) continue;
         const key = await crypto.subtle.importKey(
@@ -236,6 +236,11 @@ export class AccessService {
   }
 
   async requireAdmin(req: Request): Promise<AdminGate> {
+    const allowlisted = await this.checkSessionAllowlist(req);
+    if (allowlisted) {
+      return { ok: true, actor: allowlisted };
+    }
+
     if (this.accessConfigured()) {
       const token = req.get("cf-access-jwt-assertion") || readCookie(cookieHeader(req), "CF_Authorization");
       if (token) {
@@ -252,13 +257,8 @@ export class AccessService {
       }
     }
 
-    const allowlisted = this.checkSessionAllowlist(req);
-    if (allowlisted) {
-      return { ok: true, actor: allowlisted };
-    }
-
     if (!this.accessConfigured() && isLocalDevRequest(req, this.config.isProduction)) {
-      const { person } = this.session.loadPerson(req);
+      const { person } = await this.session.loadPerson(req);
       if (person && (person.emailVerified || person.kickUserId) && person.role !== "admin") {
         return { ok: false, status: 403, error: "Forbidden" };
       }
@@ -268,7 +268,7 @@ export class AccessService {
       return { ok: true, actor: { sub: 1, email } };
     }
 
-    const { person } = this.session.loadPerson(req);
+    const { person } = await this.session.loadPerson(req);
     if (person && (person.emailVerified || person.kickUserId)) {
       return { ok: false, status: 403, error: "Forbidden" };
     }
@@ -281,7 +281,7 @@ export class AccessService {
   }
 
   async requireStreamer(req: Request): Promise<AdminGate> {
-    const streamerActor = this.checkSessionStreamer(req);
+    const streamerActor = await this.checkSessionStreamer(req);
     if (streamerActor) {
       return { ok: true, actor: streamerActor };
     }
@@ -290,7 +290,7 @@ export class AccessService {
     if (adminGate.ok) return adminGate;
 
     if (!this.accessConfigured() && !this.streamerAllowlistConfigured()) {
-      const { person } = this.session.loadPerson(req);
+      const { person } = await this.session.loadPerson(req);
       if (person && (person.emailVerified || person.kickUserId)) {
         return { ok: false, status: 403, error: "Forbidden" };
       }
@@ -303,7 +303,7 @@ export class AccessService {
   async resolveAccountRoles(
     req: Request,
   ): Promise<{ role: UserRole; isAdmin: boolean; isStreamer: boolean }> {
-    const { person } = this.session.loadPerson(req);
+    const { person } = await this.session.loadPerson(req);
     if (!person || (!person.emailVerified && !person.kickUserId)) {
       return { role: "player", isAdmin: false, isStreamer: false };
     }

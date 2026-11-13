@@ -3,12 +3,12 @@
  *   npm run migrate            (repo root)
  *   npm run migrate -w backend
  */
-import { AppConfig } from "../config/app-config";
+import { createNodeAppConfig } from "../config/node-config";
 import { applyMigrations } from "./migrator";
 import { openDatabase } from "./open";
 
 function main(): void {
-  const config = new AppConfig();
+  const config = createNodeAppConfig();
   const db = openDatabase(config.databasePath);
   try {
     console.log(`database: ${config.databasePath}`);

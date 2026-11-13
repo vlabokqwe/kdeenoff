@@ -161,9 +161,9 @@ export class AdminService {
     return notFound();
   }
 
-  private handleDemo(segs: string[], m: string, actor: Actor): HttpResult {
+  private async handleDemo(segs: string[], m: string, actor: Actor): Promise<HttpResult> {
     if (segs.length === 0 && m === "GET") {
-      const demoBoards = this.db.all<{
+      const demoBoards = await this.db.all<{
         id: number;
         slug: string;
         title: string;
@@ -177,7 +177,7 @@ export class AdminService {
          WHERE is_demo = 1
          ORDER BY sort_order ASC, id ASC`,
       );
-      const demoRaffles = this.db.all<{
+      const demoRaffles = await this.db.all<{
         id: number;
         title: string;
         prize: string;
@@ -201,17 +201,17 @@ export class AdminService {
     }
 
     if ((segs.length === 0 && m === "DELETE") || (segs.length === 1 && segs[0] === "purge" && m === "POST")) {
-      const demoBoardRows = this.db.all<{ id: number; slug: string }>(
+      const demoBoardRows = await this.db.all<{ id: number; slug: string }>(
         `SELECT id, slug FROM leaderboards WHERE is_demo = 1`,
       );
-      const demoRaffleRows = this.db.all<{ id: number; title: string }>(
+      const demoRaffleRows = await this.db.all<{ id: number; title: string }>(
         `SELECT id, title FROM raffles WHERE is_demo = 1`,
       );
       const deletedBoards = demoBoardRows.length;
       const deletedRaffles = demoRaffleRows.length;
 
       if (deletedBoards > 0 || deletedRaffles > 0) {
-        this.db.batch([
+        await this.db.batch([
           this.db.stmt(
             `DELETE FROM lb_spot_prizes WHERE board_id IN (SELECT id FROM leaderboards WHERE is_demo = 1)`,
           ),
@@ -229,7 +229,7 @@ export class AdminService {
         ]);
       }
 
-      this.db.run(
+      await this.db.run(
         `DELETE FROM kick_accounts
          WHERE kick_user_id LIKE 'demo-bot-%'
            AND NOT EXISTS (SELECT 1 FROM raffle_entries WHERE raffle_entries.kick_user_id = kick_accounts.kick_user_id)
@@ -237,7 +237,7 @@ export class AdminService {
            AND NOT EXISTS (SELECT 1 FROM site_people WHERE site_people.kick_user_id = kick_accounts.kick_user_id)`,
       );
 
-      this.audit.audit(actor, "demo.purge", "all", {
+      await this.audit.audit(actor, "demo.purge", "all", {
         deletedBoards,
         deletedRaffles,
         boardSlugs: demoBoardRows.map((b) => b.slug),
@@ -260,7 +260,7 @@ export class AdminService {
     actor: Actor,
   ): Promise<HttpResult> {
     if (segs.length === 0 && m === "GET") {
-      const boards = this.db.all(
+      const boards = await this.db.all(
         `SELECT l.*,
                 (SELECT COUNT(*) FROM lb_players p WHERE p.board_id = l.id) AS player_count,
                 (SELECT COALESCE(SUM(p.wagered_cents), 0) FROM lb_players p WHERE p.board_id = l.id) AS total_wagered_cents,
@@ -287,7 +287,7 @@ export class AdminService {
             "Invalid or reserved slug (use 2-40 lowercase letters, numbers, or hyphens)",
           );
         }
-        const existing = this.db.first(`SELECT 1 FROM leaderboards WHERE slug = ?`, candidate);
+        const existing = await this.db.first(`SELECT 1 FROM leaderboards WHERE slug = ?`, candidate);
         if (existing) {
           return jsonResponse({ error: "A leaderboard with this slug already exists" }, 409);
         }
@@ -303,7 +303,7 @@ export class AdminService {
           (singleToken.length === 1 ? `race-${singleToken}` : `board-${Date.now()}`);
         slug = baseSlug;
         let suffix = 2;
-        while (this.db.first(`SELECT 1 FROM leaderboards WHERE slug = ?`, slug)) {
+        while (await this.db.first(`SELECT 1 FROM leaderboards WHERE slug = ?`, slug)) {
           const prefix = baseSlug.slice(0, 34).replace(/-+$/g, "");
           slug = `${prefix}-${suffix}`;
           suffix += 1;
@@ -376,8 +376,8 @@ export class AdminService {
       }
 
       try {
-        const createTx = this.db.db.transaction(() => {
-          const res = this.db.run(
+        const stmts: BoundStatement[] = [
+          this.db.stmt(
             `INSERT INTO leaderboards (
               slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
               hidden, archived, partner_signup_url, partner, avatar_style,
@@ -409,22 +409,24 @@ export class AdminService {
             isDemo,
             now,
             now,
-          );
-          const createdId = res.lastRowId;
-          for (const [rank, sp] of [...initialSpots.entries()].sort((a, b) => a[0] - b[0])) {
-            this.db.run(
-              `INSERT INTO lb_spot_prizes (board_id, rank, prize_cents, hidden) VALUES (?, ?, ?, ?)`,
-              createdId,
+          ),
+        ];
+        for (const [rank, sp] of [...initialSpots.entries()].sort((a, b) => a[0] - b[0])) {
+          stmts.push(
+            this.db.stmt(
+              `INSERT INTO lb_spot_prizes (board_id, rank, prize_cents, hidden)
+               VALUES ((SELECT id FROM leaderboards WHERE slug = ?), ?, ?, ?)`,
+              slug,
               rank,
               sp.prizeCents,
               sp.hidden,
-            );
-          }
-          return createdId;
-        });
+            ),
+          );
+        }
 
-        const newId = createTx();
-        this.audit.audit(actor, "lb.create", slug, {
+        const results = await this.db.batch(stmts);
+        const newId = results[0]?.lastRowId ?? 0;
+        await this.audit.audit(actor, "lb.create", slug, {
           title,
           id: newId,
           spots: initialSpots.size,
@@ -436,16 +438,16 @@ export class AdminService {
     }
 
     const slug = segs[0];
-    const board = this.db.first(`SELECT * FROM leaderboards WHERE slug = ?`, slug);
+    const board = await this.db.first(`SELECT * FROM leaderboards WHERE slug = ?`, slug);
     if (!board) return notFound("Leaderboard not found");
     const boardId = Number(board.id);
 
     if (segs.length === 1 && m === "GET") {
-      const rawPlayers = this.db.all(
+      const rawPlayers = await this.db.all(
         `SELECT * FROM lb_players WHERE board_id = ? ORDER BY sort_order ASC, wagered_cents DESC, id ASC`,
         boardId,
       );
-      const registeredNames = loadAuthorizedKickNames(
+      const registeredNames = await loadAuthorizedKickNames(
         this.db,
         rawPlayers.map((p) => String(p.username || "")),
       );
@@ -453,7 +455,7 @@ export class AdminService {
         ...p,
         is_registered: registeredNames.has(normalizeKickHandle(p.username)) ? 1 : 0,
       }));
-      const spots = loadSpotPrizes(this.db, boardId);
+      const spots = await loadSpotPrizes(this.db, boardId);
 
       return jsonResponse({
         board,
@@ -475,7 +477,7 @@ export class AdminService {
           );
         }
         if (candidate !== slug) {
-          const existing = this.db.first(
+          const existing = await this.db.first(
             `SELECT 1 FROM leaderboards WHERE slug = ? AND id != ?`,
             candidate,
             boardId,
@@ -587,7 +589,7 @@ export class AdminService {
           : board.is_demo ?? 0;
       const now = Date.now();
 
-      this.db.run(
+      await this.db.run(
         `UPDATE leaderboards SET
           slug = ?, title = ?, subtitle = ?, starts_at = ?, ends_at = ?, prize_pool_cents = ?,
           partner = ?, partner_signup_url = ?, avatar_style = ?, auto_rank_by_wagered = ?,
@@ -621,7 +623,7 @@ export class AdminService {
         boardId,
       );
 
-      this.audit.audit(actor, "lb.update", updatedSlug, {
+      await this.audit.audit(actor, "lb.update", updatedSlug, {
         title,
         prizePoolCents,
         ...(updatedSlug !== slug ? { previousSlug: slug } : {}),
@@ -630,12 +632,12 @@ export class AdminService {
     }
 
     if (segs.length === 1 && m === "DELETE") {
-      this.db.batch([
+      await this.db.batch([
         this.db.stmt(`DELETE FROM lb_spot_prizes WHERE board_id = ?`, boardId),
         this.db.stmt(`DELETE FROM lb_players WHERE board_id = ?`, boardId),
         this.db.stmt(`DELETE FROM leaderboards WHERE id = ?`, boardId),
       ]);
-      this.audit.audit(actor, "lb.delete", slug, { title: board.title });
+      await this.audit.audit(actor, "lb.delete", slug, { title: board.title });
       return jsonResponse({ ok: true });
     }
 
@@ -644,7 +646,7 @@ export class AdminService {
       const baseSlug = toSlug(body.slug || `${slug}-copy`) || `board-${Date.now()}`;
       let nextSlug = baseSlug;
       let suffix = 2;
-      while (this.db.first(`SELECT 1 FROM leaderboards WHERE slug = ?`, nextSlug)) {
+      while (await this.db.first(`SELECT 1 FROM leaderboards WHERE slug = ?`, nextSlug)) {
         const prefix = baseSlug.slice(0, 34).replace(/-+$/g, "");
         nextSlug = `${prefix}-${suffix}`;
         suffix += 1;
@@ -656,10 +658,10 @@ export class AdminService {
         24 * 3600 * 1000,
         (Number(board.ends_at) || now + 30 * 86400 * 1000) - (Number(board.starts_at) || now),
       );
-      const spots = loadSpotPrizes(this.db, boardId);
+      const spots = await loadSpotPrizes(this.db, boardId);
 
-      const dupTx = this.db.db.transaction(() => {
-        const ins = this.db.run(
+      const dupStmts: BoundStatement[] = [
+        this.db.stmt(
           `INSERT INTO leaderboards (
             slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
             hidden, archived, partner_signup_url, partner, avatar_style,
@@ -690,42 +692,44 @@ export class AdminService {
           board.show_on_home !== undefined ? (Number(board.show_on_home) ? 1 : 0) : 1,
           now,
           now,
-        );
-        const createdBoardId = ins.lastRowId;
-        for (const s of spots) {
-          this.db.run(
-            `INSERT INTO lb_spot_prizes (board_id, rank, prize_cents, hidden) VALUES (?, ?, ?, ?)`,
-            createdBoardId,
+        ),
+      ];
+      for (const s of spots) {
+        dupStmts.push(
+          this.db.stmt(
+            `INSERT INTO lb_spot_prizes (board_id, rank, prize_cents, hidden)
+             VALUES ((SELECT id FROM leaderboards WHERE slug = ?), ?, ?, ?)`,
+            nextSlug,
             Number(s.rank),
             Number(s.prize_cents) || 0,
             Number(s.hidden) ? 1 : 0,
-          );
-        }
-        return createdBoardId;
-      });
+          ),
+        );
+      }
 
-      const newBoardId = dupTx();
-      this.audit.audit(actor, "lb.duplicate", nextSlug, { from: slug, id: newBoardId });
+      const dupResults = await this.db.batch(dupStmts);
+      const newBoardId = dupResults[0]?.lastRowId ?? 0;
+      await this.audit.audit(actor, "lb.duplicate", nextSlug, { from: slug, id: newBoardId });
       return jsonResponse({ ok: true, slug: nextSlug, id: newBoardId });
     }
 
     if (segs.length === 2 && segs[1] === "archive" && m === "POST") {
-      this.db.run(
+      await this.db.run(
         `UPDATE leaderboards SET archived = 1, updated_at = ? WHERE id = ?`,
         Date.now(),
         boardId,
       );
-      this.audit.audit(actor, "lb.archive", slug, {});
+      await this.audit.audit(actor, "lb.archive", slug, {});
       return jsonResponse({ ok: true });
     }
 
     if (segs.length === 2 && segs[1] === "unarchive" && m === "POST") {
-      this.db.run(
+      await this.db.run(
         `UPDATE leaderboards SET archived = 0, updated_at = ? WHERE id = ?`,
         Date.now(),
         boardId,
       );
-      this.audit.audit(actor, "lb.unarchive", slug, {});
+      await this.audit.audit(actor, "lb.unarchive", slug, {});
       return jsonResponse({ ok: true });
     }
 
@@ -744,13 +748,13 @@ export class AdminService {
         const wagPct = body.wag_growth_pct ? clampWagerGrowthPct(body.wag_growth_pct) : null;
         const wagHours = body.wag_growth_hours ? Number(body.wag_growth_hours) : null;
 
-        const countRs = this.db.first<{ c: number }>(
+        const countRs = await this.db.first<{ c: number }>(
           `SELECT COUNT(*) as c FROM lb_players WHERE board_id = ?`,
           boardId,
         );
         const nextRank = (Number(countRs?.c) || 0) + 1;
 
-        const ins = this.db.run(
+        const ins = await this.db.run(
           `INSERT INTO lb_players (
             board_id, rank, sort_order, username, wagered_cents, prize_cents,
             avatar_url, avatar_sid, wag_growth_enabled, wag_growth_pct, wag_growth_hours,
@@ -771,10 +775,10 @@ export class AdminService {
         );
 
         if (board.auto_rank_by_wagered) {
-          rankPlayersByWagered(this.db, boardId);
+          await rankPlayersByWagered(this.db, boardId);
         }
 
-        this.audit.audit(actor, "player.add", `${slug}:${username}`, { wagered, prize });
+        await this.audit.audit(actor, "player.add", `${slug}:${username}`, { wagered, prize });
         return jsonResponse({ ok: true, id: ins.lastRowId });
       }
 
@@ -783,7 +787,7 @@ export class AdminService {
         const order = Array.isArray(body?.order) ? body.order : null;
         if (!order || !order.length) return badRequest("Player ID order array is required");
 
-        const existing = this.db.all<{ id: number }>(
+        const existing = await this.db.all<{ id: number }>(
           `SELECT id FROM lb_players WHERE board_id = ? ORDER BY sort_order ASC, wagered_cents DESC, id ASC`,
           boardId,
         );
@@ -821,23 +825,23 @@ export class AdminService {
             ),
           );
         }
-        if (stmts.length) this.db.batch(stmts);
-        this.audit.audit(actor, "players.reorder", slug, { count: finalOrder.length });
+        if (stmts.length) await this.db.batch(stmts);
+        await this.audit.audit(actor, "players.reorder", slug, { count: finalOrder.length });
         return jsonResponse({ ok: true, count: finalOrder.length });
       }
 
       if (segs.length === 3 && segs[2] === "auto-rank" && m === "POST") {
-        const count = rankPlayersByWagered(this.db, boardId);
-        this.audit.audit(actor, "players.auto_rank", slug, { count });
+        const count = await rankPlayersByWagered(this.db, boardId);
+        await this.audit.audit(actor, "players.auto_rank", slug, { count });
         return jsonResponse({ ok: true, count });
       }
 
       if (segs.length === 3 && segs[2] === "apply-wager-growth" && m === "POST") {
-        const { players, tickCount } = this.wagerGrowth.applyWagerGrowthForBoard(board);
+        const { players, tickCount } = await this.wagerGrowth.applyWagerGrowthForBoard(board);
         if (board.auto_rank_by_wagered) {
-          rankPlayersByWagered(this.db, boardId);
+          await rankPlayersByWagered(this.db, boardId);
         }
-        this.audit.audit(actor, "players.wager_growth", slug, {
+        await this.audit.audit(actor, "players.wager_growth", slug, {
           tickCount,
           players: players.length,
         });
@@ -908,7 +912,7 @@ export class AdminService {
             );
           }
         } else {
-          const existingRows = this.db.all<{ id: number; username: string; prize_cents: number }>(
+          const existingRows = await this.db.all<{ id: number; username: string; prize_cents: number }>(
             `SELECT id, username, prize_cents FROM lb_players WHERE board_id = ? ORDER BY id ASC`,
             boardId,
           );
@@ -963,13 +967,13 @@ export class AdminService {
 
         const imported = created + updated;
         if (stmts.length) {
-          this.db.batch(stmts);
+          await this.db.batch(stmts);
           if (board.auto_rank_by_wagered) {
-            rankPlayersByWagered(this.db, boardId);
+            await rankPlayersByWagered(this.db, boardId);
           }
         }
 
-        this.audit.audit(actor, "players.import_csv", slug, {
+        await this.audit.audit(actor, "players.import_csv", slug, {
           count: imported,
           created,
           updated,
@@ -985,7 +989,7 @@ export class AdminService {
         const body = await readBody(req);
         if (!body) return badRequest("Invalid payload");
 
-        const player = this.db.first(
+        const player = await this.db.first(
           `SELECT * FROM lb_players WHERE board_id = ? AND id = ?`,
           boardId,
           playerId,
@@ -1018,7 +1022,7 @@ export class AdminService {
             ? Number(body.wag_growth_hours)
             : player.wag_growth_hours;
 
-        this.db.run(
+        await this.db.run(
           `UPDATE lb_players SET
             username = ?, wagered_cents = ?, prize_cents = ?, avatar_url = ?,
             wag_growth_enabled = ?, wag_growth_pct = ?, wag_growth_hours = ?
@@ -1035,10 +1039,10 @@ export class AdminService {
         );
 
         if (board.auto_rank_by_wagered) {
-          rankPlayersByWagered(this.db, boardId);
+          await rankPlayersByWagered(this.db, boardId);
         }
 
-        this.audit.audit(actor, "player.update", `${slug}:${playerId}`, {
+        await this.audit.audit(actor, "player.update", `${slug}:${playerId}`, {
           username,
           wagered,
           prize,
@@ -1047,11 +1051,11 @@ export class AdminService {
       }
 
       if (segs.length === 3 && m === "DELETE") {
-        this.db.run(`DELETE FROM lb_players WHERE board_id = ? AND id = ?`, boardId, playerId);
+        await this.db.run(`DELETE FROM lb_players WHERE board_id = ? AND id = ?`, boardId, playerId);
         if (board.auto_rank_by_wagered) {
-          rankPlayersByWagered(this.db, boardId);
+          await rankPlayersByWagered(this.db, boardId);
         }
-        this.audit.audit(actor, "player.delete", `${slug}:${playerId}`, {});
+        await this.audit.audit(actor, "player.delete", `${slug}:${playerId}`, {});
         return jsonResponse({ ok: true });
       }
     }
@@ -1088,8 +1092,8 @@ export class AdminService {
         );
       }
 
-      this.db.batch(stmts);
-      this.audit.audit(actor, "spots.replace", slug, { count: byRank.size });
+      await this.db.batch(stmts);
+      await this.audit.audit(actor, "spots.replace", slug, { count: byRank.size });
       return jsonResponse({ ok: true, count: byRank.size });
     }
 
@@ -1120,8 +1124,8 @@ export class AdminService {
         );
       }
       if (!stmts.length) return badRequest("No valid spots");
-      this.db.batch(stmts);
-      this.audit.audit(actor, "spots.batch_update", slug, { count: stmts.length });
+      await this.db.batch(stmts);
+      await this.audit.audit(actor, "spots.batch_update", slug, { count: stmts.length });
       return jsonResponse({ ok: true, count: stmts.length });
     }
 
@@ -1132,24 +1136,24 @@ export class AdminService {
       if (!body) return badRequest("Invalid payload");
 
       if (body.prize_cents !== undefined) {
-        upsertSpotPrize(this.db, boardId, rank, body.prize_cents);
+        await upsertSpotPrize(this.db, boardId, rank, body.prize_cents);
       }
       if (body.hidden !== undefined) {
-        upsertSpotHidden(this.db, boardId, rank, asBool(body.hidden));
+        await upsertSpotHidden(this.db, boardId, rank, asBool(body.hidden));
       }
 
-      this.audit.audit(actor, "spot.update", `${slug}:rank-${rank}`, body);
+      await this.audit.audit(actor, "spot.update", `${slug}:rank-${rank}`, body);
       return jsonResponse({ ok: true });
     }
 
     return notFound();
   }
 
-  private handleOverview(actor: Actor): HttpResult {
+  private async handleOverview(actor: Actor): Promise<HttpResult> {
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
 
-    const boards = this.db.all<{
+    const boards = await this.db.all<{
       id: number;
       slug: string;
       title: string;
@@ -1209,13 +1213,13 @@ export class AdminService {
       }
     }
 
-    const growthRow = this.db.first<{ c: number }>(
+    const growthRow = await this.db.first<{ c: number }>(
       `SELECT COUNT(*) AS c FROM lb_players p
        JOIN leaderboards l ON l.id = p.board_id
        WHERE l.archived = 0 AND p.wag_growth_enabled = 1`,
     );
 
-    const raffleRows = this.db.all<{
+    const raffleRows = await this.db.all<{
       id: number;
       starts_at: number;
       ends_at: number;
@@ -1250,7 +1254,7 @@ export class AdminService {
       }
     }
 
-    const peopleCounts = this.db.first<{
+    const peopleCounts = await this.db.first<{
       total: number;
       verified: number;
       linked: number;
@@ -1261,24 +1265,24 @@ export class AdminService {
        FROM site_people`,
     );
 
-    const orphanKickRow = this.db.first<{ c: number }>(
+    const orphanKickRow = await this.db.first<{ c: number }>(
       `SELECT COUNT(*) AS c FROM kick_accounts ka
        WHERE NOT EXISTS (SELECT 1 FROM site_people sp WHERE sp.kick_user_id = ka.kick_user_id)`,
     );
 
-    const activeSessionsRow = this.db.first<{ c: number }>(
+    const activeSessionsRow = await this.db.first<{ c: number }>(
       `SELECT COUNT(*) AS c FROM site_sessions WHERE expires_at > ?`,
       now,
     );
 
-    const auditCounts = this.db.first<{ total: number; day: number }>(
+    const auditCounts = await this.db.first<{ total: number; day: number }>(
       `SELECT COUNT(*) AS total,
               SUM(CASE WHEN at > ? THEN 1 ELSE 0 END) AS day
        FROM audit_log`,
       now - dayMs,
     );
 
-    const rawTopPlayers = this.db.all<{
+    const rawTopPlayers = await this.db.all<{
       id: number;
       username: string;
       rank: number | null;
@@ -1301,7 +1305,7 @@ export class AdminService {
        LIMIT 8`,
     );
 
-    const topRegisteredNames = loadAuthorizedKickNames(
+    const topRegisteredNames = await loadAuthorizedKickNames(
       this.db,
       rawTopPlayers.map((p) => String(p.username || "")),
     );
@@ -1334,15 +1338,15 @@ export class AdminService {
     const todayStart = Math.floor(now / dayMs) * dayMs;
     const windowStart = todayStart - 13 * dayMs;
 
-    const entryTimes = this.db.all<{ t: number }>(
+    const entryTimes = await this.db.all<{ t: number }>(
       `SELECT created_at AS t FROM raffle_entries WHERE created_at >= ?`,
       windowStart,
     );
-    const userTimes = this.db.all<{ t: number }>(
+    const userTimes = await this.db.all<{ t: number }>(
       `SELECT created_at AS t FROM site_people WHERE created_at >= ?`,
       windowStart,
     );
-    const auditTimes = this.db.all<{ t: number }>(
+    const auditTimes = await this.db.all<{ t: number }>(
       `SELECT at AS t FROM audit_log WHERE at >= ?`,
       windowStart,
     );
@@ -1373,7 +1377,7 @@ export class AdminService {
       };
     });
 
-    const recentAudit = this.db.all(`SELECT * FROM audit_log ORDER BY at DESC LIMIT 12`);
+    const recentAudit = await this.db.all(`SELECT * FROM audit_log ORDER BY at DESC LIMIT 12`);
 
     return jsonResponse({
       actor,
@@ -1419,7 +1423,7 @@ export class AdminService {
     const now = Date.now();
 
     if (segs.length === 0 && m === "GET") {
-      const peopleRows = this.db.all<{
+      const peopleRows = await this.db.all<{
         person_id: string;
         email: string | null;
         email_verified_at: number | null;
@@ -1451,7 +1455,7 @@ export class AdminService {
         now,
       );
 
-      const orphanKicks = this.db.all<{
+      const orphanKicks = await this.db.all<{
         kick_user_id: string;
         kick_name: string;
         avatar_url: string;
@@ -1538,13 +1542,13 @@ export class AdminService {
 
     if (segs.length === 1 && m === "GET") {
       if (isOrphanKick) {
-        const ka = this.db.first(
+        const ka = await this.db.first(
           `SELECT kick_user_id, name AS kick_name, avatar_url, linked_at, updated_at
            FROM kick_accounts WHERE kick_user_id = ?`,
           kickKey,
         );
         if (!ka) return notFound("User not found");
-        const entries = this.db.all(
+        const entries = await this.db.all(
           `SELECT re.id, re.raffle_id, re.created_at,
                   r.title, r.prize, r.winner, r.starts_at, r.ends_at, r.hidden
            FROM raffle_entries re
@@ -1572,7 +1576,7 @@ export class AdminService {
         });
       }
 
-      const sp = this.db.first(
+      const sp = await this.db.first(
         `SELECT sp.id AS person_id, sp.email, sp.email_verified_at, sp.kick_user_id, sp.role,
                 sp.created_at, sp.updated_at, ka.name AS kick_name, ka.avatar_url
          FROM site_people sp
@@ -1582,7 +1586,7 @@ export class AdminService {
       );
       if (!sp) return notFound("User not found");
 
-      const sessions = this.db.all(
+      const sessions = await this.db.all(
         `SELECT created_at, expires_at FROM site_sessions
          WHERE person_id = ? AND expires_at > ?
          ORDER BY created_at DESC`,
@@ -1590,7 +1594,7 @@ export class AdminService {
         now,
       );
       const entries = sp.kick_user_id
-        ? this.db.all(
+        ? await this.db.all(
           `SELECT re.id, re.raffle_id, re.created_at,
                     r.title, r.prize, r.winner, r.starts_at, r.ends_at, r.hidden
              FROM raffle_entries re
@@ -1638,23 +1642,23 @@ export class AdminService {
       const nextRole: UserRole = rawRole;
 
       if (isOrphanKick) {
-        const ka = this.db.first<{ kick_user_id: string; name: string }>(
+        const ka = await this.db.first<{ kick_user_id: string; name: string }>(
           `SELECT kick_user_id, name FROM kick_accounts WHERE kick_user_id = ?`,
           kickKey,
         );
         if (!ka) return notFound("User not found");
-        const existingPerson = this.db.first<{ id: string }>(
+        const existingPerson = await this.db.first<{ id: string }>(
           `SELECT id FROM site_people WHERE kick_user_id = ?`,
           kickKey,
         );
         if (existingPerson) {
-          this.db.run(
+          await this.db.run(
             `UPDATE site_people SET role = ?, updated_at = ? WHERE id = ?`,
             nextRole,
             now,
             existingPerson.id,
           );
-          this.audit.audit(actor, "user.role", existingPerson.id, {
+          await this.audit.audit(actor, "user.role", existingPerson.id, {
             role: nextRole,
             kick_user_id: kickKey,
             kick_name: ka.name || null,
@@ -1662,7 +1666,7 @@ export class AdminService {
           return jsonResponse({ ok: true, id: existingPerson.id, role: nextRole });
         }
         const createdId = randomB64url(16);
-        this.db.run(
+        await this.db.run(
           `INSERT INTO site_people (id, email, email_verified_at, kick_user_id, role, created_at, updated_at)
            VALUES (?, NULL, NULL, ?, ?, ?, ?)`,
           createdId,
@@ -1671,7 +1675,7 @@ export class AdminService {
           now,
           now,
         );
-        this.audit.audit(actor, "user.role", createdId, {
+        await this.audit.audit(actor, "user.role", createdId, {
           role: nextRole,
           kick_user_id: kickKey,
           kick_name: ka.name || null,
@@ -1679,19 +1683,19 @@ export class AdminService {
         return jsonResponse({ ok: true, id: createdId, role: nextRole });
       }
 
-      const sp = this.db.first<{ email: string | null; kick_user_id: string | null; role: string }>(
+      const sp = await this.db.first<{ email: string | null; kick_user_id: string | null; role: string }>(
         `SELECT email, kick_user_id, role FROM site_people WHERE id = ?`,
         rawId,
       );
       if (!sp) return notFound("User not found");
 
-      this.db.run(
+      await this.db.run(
         `UPDATE site_people SET role = ?, updated_at = ? WHERE id = ?`,
         nextRole,
         now,
         rawId,
       );
-      this.audit.audit(actor, "user.role", rawId, {
+      await this.audit.audit(actor, "user.role", rawId, {
         previous_role: normalizeUserRole(sp.role),
         role: nextRole,
         email: sp.email || null,
@@ -1702,37 +1706,37 @@ export class AdminService {
 
     if (segs.length === 2 && segs[1] === "revoke-sessions" && m === "POST") {
       if (isOrphanKick) {
-        this.db.run(`DELETE FROM kick_sessions WHERE kick_user_id = ?`, kickKey);
-        this.audit.audit(actor, "user.revoke_sessions", rawId, {});
+        await this.db.run(`DELETE FROM kick_sessions WHERE kick_user_id = ?`, kickKey);
+        await this.audit.audit(actor, "user.revoke_sessions", rawId, {});
         return jsonResponse({ ok: true, revoked: 0 });
       }
-      const res = this.db.run(`DELETE FROM site_sessions WHERE person_id = ?`, rawId);
-      this.audit.audit(actor, "user.revoke_sessions", rawId, { revoked: res.changes });
+      const res = await this.db.run(`DELETE FROM site_sessions WHERE person_id = ?`, rawId);
+      await this.audit.audit(actor, "user.revoke_sessions", rawId, { revoked: res.changes });
       return jsonResponse({ ok: true, revoked: res.changes });
     }
 
     if (segs.length === 1 && m === "DELETE") {
       if (isOrphanKick) {
-        this.db.batch([
+        await this.db.batch([
           this.db.stmt(`DELETE FROM kick_sessions WHERE kick_user_id = ?`, kickKey),
           this.db.stmt(`DELETE FROM kick_accounts WHERE kick_user_id = ?`, kickKey),
         ]);
-        this.audit.audit(actor, "user.delete", rawId, {});
+        await this.audit.audit(actor, "user.delete", rawId, {});
         return jsonResponse({ ok: true });
       }
 
-      const sp = this.db.first<{ email: string | null; kick_user_id: string | null }>(
+      const sp = await this.db.first<{ email: string | null; kick_user_id: string | null }>(
         `SELECT email, kick_user_id FROM site_people WHERE id = ?`,
         rawId,
       );
       if (!sp) return notFound("User not found");
 
-      this.db.batch([
+      await this.db.batch([
         this.db.stmt(`DELETE FROM site_sessions WHERE person_id = ?`, rawId),
         this.db.stmt(`DELETE FROM email_codes WHERE person_id = ?`, rawId),
         this.db.stmt(`DELETE FROM site_people WHERE id = ?`, rawId),
       ]);
-      this.audit.audit(actor, "user.delete", rawId, {
+      await this.audit.audit(actor, "user.delete", rawId, {
         email: sp.email || null,
         kick_user_id: sp.kick_user_id || null,
       });
@@ -1751,15 +1755,15 @@ export class AdminService {
     if (segs.length === 1 && m === "DELETE") {
       const key = asTrimmed(segs[0]);
       if (!/^[a-z][a-z0-9_]{0,63}$/.test(key)) return badRequest("Invalid key");
-      this.db.run(`DELETE FROM site_settings WHERE key = ?`, key);
-      this.audit.audit(actor, "site.delete", key, {});
+      await this.db.run(`DELETE FROM site_settings WHERE key = ?`, key);
+      await this.audit.audit(actor, "site.delete", key, {});
       return jsonResponse({ ok: true });
     }
 
     if (segs.length !== 0) return notFound();
 
     if (m === "GET") {
-      const rows = this.db.all<{ key: string; value: string }>(
+      const rows = await this.db.all<{ key: string; value: string }>(
         `SELECT key, value FROM site_settings`,
       );
       const settings: Record<string, string> = {};
@@ -1793,8 +1797,8 @@ export class AdminService {
         );
       }
 
-      if (stmts.length) this.db.batch(stmts);
-      this.audit.audit(actor, "site.batch_set", `${keys.length} keys`, { keys });
+      if (stmts.length) await this.db.batch(stmts);
+      await this.audit.audit(actor, "site.batch_set", `${keys.length} keys`, { keys });
       return jsonResponse({ ok: true, count: keys.length });
     }
 
@@ -1805,7 +1809,7 @@ export class AdminService {
       if (!/^[a-z][a-z0-9_]{0,63}$/.test(key)) return badRequest("Invalid key");
       const value = asString(body.value);
 
-      this.db.run(
+      await this.db.run(
         `INSERT INTO site_settings (key, value, updated_at) VALUES (?, ?, ?)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
         key,
@@ -1813,14 +1817,14 @@ export class AdminService {
         Date.now(),
       );
 
-      this.audit.audit(actor, "site.set", key, { len: value.length });
+      await this.audit.audit(actor, "site.set", key, { len: value.length });
       return jsonResponse({ ok: true });
     }
 
     return notFound();
   }
 
-  private handleAudit(req: Request): HttpResult {
+  private async handleAudit(req: Request): Promise<HttpResult> {
     const params = searchParams(req);
     const rawLimit = Number(params.get("limit"));
     const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(500, Math.floor(rawLimit)) : 200;
@@ -1855,7 +1859,7 @@ export class AdminService {
     }
 
     const whereSql = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
-    const entries = this.db.all(
+    const entries = await this.db.all(
       `SELECT * FROM audit_log ${whereSql} ORDER BY at DESC LIMIT ?`,
       ...binds,
       limit,
