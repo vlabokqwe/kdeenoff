@@ -199,9 +199,12 @@ export function AccountPage() {
     setEmailError("");
     try {
       const body = await postJson<{
+        linked?: boolean;
+        name?: string;
         email?: string;
         avatarUrl?: string;
         partnerUsername?: string;
+        raffleBan?: NonNullable<typeof account>["raffleBan"];
         role?: UserRole;
         isAdmin?: boolean;
         isStreamer?: boolean;
@@ -209,13 +212,13 @@ export function AccountPage() {
         code: codeInput,
       });
       applyAccount({
-        linked: account?.linked ?? false,
-        name: account?.name ?? "",
+        linked: Boolean(body.linked ?? account?.linked),
+        name: String(body.name ?? account?.name ?? ""),
         avatarUrl: String(body.avatarUrl || account?.avatarUrl || ""),
         emailVerified: true,
         email: String(body.email || emailInput),
         partnerUsername: String(body.partnerUsername ?? account?.partnerUsername ?? "").trim(),
-        raffleBan: account?.raffleBan ?? null,
+        raffleBan: body.raffleBan !== undefined ? body.raffleBan : (account?.raffleBan ?? null),
         role: body.role ?? account?.role,
         isAdmin: Boolean(body.isAdmin ?? account?.isAdmin),
         isStreamer: Boolean(body.isStreamer ?? account?.isStreamer),

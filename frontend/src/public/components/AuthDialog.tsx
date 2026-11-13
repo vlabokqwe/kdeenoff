@@ -147,9 +147,12 @@ export function AuthDialog() {
     setErrorText("");
     try {
       const body = await postJson<{
+        linked?: boolean;
+        name?: string;
         email?: string;
         avatarUrl?: string;
         partnerUsername?: string;
+        raffleBan?: Account["raffleBan"];
         role?: UserRole;
         isAdmin?: boolean;
         isStreamer?: boolean;
@@ -159,13 +162,13 @@ export function AuthDialog() {
       const resolvedEmail = String(body.email || emailInput).trim();
       const cur = accountRef.current;
       applyAccount({
-        linked: cur?.linked ?? false,
-        name: cur?.name ?? "",
+        linked: Boolean(body.linked ?? cur?.linked),
+        name: String(body.name ?? cur?.name ?? ""),
         avatarUrl: String(body.avatarUrl || cur?.avatarUrl || ""),
         emailVerified: true,
         email: resolvedEmail,
         partnerUsername: String(body.partnerUsername ?? cur?.partnerUsername ?? "").trim(),
-        raffleBan: cur?.raffleBan ?? null,
+        raffleBan: body.raffleBan !== undefined ? body.raffleBan : (cur?.raffleBan ?? null),
         role: body.role ?? cur?.role,
         isAdmin: Boolean(body.isAdmin ?? cur?.isAdmin),
         isStreamer: Boolean(body.isStreamer ?? cur?.isStreamer),
@@ -229,7 +232,7 @@ export function AuthDialog() {
           {errorText}
         </p>
         <p className="auth-dialog__done" data-auth-done hidden={step !== "done"}>
-          {confirmedEmail ? `Confirmed as ${confirmedEmail}` : ""}
+          {confirmedEmail ? `Signed in as ${confirmedEmail}` : ""}
         </p>
 
         <form

@@ -60,6 +60,25 @@ export class AccountService {
     return Boolean(key && key.length < 200 && !/[\r\n]/.test(key));
   }
 
+  private async loadActiveBan(
+    kickUserId: string,
+  ): Promise<{ permanent: boolean; bannedUntil: number | null } | null> {
+    if (!kickUserId) return null;
+    const row = await this.db.first<{ is_permanent: number; banned_until: number | null }>(
+      `SELECT is_permanent, banned_until FROM raffle_bans WHERE kick_user_id = ?`,
+      kickUserId,
+    );
+    if (!row) return null;
+    if (Number(row.is_permanent) === 1) {
+      return { permanent: true, bannedUntil: null };
+    }
+    const until = row.banned_until != null ? Number(row.banned_until) : 0;
+    if (until > Date.now()) {
+      return { permanent: false, bannedUntil: until };
+    }
+    return null;
+  }
+
   async handleAccountEmail(req: Request): Promise<HttpResult> {
     if (req.method.toUpperCase() !== "POST") return methodNotAllowed(req.method);
     const csrf = verifyCsrf(req);
@@ -71,14 +90,6 @@ export class AccountService {
     if (!this.resendReady()) return fail("config", 503);
 
     const existing = await this.session.loadPerson(req);
-    const taken = await this.db.first<{ id: string }>(
-      `SELECT id FROM site_people WHERE email = ? AND email_verified_at IS NOT NULL`,
-      email,
-    );
-    if (taken && (!existing.person || taken.id !== existing.person.id)) {
-      return fail("taken", 409);
-    }
-
     let ensured: { person: NonNullable<typeof existing.person>; cookie: string | null };
     try {
       ensured = existing.person
@@ -170,7 +181,7 @@ export class AccountService {
     if (!/^\d{6}$/.test(code)) return fail("bad", 400);
 
     const loaded = await this.session.loadPerson(req);
-    if (!loaded.person) return fail("expired", 400);
+    if (!loaded.person || !loaded.sessionId) return fail("expired", 400);
 
     const row = await this.db.first<{
       id: number;
@@ -196,30 +207,156 @@ export class AccountService {
       return fail("bad", 400);
     }
 
+    const targetEmail = normalizeEmail(row.email);
+    const current = loaded.person;
     const now = Date.now();
+
     try {
-      await this.db.run(
-        `UPDATE site_people SET email = ?, email_verified_at = ?, updated_at = ? WHERE id = ?`,
-        row.email,
-        now,
-        now,
-        loaded.person.id,
+      const owner = await this.db.first<{
+        id: string;
+        kick_user_id: string | null;
+        partner_username: string | null;
+      }>(
+        `SELECT id, kick_user_id, partner_username FROM site_people WHERE lower(email) = ?`,
+        targetEmail,
       );
+
+      if (owner && owner.id !== current.id) {
+        // Sign this browser session into the existing account (merging unverified guest Kick/partner if free).
+        const stmts = [];
+        const moveKick = Boolean(!current.emailVerified && current.kickUserId && !owner.kick_user_id);
+        const canDropCurrent = Boolean(!current.emailVerified && (!current.kickUserId || moveKick));
+
+        if (moveKick) {
+          stmts.push(
+            this.db.stmt(`UPDATE site_people SET kick_user_id = NULL WHERE id = ?`, current.id),
+            this.db.stmt(
+              `UPDATE site_people SET kick_user_id = ?, updated_at = ? WHERE id = ?`,
+              current.kickUserId,
+              now,
+              owner.id,
+            ),
+          );
+        }
+
+        if (
+          !current.emailVerified &&
+          current.partnerUsername &&
+          !String(owner.partner_username || "").trim()
+        ) {
+          stmts.push(
+            this.db.stmt(
+              `UPDATE site_people SET partner_username = ?, updated_at = ? WHERE id = ?`,
+              current.partnerUsername,
+              now,
+              owner.id,
+            ),
+          );
+          const targetKick = owner.kick_user_id || (moveKick ? current.kickUserId : "");
+          if (targetKick) {
+            stmts.push(
+              this.db.stmt(
+                `UPDATE kick_accounts
+                 SET partner_username = COALESCE(NULLIF(TRIM(partner_username), ''), ?), updated_at = ?
+                 WHERE kick_user_id = ?`,
+                current.partnerUsername,
+                now,
+                targetKick,
+              ),
+            );
+          }
+        }
+
+        stmts.push(
+          this.db.stmt(
+            `UPDATE site_people
+             SET email = ?, email_verified_at = COALESCE(email_verified_at, ?), updated_at = ?
+             WHERE id = ?`,
+            targetEmail,
+            now,
+            now,
+            owner.id,
+          ),
+          this.db.stmt(
+            `UPDATE site_sessions SET person_id = ? WHERE id = ?`,
+            owner.id,
+            loaded.sessionId,
+          ),
+          this.db.stmt(`DELETE FROM email_codes WHERE person_id IN (?, ?)`, current.id, owner.id),
+        );
+
+        if (canDropCurrent) {
+          stmts.push(
+            this.db.stmt(
+              `UPDATE site_sessions SET person_id = ? WHERE person_id = ?`,
+              owner.id,
+              current.id,
+            ),
+            this.db.stmt(`DELETE FROM site_people WHERE id = ?`, current.id),
+          );
+        }
+
+        await this.db.batch(stmts);
+      } else if (!owner && current.emailVerified && normalizeEmail(current.email) !== targetEmail) {
+        // Already signed into a different verified account: create a fresh account for the new email.
+        const newPersonId = randomB64url(16);
+        await this.db.batch([
+          this.db.stmt(
+            `INSERT INTO site_people (id, email, email_verified_at, kick_user_id, created_at, updated_at)
+             VALUES (?, ?, ?, NULL, ?, ?)`,
+            newPersonId,
+            targetEmail,
+            now,
+            now,
+            now,
+          ),
+          this.db.stmt(
+            `UPDATE site_sessions SET person_id = ? WHERE id = ?`,
+            newPersonId,
+            loaded.sessionId,
+          ),
+          this.db.stmt(`DELETE FROM email_codes WHERE person_id = ?`, current.id),
+        ]);
+      } else {
+        // Confirm email onto the current person record.
+        await this.db.batch([
+          this.db.stmt(
+            `UPDATE site_people
+             SET email = ?, email_verified_at = COALESCE(email_verified_at, ?), updated_at = ?
+             WHERE id = ?`,
+            targetEmail,
+            now,
+            now,
+            current.id,
+          ),
+          this.db.stmt(`DELETE FROM email_codes WHERE person_id = ?`, current.id),
+        ]);
+      }
     } catch (err) {
       this.logger.error(`email confirm failed: ${(err as Error)?.message || err}`);
-      return fail("taken", 409);
+      return fail("store", 500);
     }
-    await this.db.run(`DELETE FROM email_codes WHERE person_id = ?`, loaded.person.id);
+
+    const resolved = await this.session.loadPerson(req);
+    const person = resolved.person;
     const roles = await this.access.resolveAccountRoles(req);
+    const raffleBan = person?.kickUserId ? await this.loadActiveBan(person.kickUserId) : null;
+    const linked = Boolean(person && person.kickUserId && person.name);
+    const resolvedEmail = person?.email || targetEmail;
     const avatarUrl =
-      loaded.person.kickUserId && loaded.person.name
-        ? buildLeaderboardAvatarUrl(loaded.person.name)
-        : buildLeaderboardAvatarUrl(row.email.split("@")[0] || loaded.person.id);
+      linked && person
+        ? buildLeaderboardAvatarUrl(person.name)
+        : buildLeaderboardAvatarUrl(resolvedEmail.split("@")[0] || person?.id || current.id);
+
     return jsonResponse({
       ok: true,
-      email: row.email,
-      partnerUsername: loaded.person.partnerUsername || "",
+      linked,
+      name: person?.name || "",
       avatarUrl,
+      email: resolvedEmail,
+      emailVerified: true,
+      partnerUsername: person?.partnerUsername || "",
+      raffleBan,
       role: roles.role,
       isAdmin: roles.isAdmin,
       isStreamer: roles.isStreamer,
