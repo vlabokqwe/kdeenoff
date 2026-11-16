@@ -777,6 +777,7 @@ export class AdminService {
         if (board.auto_rank_by_wagered) {
           await rankPlayersByWagered(this.db, boardId);
         }
+        await this.db.run(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId);
 
         await this.audit.audit(actor, "player.add", `${slug}:${username}`, { wagered, prize });
         return jsonResponse({ ok: true, id: ins.lastRowId });
@@ -824,6 +825,10 @@ export class AdminService {
               boardId,
             ),
           );
+        } else {
+          stmts.push(
+            this.db.stmt(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId),
+          );
         }
         if (stmts.length) await this.db.batch(stmts);
         await this.audit.audit(actor, "players.reorder", slug, { count: finalOrder.length });
@@ -832,6 +837,7 @@ export class AdminService {
 
       if (segs.length === 3 && segs[2] === "auto-rank" && m === "POST") {
         const count = await rankPlayersByWagered(this.db, boardId);
+        await this.db.run(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId);
         await this.audit.audit(actor, "players.auto_rank", slug, { count });
         return jsonResponse({ ok: true, count });
       }
@@ -840,6 +846,9 @@ export class AdminService {
         const { players, tickCount } = await this.wagerGrowth.applyWagerGrowthForBoard(board);
         if (board.auto_rank_by_wagered) {
           await rankPlayersByWagered(this.db, boardId);
+        }
+        if (tickCount > 0) {
+          await this.db.run(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId);
         }
         await this.audit.audit(actor, "players.wager_growth", slug, {
           tickCount,
@@ -967,6 +976,9 @@ export class AdminService {
 
         const imported = created + updated;
         if (stmts.length) {
+          stmts.push(
+            this.db.stmt(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, now, boardId),
+          );
           await this.db.batch(stmts);
           if (board.auto_rank_by_wagered) {
             await rankPlayersByWagered(this.db, boardId);
@@ -1041,6 +1053,7 @@ export class AdminService {
         if (board.auto_rank_by_wagered) {
           await rankPlayersByWagered(this.db, boardId);
         }
+        await this.db.run(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId);
 
         await this.audit.audit(actor, "player.update", `${slug}:${playerId}`, {
           username,
@@ -1055,6 +1068,7 @@ export class AdminService {
         if (board.auto_rank_by_wagered) {
           await rankPlayersByWagered(this.db, boardId);
         }
+        await this.db.run(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId);
         await this.audit.audit(actor, "player.delete", `${slug}:${playerId}`, {});
         return jsonResponse({ ok: true });
       }
@@ -1079,6 +1093,7 @@ export class AdminService {
 
       const stmts: BoundStatement[] = [
         this.db.stmt(`DELETE FROM lb_spot_prizes WHERE board_id = ?`, boardId),
+        this.db.stmt(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId),
       ];
       for (const [rank, sp] of [...byRank.entries()].sort((a, b) => a[0] - b[0])) {
         stmts.push(
@@ -1124,9 +1139,10 @@ export class AdminService {
         );
       }
       if (!stmts.length) return badRequest("No valid spots");
+      stmts.push(this.db.stmt(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId));
       await this.db.batch(stmts);
-      await this.audit.audit(actor, "spots.batch_update", slug, { count: stmts.length });
-      return jsonResponse({ ok: true, count: stmts.length });
+      await this.audit.audit(actor, "spots.batch_update", slug, { count: stmts.length - 1 });
+      return jsonResponse({ ok: true, count: stmts.length - 1 });
     }
 
     if (segs[1] === "spots" && segs.length === 3 && m === "PATCH") {
@@ -1141,6 +1157,7 @@ export class AdminService {
       if (body.hidden !== undefined) {
         await upsertSpotHidden(this.db, boardId, rank, asBool(body.hidden));
       }
+      await this.db.run(`UPDATE leaderboards SET updated_at = ? WHERE id = ?`, Date.now(), boardId);
 
       await this.audit.audit(actor, "spot.update", `${slug}:rank-${rank}`, body);
       return jsonResponse({ ok: true });

@@ -7,13 +7,12 @@
  *   GET /api/leaderboards/:slug           -> one board with its players & prizes
  */
 import { Injectable } from "@nestjs/common";
+import { sha256Hex } from "../common/crypto";
 import { type HttpResult, jsonResponse, notFound } from "../common/http/response";
 import { isValidSlug } from "../common/validation";
 import { DatabaseService, type Row } from "../database/database.service";
 import {
   buildLeaderboardAvatarUrl,
-  buildNeutralAvatarUrl,
-  loadAuthorizedKickNames,
   normalizeKickHandle,
   renderLeaderboardAvatarSvg,
 } from "./lb-avatar";
@@ -35,18 +34,18 @@ const PUBLIC_SITE_SETTING_KEYS = [
   "telegram_url",
 ] as const;
 
-function resolveAvatarUrl(player: Row, board: Row, isRegistered: boolean): string {
+function resolveAvatarUrl(player: Row, board: Row): string {
   const style = String(board.avatar_style || "kdeenoff").trim().toLowerCase();
   if (style === "none") return "";
   const custom = player.avatar_url ? String(player.avatar_url).trim() : "";
   if (custom && !custom.includes("dicebear.com")) {
     return custom;
   }
-  if (isRegistered) {
-    const seed = player.username || player.avatar_sid || player.id || "player";
-    return buildLeaderboardAvatarUrl(seed, style);
-  }
-  return buildNeutralAvatarUrl(style);
+  const rawIdentity = normalizeKickHandle(
+    player.username || player.avatar_sid || player.id || "player",
+  );
+  const opaqueSeed = sha256Hex(`lb-avatar-v1:${rawIdentity}`).slice(0, 16);
+  return buildLeaderboardAvatarUrl(opaqueSeed, style);
 }
 
 @Injectable()
@@ -97,9 +96,9 @@ export class LeaderboardsService {
     try {
       const now = Date.now();
       const boards = await this.db.all(
-        `SELECT id, slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
+        `SELECT slug, title, subtitle, starts_at, ends_at, updated_at, prize_pool_cents,
                 partner_signup_url, partner, avatar_style,
-                badge, promo_code, sort_order, show_in_drawer, show_on_home, is_demo
+                badge, promo_code, show_in_drawer, show_on_home
          FROM leaderboards
          WHERE hidden = 0 AND archived = 0
          ORDER BY CASE WHEN ends_at > ? THEN 0 ELSE 1 END ASC,
@@ -115,66 +114,103 @@ export class LeaderboardsService {
     }
   }
 
-  async handleGetBoard(slug: string, opts?: { includeHidden?: boolean }): Promise<HttpResult> {
+  async handleGetBoard(
+    slug: string,
+    opts?: { includeHidden?: boolean; viewerHandles?: ReadonlySet<string> },
+  ): Promise<HttpResult> {
     if (!isValidSlug(slug)) return notFound();
 
     const boardRs = await this.db.first(
-      `SELECT id, slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
-              hidden, archived, partner_signup_url, partner, avatar_style,
-              auto_hidden_above_rank, badge, promo_code, sort_order,
-              show_in_drawer, show_on_home, is_demo
+      `SELECT id, slug, title, subtitle, starts_at, ends_at, updated_at, prize_pool_cents,
+              archived, partner_signup_url, partner, avatar_style,
+              auto_rank_by_wagered, auto_hidden_above_rank, badge, promo_code,
+              show_in_drawer, show_on_home
        FROM leaderboards WHERE slug = ?${opts?.includeHidden ? "" : " AND hidden = 0"}`,
       slug,
     );
 
     if (!boardRs) return notFound();
 
+    const viewerHandles = opts?.viewerHandles;
+
     const spots = await loadSpotPrizes(this.db, Number(boardRs.id));
     const spotsM = spotMap(spots);
+    const publicSpots = spots
+      .filter((s) => !Number(s.hidden))
+      .map((s) => ({
+        rank: Number(s.rank),
+        prize_cents: Math.max(0, Math.floor(Number(s.prize_cents) || 0)),
+      }));
 
+    const autoRank = Number(boardRs.auto_rank_by_wagered) !== 0;
     const rawPlayers = await this.db.all(
-      `SELECT id, rank, sort_order, username, wagered_cents, prize_cents, avatar_url, avatar_sid
-       FROM lb_players WHERE board_id = ?
-       ORDER BY sort_order ASC, wagered_cents DESC, id ASC`,
+      autoRank
+        ? `SELECT id, rank, sort_order, username, wagered_cents, prize_cents, avatar_url, avatar_sid
+           FROM lb_players WHERE board_id = ?
+           ORDER BY wagered_cents DESC, sort_order ASC, id ASC`
+        : `SELECT id, rank, sort_order, username, wagered_cents, prize_cents, avatar_url, avatar_sid
+           FROM lb_players WHERE board_id = ?
+           ORDER BY sort_order ASC, wagered_cents DESC, id ASC`,
       boardRs.id,
     );
 
-    const registeredNames = await loadAuthorizedKickNames(
-      this.db,
-      rawPlayers.map((p) => String(p.username || "")),
-    );
+    const rankedPlayers: Row[] = rawPlayers.map((p, idx) => ({
+      ...p,
+      rank: autoRank ? idx + 1 : p.rank || idx + 1,
+    }));
 
-    const visible = rawPlayers
+    const visible = rankedPlayers
       .filter((p) => isPlayerSpotVisible(p, spotsM, boardRs.auto_hidden_above_rank))
       .map((p) => {
-        const isRegistered = registeredNames.has(normalizeKickHandle(p.username));
-        return {
-          id: p.id,
+        const normName = normalizeKickHandle(p.username);
+        const isYou = Boolean(normName && viewerHandles?.has(normName));
+        const masked = formatLbUsername(p.username);
+        const item: Row = {
           rank: p.rank,
-          username: p.username,
-          display_name: formatLbUsername(p.username),
+          username: masked,
+          display_name: masked,
           wagered_cents: p.wagered_cents,
           prize_cents: p.prize_cents,
-          avatar_url: resolveAvatarUrl(p, boardRs, isRegistered),
+          avatar_url: resolveAvatarUrl(p, boardRs),
         };
+        if (isYou) item.is_you = true;
+        return item;
       });
 
     const publicPlayers = buildPublicBoardPlayers(visible, spotsM, {
       autoHiddenAboveRank: boardRs.auto_hidden_above_rank,
     });
 
+    const publicBoard = {
+      slug: boardRs.slug,
+      title: boardRs.title,
+      subtitle: boardRs.subtitle,
+      starts_at: boardRs.starts_at,
+      ends_at: boardRs.ends_at,
+      updated_at: boardRs.updated_at,
+      archived: boardRs.archived,
+      prize_pool_cents: boardRs.prize_pool_cents,
+      partner_signup_url: boardRs.partner_signup_url,
+      partner: boardRs.partner,
+      avatar_style: boardRs.avatar_style,
+      badge: boardRs.badge,
+      promo_code: boardRs.promo_code,
+      show_in_drawer: boardRs.show_in_drawer,
+      show_on_home: boardRs.show_on_home,
+    };
+
     return jsonResponse({
-      board: boardRs,
+      board: publicBoard,
       players: publicPlayers,
-      spots,
+      spots: publicSpots,
     });
   }
 
   async handleListHistory(): Promise<HttpResult> {
     try {
       const boards = await this.db.all(
-        `SELECT id, slug, title, subtitle, starts_at, ends_at, prize_pool_cents,
-                partner, partner_signup_url, avatar_style, badge, promo_code, is_demo
+        `SELECT slug, title, subtitle, starts_at, ends_at, updated_at, archived, prize_pool_cents,
+                partner, partner_signup_url, avatar_style, badge, promo_code
          FROM leaderboards
          WHERE hidden = 0 AND (archived = 1 OR ends_at <= ?)
          ORDER BY ends_at DESC`,

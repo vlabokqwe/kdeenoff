@@ -21,7 +21,6 @@ export interface Account {
 }
 
 export interface Board {
-  id?: number;
   slug: string;
   title?: string;
   subtitle?: string;
@@ -31,12 +30,12 @@ export interface Board {
   prize_pool_cents?: number;
   starts_at?: number;
   ends_at?: number;
+  updated_at?: number;
+  archived?: number;
   badge?: string;
   promo_code?: string;
-  sort_order?: number;
   show_in_drawer?: number;
   show_on_home?: number;
-  is_demo?: number;
 }
 
 export interface SiteSettings {
@@ -57,6 +56,7 @@ export interface BoardPlayer {
   wagered_cents?: number;
   prize_cents?: number;
   empty_spot?: boolean | number;
+  is_you?: boolean;
 }
 
 export interface BoardSpot {

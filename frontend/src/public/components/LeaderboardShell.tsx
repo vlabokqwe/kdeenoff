@@ -11,7 +11,10 @@ import {
   defaultSiteSettings,
   dhms,
   fetchBoards,
+  fetchHistoryBoards,
   fetchSiteSettings,
+  formatRaceWindowUtc,
+  formatSyncAgo,
   money,
   moneyShort,
   partnerLabel,
@@ -516,10 +519,12 @@ export function LeaderboardShell({
   const navigate = useNavigate();
   const now = useNow();
   const { dataRev } = useUi();
-  const { accountRev } = useSession();
+  const { account, accountRev } = useSession();
 
   const [boards, setBoards] = useState<Board[]>([]);
+  const [historyBoards, setHistoryBoards] = useState<Board[]>([]);
   const [boardsLoaded, setBoardsLoaded] = useState(false);
+  const [archiveMode, setArchiveMode] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => defaultSiteSettings());
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [detail, setDetail] = useState<BoardDetail | null>(null);
@@ -533,14 +538,40 @@ export function LeaderboardShell({
     [boards, homeOnly],
   );
 
+  const liveBoards = useMemo(() => {
+    const active = visibleBoards.filter((b) => Number(b.ends_at) > now && !b.archived);
+    return active.length > 0 ? active : visibleBoards;
+  }, [visibleBoards, now]);
+
+  const pastBoards = useMemo(() => {
+    const liveSlugs = new Set(liveBoards.map((b) => b.slug));
+    const seen = new Set<string>();
+    const out: Board[] = [];
+    for (const b of historyBoards) {
+      if (!b.slug || liveSlugs.has(b.slug) || seen.has(b.slug)) continue;
+      seen.add(b.slug);
+      out.push(b);
+    }
+    return out;
+  }, [historyBoards, liveBoards]);
+
   const explicitSlug = slug.trim();
   const pathSlug = slugFromPath(location.pathname) || "";
   const validSelectedSlug =
     selectedSlug && (!homeOnly || visibleBoards.some((b) => b.slug === selectedSlug))
       ? selectedSlug
       : "";
+  const candidateSlug = validSelectedSlug || explicitSlug || pathSlug;
+  const isViewingPastSlug = Boolean(
+    !collapse &&
+      candidateSlug &&
+      pastBoards.some((b) => b.slug === candidateSlug) &&
+      !liveBoards.some((b) => b.slug === candidateSlug),
+  );
+  const effectiveArchiveMode = Boolean(!collapse && pastBoards.length > 0 && (archiveMode || isViewingPastSlug));
+  const switcherBoards = effectiveArchiveMode ? pastBoards : liveBoards;
   const activeSlug =
-    validSelectedSlug || explicitSlug || pathSlug || visibleBoards[0]?.slug || "";
+    candidateSlug || switcherBoards[0]?.slug || visibleBoards[0]?.slug || "";
 
   useEffect(() => {
     setSelectedSlug("");
@@ -553,13 +584,18 @@ export function LeaderboardShell({
       setBoards(list);
       setBoardsLoaded(true);
     });
+    if (!collapse) {
+      fetchHistoryBoards().then((hist) => {
+        if (alive) setHistoryBoards(hist);
+      });
+    }
     fetchSiteSettings().then((settings) => {
       if (alive) setSiteSettings(settings);
     });
     return () => {
       alive = false;
     };
-  }, [dataRev]);
+  }, [dataRev, collapse]);
 
   useEffect(() => {
     if (!boardsLoaded && !explicitSlug && !pathSlug) return;
@@ -620,6 +656,34 @@ export function LeaderboardShell({
       });
     return () => ctrl.abort();
   }, [accountRev, activeSlug]);
+
+  useEffect(() => {
+    if (!activeSlug) return;
+    let ctrl: AbortController | null = null;
+    const refresh = () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      ctrl?.abort();
+      const nextCtrl = new AbortController();
+      ctrl = nextCtrl;
+      getJson<BoardDetail>(`/api/leaderboards/${encodeURIComponent(activeSlug)}`, {
+        cache: "no-store",
+        signal: nextCtrl.signal,
+      })
+        .then((data) => {
+          if (!nextCtrl.signal.aborted && data.board) {
+            setDetail(data);
+          }
+        })
+        .catch(() => {
+          /* silent background poll */
+        });
+    };
+    const timer = window.setInterval(refresh, 60_000);
+    return () => {
+      window.clearInterval(timer);
+      ctrl?.abort();
+    };
+  }, [activeSlug]);
 
   const board = detail?.board;
   const avatarsDisabled = String(board?.avatar_style || "").trim().toLowerCase() === "none";
@@ -784,13 +848,14 @@ export function LeaderboardShell({
             const wager = empty ? "—" : money(player.wagered_cents);
             const prize = hasPrize ? money(player.prize_cents) : "—";
             const rank = player.rank || (zeusTheme ? index + 4 : index + 1);
+            const isYou = Boolean(!empty && player.is_you);
             const rawAvatar = !empty && !avatarsDisabled ? player.avatar_url || "" : "";
             const validRowAvatar = rawAvatar && !brokenAvatars[rawAvatar] ? rawAvatar : "";
 
             return (
               <li
                 key={`${rank}-${index}`}
-                className={`lb-row${empty ? " is-empty" : ""}`}
+                className={`lb-row${empty ? " is-empty" : ""}${isYou ? " is-you" : ""}`}
                 data-rank={rank}
                 data-has-prize={hasPrize ? "" : undefined}
                 style={{ "--i": index } as CSSProperties}
@@ -837,6 +902,7 @@ export function LeaderboardShell({
                     )
                   )}
                   <span className="lb-row__name">{name}</span>
+                  {isYou && <span className="lb-you-badge">YOU</span>}
                 </span>
                 <span className="lb-row__wager">
                   {zeusTheme ? <span className="lb-row__hud-pill">{wager}</span> : wager}
@@ -853,6 +919,27 @@ export function LeaderboardShell({
       </p>
     </>
   );
+
+  const showArchiveToggle = Boolean(!collapse && switcher && pastBoards.length > 0);
+  const showBoardTabs = Boolean(
+    switcher && (switcherBoards.length >= 2 || (effectiveArchiveMode && switcherBoards.length >= 1)),
+  );
+  const isFinalLocked = Boolean(board && (isEnded || Number(board.archived) === 1));
+  const raceWindowLabel = board ? formatRaceWindowUtc(board.starts_at, board.ends_at) : "";
+  const syncStatusLabel = board
+    ? isFinalLocked
+      ? "Final results locked"
+      : formatSyncAgo(board.updated_at, now) || "Standings synced"
+    : "";
+
+  const selectBoardSlug = (nextSlug: string) => {
+    if (!nextSlug || nextSlug === activeSlug) return;
+    if (pathSlug) {
+      navigate(boardHref(nextSlug));
+    } else {
+      setSelectedSlug(nextSlug);
+    }
+  };
 
   return (
     <div
@@ -878,16 +965,47 @@ export function LeaderboardShell({
           <p className="lead lb__subtitle-spacer" data-lb-subtitle aria-hidden="true" />
         )}
         <div className="lb__controls">
+          {showArchiveToggle && (
+            <div className="seg lb__mode-seg" role="tablist" aria-label="Leaderboard period">
+              <button
+                type="button"
+                className="seg__btn"
+                role="tab"
+                aria-selected={!effectiveArchiveMode}
+                onClick={() => {
+                  if (!effectiveArchiveMode) return;
+                  setArchiveMode(false);
+                  const target = liveBoards[0]?.slug;
+                  if (target) selectBoardSlug(target);
+                }}
+              >
+                Active
+              </button>
+              <button
+                type="button"
+                className="seg__btn"
+                role="tab"
+                aria-selected={effectiveArchiveMode}
+                onClick={() => {
+                  if (effectiveArchiveMode) return;
+                  setArchiveMode(true);
+                  const target = pastBoards[0]?.slug;
+                  if (target) selectBoardSlug(target);
+                }}
+              >
+                Previous
+              </button>
+            </div>
+          )}
           <div
             className="seg"
             data-lb-tabs
             role="tablist"
             aria-label="Choose leaderboard"
-            hidden={!switcher || visibleBoards.length < 2}
+            hidden={!showBoardTabs}
           >
-            {switcher &&
-              visibleBoards.length >= 2 &&
-              visibleBoards.map((b) => {
+            {showBoardTabs &&
+              switcherBoards.map((b) => {
                 const selected = b.slug === activeSlug;
                 const label = b.title || boardCadence(b);
                 return (
@@ -899,14 +1017,7 @@ export function LeaderboardShell({
                     id={`lb-tab-${b.slug}`}
                     aria-selected={selected}
                     data-lb-tab={b.slug}
-                    onClick={() => {
-                      if (selected) return;
-                      if (pathSlug) {
-                        navigate(boardHref(b.slug));
-                      } else {
-                        setSelectedSlug(b.slug);
-                      }
-                    }}
+                    onClick={() => selectBoardSlug(b.slug)}
                   >
                     {label}
                   </button>
@@ -926,6 +1037,20 @@ export function LeaderboardShell({
             </a>
           )}
         </div>
+        {!isBoardLoading && board && (
+          <div className="lb__meta" data-lb-meta>
+            <span className={`lb__meta-status${isFinalLocked ? " is-locked" : " is-live"}`}>
+              <i className="lb__meta-dot" aria-hidden="true" />
+              <span>{syncStatusLabel}</span>
+            </span>
+            {raceWindowLabel && <span className="lb__meta-item">{raceWindowLabel}</span>}
+            {!collapse && promoCode && (
+              <span className="lb__meta-item">
+                Code: <strong>{promoCode}</strong>
+              </span>
+            )}
+          </div>
+        )}
       </header>
 
       <div className="lb__stage" data-lb-podium>
@@ -1064,6 +1189,7 @@ export function LeaderboardShell({
                     : "—";
             const wagerText = player ? money(player.wagered_cents) : "—";
             const nameText = player ? player.username || player.display_name || "—" : "—";
+            const podiumIsYou = Boolean(player?.is_you);
             const avatarUrl =
               player?.avatar_url && !brokenAvatars[player.avatar_url]
                 ? player.avatar_url
@@ -1077,7 +1203,7 @@ export function LeaderboardShell({
             return (
               <article
                 key={rank}
-                className={`podium podium--${rank} ${isBoardLoading ? "is-loading is-empty" : player ? "is-in" : "is-empty"}`}
+                className={`podium podium--${rank} ${isBoardLoading ? "is-loading is-empty" : player ? "is-in" : "is-empty"}${podiumIsYou ? " is-you" : ""}`}
                 data-podium-rank={rank}
                 aria-label={`Place ${rank}`}
               >
@@ -1127,7 +1253,10 @@ export function LeaderboardShell({
                               {isBoardLoading ? (
                                 <i className="podium__skel-name skel" aria-hidden="true" />
                               ) : (
-                                nameText
+                                <>
+                                  <span>{nameText}</span>
+                                  {podiumIsYou && <span className="lb-you-badge">YOU</span>}
+                                </>
                               )}
                             </h3>
                           </div>
@@ -1198,7 +1327,10 @@ export function LeaderboardShell({
                         {isBoardLoading ? (
                           <i className="podium__skel-name skel" aria-hidden="true" />
                         ) : (
-                          nameText
+                          <>
+                            <span>{nameText}</span>
+                            {podiumIsYou && <span className="lb-you-badge">YOU</span>}
+                          </>
                         )}
                       </h3>
                     </div>
@@ -1356,6 +1488,23 @@ export function LeaderboardShell({
             <span>View full leaderboard</span>
           </Link>
         </div>
+      )}
+
+      {!collapse && !isBoardLoading && board && !error && (
+        <footer className="lb__foot" data-lb-foot>
+          <p className="lb__terms">
+            Wagers placed on <strong>{partnerCtaLabel}</strong> under code{" "}
+            <strong>{promoCode}</strong>
+            {raceWindowLabel ? ` (${raceWindowLabel})` : ""} count toward standings. Leaderboard
+            totals sync automatically from partner wager reports; game RTP contribution weights
+            follow {partnerCtaLabel} race terms.
+          </p>
+          {!account?.partnerUsername && (
+            <Link className="lb__verify-link" to="/account/">
+              Link {partnerCtaLabel} username to highlight your spot
+            </Link>
+          )}
+        </footer>
       )}
 
     </div>

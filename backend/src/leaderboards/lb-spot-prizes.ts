@@ -97,45 +97,66 @@ export function buildPublicBoardPlayers(
   map: Map<number, SpotEntry>,
   opts: { autoHiddenAboveRank?: unknown } = {},
 ): Row[] {
-  const merged = mergePlayerSpots(visiblePlayers, map, opts);
+  const merged = mergePlayerSpots(visiblePlayers, map, opts).map((p) => {
+    const clean: Row = {
+      rank: p.rank,
+      username: p.username,
+      display_name: p.display_name ?? p.username,
+      wagered_cents: p.wagered_cents,
+      prize_cents: p.prize_cents,
+      avatar_url: p.avatar_url,
+    };
+    if (p.is_you) clean.is_you = true;
+    return clean;
+  });
+
   const cap = Number(opts.autoHiddenAboveRank);
-  if (!Number.isFinite(cap) || cap <= 0) return merged;
+  const maxPaidRank = [...map.entries()].reduce(
+    (maxR, [r, entry]) => (entry.prize_cents > 0 && !entry.hidden ? Math.max(maxR, r) : maxR),
+    0,
+  );
+  const fillLimit =
+    Number.isFinite(cap) && cap > 0
+      ? Math.min(Math.floor(cap), maxPaidRank)
+      : maxPaidRank;
+
+  if (fillLimit <= 0) return merged;
 
   const playersByRank = new Map<number, Row>();
-  const unranked: Row[] = [];
+  const trailing: Row[] = [];
   for (const p of merged) {
     const rank = p.rank != null ? Number(p.rank) : null;
-    if (rank != null && rank >= 1) {
+    if (rank != null && rank >= 1 && rank <= fillLimit) {
       if (!playersByRank.has(rank)) playersByRank.set(rank, p);
+      else trailing.push(p);
     } else {
-      unranked.push(p);
+      trailing.push(p);
     }
   }
 
   const rows: Row[] = [];
-  const floorCap = Math.floor(cap);
-  for (let rank = 1; rank <= floorCap; rank++) {
+  for (let rank = 1; rank <= fillLimit; rank++) {
     const player = playersByRank.get(rank);
     if (player) {
       rows.push(player);
       continue;
     }
     const spot = map.get(rank);
-    const manualHidden = spot?.hidden ?? false;
-    const { hidden } = effectiveSpotHidden(rank, manualHidden, cap);
+    if (!spot || spot.prize_cents <= 0) continue;
+    const { hidden } = effectiveSpotHidden(rank, spot.hidden, cap);
     if (hidden) continue;
     rows.push({
-      id: null,
       rank,
       username: "\u2014",
+      display_name: "\u2014",
       wagered_cents: 0,
-      prize_cents: spot?.prize_cents ?? 0,
+      prize_cents: spot.prize_cents,
       avatar_url: null,
       empty_spot: 1,
     });
   }
 
-  rows.push(...unranked);
+  rows.push(...trailing);
   return rows;
 }
 

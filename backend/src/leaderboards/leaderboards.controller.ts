@@ -3,6 +3,8 @@ import type { Request, Response } from "express";
 import { AccessService } from "../access/access.service";
 import { methodNotAllowed, notFound, send } from "../common/http/response";
 import { BOARD_SLUG_ROUTE_RE } from "../common/validation";
+import { SessionService } from "../session/session.service";
+import { normalizeKickHandle } from "./lb-avatar";
 import { LeaderboardsService } from "./leaderboards.service";
 
 @Controller("api/leaderboards")
@@ -10,6 +12,7 @@ export class LeaderboardsController {
   constructor(
     private readonly leaderboards: LeaderboardsService,
     private readonly access: AccessService,
+    private readonly sessions: SessionService,
   ) {}
 
   @All()
@@ -61,11 +64,29 @@ export class LeaderboardsController {
       send(res, methodNotAllowed(req.method));
       return;
     }
-    let result = await this.leaderboards.handleGetBoard(slug);
+    const viewerHandles = new Set<string>();
+    try {
+      const loaded = await this.sessions.loadPerson(req);
+      const person = loaded.person;
+      if (person?.partnerUsername) {
+        const h = normalizeKickHandle(person.partnerUsername);
+        if (h) viewerHandles.add(h);
+      } else if (person?.name) {
+        const h = normalizeKickHandle(person.name);
+        if (h) viewerHandles.add(h);
+      }
+    } catch {
+      /* ignore session lookup errors on public read */
+    }
+
+    let result = await this.leaderboards.handleGetBoard(slug, { viewerHandles });
     if (result.status === 404) {
       const gate = await this.access.requireAdmin(req);
       if (gate.ok) {
-        result = await this.leaderboards.handleGetBoard(slug, { includeHidden: true });
+        result = await this.leaderboards.handleGetBoard(slug, {
+          includeHidden: true,
+          viewerHandles,
+        });
       }
     }
     send(res, m === "HEAD" ? { ...result, body: null } : result);

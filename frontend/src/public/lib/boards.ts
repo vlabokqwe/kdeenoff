@@ -7,6 +7,7 @@ import type { Board, SiteSettings } from "./types";
 
 const BOARDS_TTL_MS = 15_000;
 let boardsCache: { at: number; promise: Promise<Board[]> } | null = null;
+let historyBoardsCache: { at: number; promise: Promise<Board[]> } | null = null;
 
 const SITE_SETTINGS_TTL_MS = 15_000;
 let siteSettingsCache: { at: number; promise: Promise<SiteSettings> } | null = null;
@@ -26,6 +27,7 @@ export function defaultSiteSettings(): SiteSettings {
 /** Clear the shared 15s board cache (e.g. after an admin dashboard edit). */
 export function invalidateBoardsCache(): void {
   boardsCache = null;
+  historyBoardsCache = null;
 }
 
 /** Clear the shared 15s site settings cache (e.g. after an admin dashboard edit). */
@@ -79,6 +81,22 @@ export function fetchBoards(): Promise<Board[]> {
     boardsCache = { at: now, promise };
   }
   return boardsCache.promise;
+}
+
+/** Past / archived boards from /api/leaderboards/history ("Previous Leaderboards"). */
+export function fetchHistoryBoards(): Promise<Board[]> {
+  const now = Date.now();
+  if (!historyBoardsCache || now - historyBoardsCache.at > BOARDS_TTL_MS) {
+    const promise = fetch("/api/leaderboards/history", {
+      cache: "no-store",
+      headers: { accept: "application/json" },
+    })
+      .then((res) => (res.ok ? (res.json() as Promise<{ boards?: Board[] }>) : { boards: [] }))
+      .then((data) => (Array.isArray(data.boards) ? data.boards : []))
+      .catch(() => [] as Board[]);
+    historyBoardsCache = { at: now, promise };
+  }
+  return historyBoardsCache.promise;
 }
 
 /** Partners that have their own card art + colours. Everything else is "generic". */
@@ -192,6 +210,35 @@ export function validSlug(value: string | null | undefined): string | null {
 export function slugFromPath(pathname: string): string | null {
   const m = pathname.match(/^\/leaderboards\/([a-z0-9][a-z0-9-]{0,38}[a-z0-9])\/?$/);
   return m ? validSlug(m[1]) : null;
+}
+
+const utcShortDateFmt = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+/** Format a race window as e.g. "Nov 1 – Nov 30 UTC". */
+export function formatRaceWindowUtc(startsAt: unknown, endsAt: unknown): string {
+  const s = Number(startsAt);
+  const e = Number(endsAt);
+  if (!Number.isFinite(s) || s <= 0 || !Number.isFinite(e) || e <= 0) return "";
+  return `${utcShortDateFmt.format(new Date(s))} – ${utcShortDateFmt.format(new Date(e))} UTC`;
+}
+
+/** Human-readable relative freshness string from a real board `updated_at` timestamp. */
+export function formatSyncAgo(updatedAt: unknown, now: number): string {
+  const ts = Number(updatedAt);
+  if (!Number.isFinite(ts) || ts <= 0) return "";
+  const diffSec = Math.max(0, Math.floor((now - ts) / 1000));
+  if (diffSec < 60) return "Updated just now";
+  const mins = Math.floor(diffSec / 60);
+  if (mins < 60) return `Updated ${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `Updated ${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days <= 7) return `Updated ${days}d ago`;
+  return `Updated ${utcShortDateFmt.format(new Date(ts))} UTC`;
 }
 
 /** Local link to a board page. */

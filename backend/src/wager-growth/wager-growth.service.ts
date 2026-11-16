@@ -173,6 +173,11 @@ export class WagerGrowthService {
         if (board.auto_rank_by_wagered) {
           ranked = await rankPlayersByWagered(this.db, Number(board.id));
         }
+        await this.db.run(
+          `UPDATE leaderboards SET updated_at = ? WHERE id = ?`,
+          Date.now(),
+          board.id,
+        );
 
         await this.audit.audit(null, "lb.wager_growth", String(board.slug), {
           tick_count: ticks,
