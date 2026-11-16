@@ -23,7 +23,7 @@ import {
   loadSpotPrizes,
   spotMap,
 } from "./lb-spot-prizes";
-import { maskLbUsername } from "./lb-username";
+import { formatLbUsername } from "./lb-username";
 
 const PUBLIC_SITE_SETTING_KEYS = [
   "promo_code",
@@ -152,7 +152,7 @@ export class LeaderboardsService {
           id: p.id,
           rank: p.rank,
           username: p.username,
-          display_name: maskLbUsername(p.username),
+          display_name: formatLbUsername(p.username),
           wagered_cents: p.wagered_cents,
           prize_cents: p.prize_cents,
           avatar_url: resolveAvatarUrl(p, boardRs, isRegistered),

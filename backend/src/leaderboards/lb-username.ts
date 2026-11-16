@@ -1,6 +1,4 @@
-/** Public leaderboard name: first two characters of the input + six asterisks. */
-export function maskLbUsername(name: unknown): string {
-  const s = String(name || "").trim();
-  if (!s) return "";
-  return `${s.slice(0, 2)}******`;
+/** Public leaderboard name: exact username as entered in the admin panel. */
+export function formatLbUsername(name: unknown): string {
+  return String(name ?? "").trim();
 }

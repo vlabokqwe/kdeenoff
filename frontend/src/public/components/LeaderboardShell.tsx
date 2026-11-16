@@ -780,7 +780,7 @@ export function LeaderboardShell({
           : tablePlayers.map((player, index) => {
             const empty = Boolean(player.empty_spot);
             const hasPrize = Number(player.prize_cents) > 0;
-            const name = empty ? "—" : player.display_name || player.username || "—";
+            const name = empty ? "—" : player.username || player.display_name || "—";
             const wager = empty ? "—" : money(player.wagered_cents);
             const prize = hasPrize ? money(player.prize_cents) : "—";
             const rank = player.rank || (zeusTheme ? index + 4 : index + 1);
@@ -1063,7 +1063,7 @@ export function LeaderboardShell({
                     ? money(configuredSpot?.prize_cents)
                     : "—";
             const wagerText = player ? money(player.wagered_cents) : "—";
-            const nameText = player ? player.display_name || player.username || "—" : "—";
+            const nameText = player ? player.username || player.display_name || "—" : "—";
             const avatarUrl =
               player?.avatar_url && !brokenAvatars[player.avatar_url]
                 ? player.avatar_url

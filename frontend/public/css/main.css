@@ -3890,7 +3890,7 @@ body.site--board::before {
 .podium__name {
   font-size: 16px;
   font-weight: 800;
-  text-transform: uppercase;
+  text-transform: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
